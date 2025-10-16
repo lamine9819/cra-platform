@@ -48,8 +48,9 @@ export const CommentForm: React.FC<CommentFormProps> = ({
       });
       
       setContent('');
-    } catch (err: any) {
-      setError(err.message || 'Erreur lors de l\'ajout du commentaire');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de l\'ajout du commentaire';
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -58,7 +59,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
-      handleSubmit(e as any);
+      handleSubmit(e as React.FormEvent);
     }
   };
 

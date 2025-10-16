@@ -66,16 +66,6 @@ const LoginPage: React.FC = () => {
     }));
   };
 
-  const handleRoleQuickAccess = (role: string) => {
-    // Fonction pour les boutons d'accès rapide par rôle
-    
-    // Peut être utilisée pour pré-remplir l'email ou rediriger
-    toast.success(`Accès ${role}`, {
-      icon: '👤',
-      duration: 2000
-    });
-  };
-
   // Afficher un loader si en cours de vérification d'auth
   if (isLoading) {
     return (

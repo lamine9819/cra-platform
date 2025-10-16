@@ -8,8 +8,7 @@ import { UserRole } from '../types/auth.types';
 export const roleLabels: Record<UserRole, string> = {
   [UserRole.ADMINISTRATEUR]: 'Administrateur',
   [UserRole.CHERCHEUR]: 'Chercheur',
-  [UserRole.ASSISTANT_CHERCHEUR]: 'Assistant de Recherche',
-  [UserRole.TECHNICIEN_SUPERIEUR]: 'Technicien Supérieur',
+  [UserRole.COORDONATEUR_PROJET]: 'Coordonateur de Projet',
 };
 
 export const getRoleLabel = (role: UserRole): string => {

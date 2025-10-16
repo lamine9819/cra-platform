@@ -38,7 +38,6 @@ const AdminLayout: React.FC = () => {
       name: 'Gestion des utilisateurs',
       href: '/admin/users',
       icon: Users,
-      badge: '24',
     },
     {
       name: 'Projets & Activités',

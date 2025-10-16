@@ -1,5 +1,6 @@
 // src/services/usersApi.ts
 import api from './api';
+import { UserRole } from '../types/auth.types';
 
 // =============================================
 // TYPES ET INTERFACES
@@ -10,7 +11,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'CHERCHEUR' | 'ASSISTANT_CHERCHEUR' | 'TECHNICIEN_SUPERIEUR' | 'ADMINISTRATEUR';
+  role: UserRole;
   isActive: boolean;
   profileImage?: string;
   phoneNumber?: string;
@@ -84,7 +85,7 @@ class UsersApiService {
         search: query,
         limit: limit.toString(),
         // Filtrer seulement les rôles qui peuvent participer aux projets
-        roles: 'CHERCHEUR,ASSISTANT_CHERCHEUR,TECHNICIEN_SUPERIEUR'
+        roles: 'CHERCHEUR,COORDONATEUR_PROJET'
       });
 
       const response = await api.get(`${this.baseUrl}?${params.toString()}`);

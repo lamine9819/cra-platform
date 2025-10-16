@@ -59,7 +59,7 @@ export const ActivityDocumentsSection: React.FC<ActivityDocumentsSectionProps> =
         try {
           const { default: DocumentService } = await import('../../services/documentService');
           await DocumentService.downloadDocument(document.id, document.filename);
-        } catch (error) {
+        } catch {
           toast.error('Erreur lors du téléchargement');
         }
         break;
@@ -76,8 +76,11 @@ export const ActivityDocumentsSection: React.FC<ActivityDocumentsSectionProps> =
             await DocumentService.deleteDocument(document.id);
             toast.success('Document supprimé');
             refetch();
-          } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Erreur lors de la suppression');
+          } catch (error: unknown) {
+            const errorMessage = error instanceof Error && 'response' in error 
+              ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+              : 'Erreur lors de la suppression';
+            toast.error(errorMessage || 'Erreur lors de la suppression');
           }
         }
         break;
@@ -89,24 +92,30 @@ export const ActivityDocumentsSection: React.FC<ActivityDocumentsSectionProps> =
             await DocumentService.unlinkDocument(document.id);
             toast.success('Document délié de l\'activité');
             refetch();
-          } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Erreur lors du déliage');
+          } catch (error: unknown) {
+            const errorMessage = error instanceof Error && 'response' in error 
+              ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+              : 'Erreur lors du déliage';
+            toast.error(errorMessage || 'Erreur lors du déliage');
           }
         }
         break;
     }
   };
 
-  const handleShare = async (shareData: any) => {
+  const handleShare = async (shareData: { userIds: string[]; canEdit?: boolean; canDelete?: boolean }) => {
     if (!selectedDocument) return;
-    
+
     try {
       const { default: DocumentService } = await import('../../services/documentService');
       await DocumentService.shareDocument(selectedDocument.id, shareData);
       toast.success('Document partagé avec succès');
       refetch();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Erreur lors du partage');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : 'Erreur lors du partage';
+      toast.error(errorMessage || 'Erreur lors du partage');
     }
   };
 

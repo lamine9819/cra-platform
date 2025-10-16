@@ -2,32 +2,42 @@
 import api from './api';
 import { LoginCredentials, AuthResponse, User } from '../types/auth.types';
 import { AxiosResponse } from 'axios';
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      const response: AxiosResponse<AuthResponse> = await api.post('/auth/login', credentials);
-      
+      const response: AxiosResponse<{ success: boolean; data: { user: User; token: string; message: string } }> = await api.post('/auth/login', credentials);
+
       if (response.data.success) {
-        const { user, token, refreshToken } = response.data.data;
-        
+        const { user, token } = response.data.data;
+
         // Stocker les données d'authentification
         localStorage.setItem('cra_auth_token', token);
         localStorage.setItem('cra_user_data', JSON.stringify(user));
-        
-        if (refreshToken) {
-          localStorage.setItem('cra_refresh_token', refreshToken);
-        }
-        
+
         // Remember me
         if (credentials.rememberMe) {
           localStorage.setItem('cra_remember_me', 'true');
         }
       }
-      
-      return response.data;
+
+      // Adapter la réponse au format AuthResponse attendu
+      return {
+        success: response.data.success,
+        message: response.data.data.message,
+        data: {
+          user: response.data.data.user,
+          token: response.data.data.token
+        }
+      };
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.message || 
+        error.response?.data?.message ||
         'Erreur lors de la connexion. Veuillez réessayer.'
       );
     }
@@ -76,9 +86,23 @@ export class AuthService {
     return !!(token && user);
   }
 
+  async changePassword(passwordData: ChangePasswordRequest): Promise<{ message: string }> {
+    try {
+      const response: AxiosResponse<{ success: boolean; data: { message: string } }> = await api.post('/auth/change-password', passwordData);
+
+      return {
+        message: response.data.data.message || 'Mot de passe modifié avec succès'
+      };
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message ||
+        'Erreur lors du changement de mot de passe'
+      );
+    }
+  }
+
   private clearAuthData(): void {
     localStorage.removeItem('cra_auth_token');
-    localStorage.removeItem('cra_refresh_token');
     localStorage.removeItem('cra_user_data');
     localStorage.removeItem('cra_remember_me');
   }
@@ -87,10 +111,9 @@ export class AuthService {
     const roleRoutes = {
       ADMINISTRATEUR: '/admin',
       CHERCHEUR: '/chercheur',
-      ASSISTANT_CHERCHEUR: '/assistant',
-      TECHNICIEN_SUPERIEUR: '/technicien'
+      COORDONATEUR_PROJET: '/coordonateur'
     };
-    
+
     return roleRoutes[role as keyof typeof roleRoutes] || '/dashboard';
   }
 }

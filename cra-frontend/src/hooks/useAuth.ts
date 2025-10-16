@@ -23,8 +23,7 @@ export const useAuthRedirect = () => {
       const redirectPath = {
         ADMINISTRATEUR: '/admin',
         CHERCHEUR: '/chercheur',
-        ASSISTANT_CHERCHEUR: '/assistant',
-        TECHNICIEN_SUPERIEUR: '/technicien',
+        COORDONATEUR_PROJET: '/coordonateur',
       }[user.role];
 
       if (redirectPath) {

@@ -9,7 +9,7 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'CHERCHEUR' | 'ASSISTANT_CHERCHEUR' | 'TECHNICIEN_SUPERIEUR' | 'ADMINISTRATEUR';
+  role: 'CHERCHEUR' | 'COORDONATEUR_PROJET' | 'ADMINISTRATEUR';
   department?: string;
   specialization?: string;
 }
@@ -24,8 +24,7 @@ interface AddParticipantModalProps {
 
 const roleLabels = {
   CHERCHEUR: 'Chercheur',
-  ASSISTANT_CHERCHEUR: 'Assistant Chercheur', 
-  TECHNICIEN_SUPERIEUR: 'Technicien Supérieur',
+  COORDONATEUR_PROJET: 'Coordonateur de Projet',
   ADMINISTRATEUR: 'Administrateur'
 };
 
@@ -63,7 +62,7 @@ const AddParticipantModal: React.FC<AddParticipantModalProps> = ({
         params: {
           search,
           limit: 20,
-          roles: 'CHERCHEUR,ASSISTANT_CHERCHEUR,TECHNICIEN_SUPERIEUR'
+          roles: 'CHERCHEUR,COORDONATEUR_PROJET'
         }
       });
       

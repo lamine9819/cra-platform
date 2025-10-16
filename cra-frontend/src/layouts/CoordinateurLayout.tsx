@@ -1,80 +1,92 @@
-// src/layouts/TechnicienLayout.tsx
+// src/layouts/CoordinateurLayout.tsx
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { Sidebar, SidebarItem } from '../components/layout/Sidebar';
-import { 
-  BarChart3, 
-  Clipboard, 
-  FileText, 
+import {
+  BarChart3,
+  Clipboard,
+  FileText,
   Upload,
   CheckSquare,
   FormInput,
   Download,
-  Database
+  Database,
+  FolderKanban,
+  Users
 } from 'lucide-react';
 
-const TechnicienLayout: React.FC = () => {
+const CoordinateurLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const navigation: SidebarItem[] = [
     {
       name: 'Tableau de bord',
-      href: '/technicien',
+      href: '/coordonateur',
       icon: BarChart3,
     },
     {
+      name: 'Projets',
+      href: '/coordonateur/projects',
+      icon: FolderKanban,
+    },
+    {
       name: 'Mes tâches',
-      href: '/technicien/tasks',
+      href: '/coordonateur/tasks',
       icon: CheckSquare,
       badge: '12',
     },
     {
+      name: 'Équipes',
+      href: '/coordonateur/teams',
+      icon: Users,
+    },
+    {
       name: 'Formulaires',
-      href: '/technicien/forms',
+      href: '/coordonateur/forms',
       icon: FormInput,
       children: [
         {
           name: 'Créer formulaire',
-          href: '/technicien/forms/create',
+          href: '/coordonateur/forms/create',
           icon: FormInput,
         },
         {
           name: 'Mes formulaires',
-          href: '/technicien/forms/mine',
+          href: '/coordonateur/forms/mine',
           icon: Clipboard,
         },
         {
           name: 'Réponses collectées',
-          href: '/technicien/forms/responses',
+          href: '/coordonateur/forms/responses',
           icon: Database,
         },
       ],
     },
     {
       name: 'Collecte de données',
-      href: '/technicien/data-collection',
+      href: '/coordonateur/data-collection',
       icon: Clipboard,
       badge: '6',
     },
     {
       name: 'Documents',
-      href: '/technicien/documents',
+      href: '/coordonateur/documents',
       icon: FileText,
       children: [
         {
           name: 'Mes documents',
-          href: '/technicien/documents/mine',
+          href: '/coordonateur/documents/mine',
           icon: FileText,
         },
         {
           name: 'Téléverser',
-          href: '/technicien/documents/upload',
+          href: '/coordonateur/documents/upload',
           icon: Upload,
         },
         {
           name: 'Télécharger données',
-          href: '/technicien/documents/download',
+          href: '/coordonateur/documents/download',
           icon: Download,
         },
       ],
@@ -83,19 +95,19 @@ const TechnicienLayout: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar 
-        navigation={navigation} 
+      <Sidebar
+        navigation={navigation}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header 
-          title="Espace Technicien"
+        <Header
+          title="Espace Coordonateur de Projet"
           onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)}
           isSidebarOpen={isSidebarOpen}
         />
-        
+
         <main className="flex-1 overflow-auto">
           <div className="p-6">
             <Outlet />
@@ -106,4 +118,4 @@ const TechnicienLayout: React.FC = () => {
   );
 };
 
-export default TechnicienLayout;
+export default CoordinateurLayout;

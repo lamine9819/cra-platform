@@ -101,8 +101,8 @@ const HomePage: React.FC = () => {
     },
     {
       name: "Mamadou Fall",
-      role: "Technicien Terrain",
-      content: "Les formulaires de collecte de données sont intuitifs et me permettent de travailler efficacement même sur le terrain.",
+      role: "Coordonateur de Projet",
+      content: "Les formulaires de collecte de données sont intuitifs et me permettent de coordonner efficacement les équipes même sur le terrain.",
       rating: 5
     },
     {

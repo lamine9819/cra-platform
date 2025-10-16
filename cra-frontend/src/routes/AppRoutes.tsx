@@ -8,8 +8,7 @@ import { useAuth } from '../hooks/useAuth';
 // Import des layouts existants
 import AdminLayout from '../layouts/AdminLayout';
 import ChercheurLayout from '../layouts/ChercheurLayout';
-import TechnicienLayout from '../layouts/TechnicienLayout';
-import AssistantLayout from '../layouts/AssistantLayout';
+import CoordinateurLayout from '../layouts/CoordinateurLayout';
 
 // Import des pages existantes
 import LoginPage from '../pages/auth/LoginPage';
@@ -30,8 +29,7 @@ const RoleBasedRedirect: React.FC = () => {
   const redirectPath = {
     [UserRole.ADMINISTRATEUR]: '/admin',
     [UserRole.CHERCHEUR]: '/chercheur',
-    [UserRole.ASSISTANT_CHERCHEUR]: '/assistant',
-    [UserRole.TECHNICIEN_SUPERIEUR]: '/technicien',
+    [UserRole.COORDONATEUR_PROJET]: '/coordonateur',
   }[user.role];
 
   return <Navigate to={redirectPath || '/login'} replace />;
@@ -59,8 +57,8 @@ const AppRoutes: React.FC = () => {
       />
 
       {/* Routes chercheur */}
-      <Route 
-        path="/chercheur/*" 
+      <Route
+        path="/chercheur/*"
         element={
           <ProtectedRoute allowedRoles={[UserRole.CHERCHEUR]}>
             <ChercheurLayout />
@@ -68,22 +66,12 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* Routes technicien */}
-      <Route 
-        path="/technicien/*" 
+      {/* Routes coordonateur de projet */}
+      <Route
+        path="/coordonateur/*"
         element={
-          <ProtectedRoute allowedRoles={[UserRole.TECHNICIEN_SUPERIEUR]}>
-            <TechnicienLayout />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Routes assistant */}
-      <Route 
-        path="/assistant/*" 
-        element={
-          <ProtectedRoute allowedRoles={[UserRole.ASSISTANT_CHERCHEUR]}>
-            <AssistantLayout />
+          <ProtectedRoute allowedRoles={[UserRole.COORDONATEUR_PROJET]}>
+            <CoordinateurLayout />
           </ProtectedRoute>
         }
       />
