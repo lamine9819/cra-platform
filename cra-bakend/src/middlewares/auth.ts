@@ -2,6 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../config/jwt';
 import { AuthError } from '../utils/errors';
+import jwt from 'jsonwebtoken';
 import { AuthenticatedRequest } from '../types/auth.types';
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
@@ -43,4 +44,19 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
 
     next(error);
   }
+};
+// Authentification optionnelle (pour les routes publiques avec amélioration si connecté)
+export const optionalAuth = (req: Request, res: Response, next: NextFunction) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+      (req as AuthenticatedRequest).user = decoded;
+    } catch (error) {
+      // Ignorer les erreurs d'authentification pour l'auth optionnelle
+    }
+  }
+  
+  next();
 };

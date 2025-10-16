@@ -1,27 +1,22 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  //output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
+ 
 // =============================================
 // ÉNUMÉRATIONS
 // =============================================
 
 enum UserRole {
   CHERCHEUR
-  ASSISTANT_CHERCHEUR
-  TECHNICIEN_SUPERIEUR
+  COORDONATEUR_PROJET
   ADMINISTRATEUR
 }
 
@@ -31,6 +26,38 @@ enum ProjectStatus {
   SUSPENDU
   TERMINE
   ARCHIVE
+}
+
+enum ActivityType {
+  RECHERCHE_EXPERIMENTALE
+  RECHERCHE_DEVELOPPEMENT
+  PRODUCTION_SEMENCES
+  FORMATION_DISPENSEE
+  FORMATION_RECUE
+  STAGE
+  ENCADREMENT
+  TRANSFERT_ACQUIS
+  SEMINAIRE
+  ATELIER
+  CONFERENCE
+  DEMONSTRATION
+  AUTRE
+}
+
+enum ActivityStatus {
+  PLANIFIEE
+  EN_COURS
+  SUSPENDUE
+  ANNULEE
+  RECONDUITE
+  CLOTUREE
+}
+
+// NOUVEAU : Statuts spécifiques aux activités du CRA
+enum ActivityLifecycleStatus {
+  NOUVELLE
+  RECONDUITE
+  CLOTUREE
 }
 
 enum TaskStatus {
@@ -52,9 +79,14 @@ enum DocumentType {
   RAPPORT
   FICHE_ACTIVITE
   FICHE_TECHNIQUE
+  FICHE_INDIVIDUELLE
   DONNEES_EXPERIMENTALES
   FORMULAIRE
+  PUBLICATION_SCIENTIFIQUE
+  MEMOIRE
+  THESE
   IMAGE
+  PRESENTATION
   AUTRE
 }
 
@@ -65,6 +97,48 @@ enum SeminarStatus {
   ANNULE
 }
 
+enum TrainingType {
+  FORMATION_COURTE
+  FORMATION_DIPLOMANTE
+  STAGE_ADAPTATION
+  STAGE_RECHERCHE
+  ATELIER_TECHNIQUE
+  SEMINAIRE_FORMATION
+}
+
+enum TransferType {
+  FICHE_TECHNIQUE
+  DEMONSTRATION
+  FORMATION_PRODUCTEUR
+  VISITE_GUIDEE
+  EMISSION_RADIO
+  REPORTAGE_TV
+  PUBLICATION_VULGARISATION
+  SITE_WEB
+  RESEAUX_SOCIAUX
+}
+
+enum EventType {
+  REUNION
+  SEMINAIRE
+  FORMATION
+  MISSION_TERRAIN
+  CONFERENCE
+  ATELIER
+  DEMONSTRATION
+  VISITE
+  SOUTENANCE
+  AUTRE
+}
+
+enum EventStatus {
+  PLANIFIE
+  EN_COURS
+  TERMINE
+  ANNULE
+  REPORTE
+}
+
 enum AuditLevel {
   INFO
   WARNING
@@ -72,8 +146,591 @@ enum AuditLevel {
   CRITICAL
 }
 
+enum ParticipantRole {
+  RESPONSABLE
+  CO_RESPONSABLE
+  CHERCHEUR_PRINCIPAL
+  CHERCHEUR_ASSOCIE
+  TECHNICIEN
+  STAGIAIRE
+  PARTENAIRE_EXTERNE
+  CONSULTANT
+}
+
+enum FundingType {
+  SUBVENTION
+  CONTRAT
+  PARTENARIAT
+  BUDGET_INTERNE
+  COOPERATION_INTERNATIONALE
+  SECTEUR_PRIVE
+}
+
+enum FundingStatus {
+  DEMANDE
+  APPROUVE
+  REJETE
+  EN_COURS
+  TERMINE
+  SUSPENDU
+}
+
+enum PartnerType {
+  UNIVERSITE
+  INSTITUT_RECHERCHE
+  ENTREPRISE_PRIVEE
+  ONG
+  ORGANISME_PUBLIC
+  ORGANISATION_INTERNATIONALE
+  COOPERATIVE
+  ASSOCIATION
+}
+
+// NOUVELLES ÉNUMÉRATIONS POUR LA STRUCTURE STRATÉGIQUE
+enum ConventionStatus {
+  EN_NEGOCIATION
+  SIGNEE
+  EN_COURS
+  CLOTUREE
+  SUSPENDUE
+  RESILIEE
+}
+
+enum ConventionType {
+  BILATERALE
+  MULTILATERALE
+  PARTENARIAT_PUBLIC_PRIVE
+  COOPERATION_INTERNATIONALE
+  SOUS_TRAITANCE
+}
+
+// ÉNUMÉRATIONS POUR LES FORMULAIRES
+enum ShareType {
+  INTERNAL
+  EXTERNAL
+}
+
+enum CollectorType {
+  USER
+  SHARED_USER
+  PUBLIC
+}
+
+enum SyncStatus {
+  PENDING
+  SYNCING
+  SYNCED
+  ERROR
+  RETRY
+}
+
+// ÉNUMÉRATIONS POUR LES INDICATEURS
+enum PublicationType {
+  ARTICLE_SCIENTIFIQUE
+  COMMUNICATION_CONFERENCE
+  CHAPITRE_LIVRE
+  LIVRE
+  RAPPORT_TECHNIQUE
+  FICHE_TECHNIQUE
+  MEMOIRE
+  THESE
+}
+
+enum ObjectiveStatus {
+  EN_ATTENTE
+  EN_COURS
+  TERMINE
+  ANNULE
+  REPORTE
+}
+
 // =============================================
-// GESTION DES UTILISATEURS
+// NOUVEAUX MODÈLES POUR LA STRUCTURE STRATÉGIQUE
+// =============================================
+
+// Modèle pour le Plan Stratégique de Développement
+model StrategicPlan {
+  id          String   @id @default(cuid())
+  name        String   @unique // Ex: "PSD-2018-2022"
+  description String?
+  startYear   Int
+  endYear     Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  axes        StrategicAxis[]
+  
+  @@map("strategic_plans")
+}
+
+// Modèle pour les Axes stratégiques
+model StrategicAxis {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  code        String?  // Code de l'axe
+  order       Int?     // Ordre d'affichage
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  strategicPlan   StrategicPlan @relation(fields: [strategicPlanId], references: [id])
+  strategicPlanId String
+  
+  subAxes     StrategicSubAxis[]
+  
+  @@unique([strategicPlanId, name])
+  @@map("strategic_axes")
+}
+
+// Modèle pour les Sous-axes
+model StrategicSubAxis {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  code        String?
+  order       Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  strategicAxis   StrategicAxis @relation(fields: [strategicAxisId], references: [id])
+  strategicAxisId String
+  
+  programs    ResearchProgram[]
+  
+  @@unique([strategicAxisId, name])
+  @@map("strategic_sub_axes")
+}
+
+// NOUVEAU : Modèle pour les Programmes de recherche
+model ResearchProgram {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  code        String?  @unique
+  startDate   DateTime?
+  endDate     DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations avec la structure stratégique
+  strategicSubAxis   StrategicSubAxis @relation(fields: [strategicSubAxisId], references: [id])
+  strategicSubAxisId String
+  
+  // Responsable du programme
+  coordinator   User   @relation(fields: [coordinatorId], references: [id])
+  coordinatorId String
+  
+  // Relations
+  themes      ResearchTheme[]
+  projects    Project[]
+  
+  @@map("research_programs")
+}
+
+// =============================================
+// MODÈLES MODIFIÉS SPÉCIFIQUES AU CRA
+// =============================================
+
+// Modèle pour les 5 thèmes de recherche (MODIFIÉ)
+model ResearchTheme {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  objectives  String[]
+  code        String?  @unique
+  order       Int?     // Ordre d'affichage
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // NOUVELLE RELATION avec le programme
+  program     ResearchProgram @relation(fields: [programId], references: [id])
+  programId   String
+  
+  // Relations existantes
+  projects    Project[]
+  activities  Activity[]
+  
+  @@unique([programId, name])
+  @@map("research_themes")
+}
+
+// Modèle pour les stations de recherche
+model ResearchStation {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  location    String
+  surface     Float?   // Surface en hectares
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  activities  Activity[]
+  events      CalendarEvent[]
+  
+  @@map("research_stations")
+}
+
+// NOUVEAU : Modèle pour les Conventions
+model Convention {
+  id              String           @id @default(cuid())
+  title           String
+  description     String?
+  type            ConventionType
+  status          ConventionStatus @default(EN_NEGOCIATION)
+  
+  // Informations contractuelles
+  contractNumber  String?          @unique
+  signatureDate   DateTime?
+  startDate       DateTime?
+  endDate         DateTime?
+  
+  // Informations financières
+  totalBudget     Float?
+  currency        String           @default("XOF")
+  
+  // Documents
+  documentPath    String?          // Chemin vers le document de convention
+  
+  // Partenaires
+  mainPartner     String           // Partenaire principal
+  otherPartners   String[]         // Autres partenaires
+  
+  // Responsabilité ISRA
+  responsibleUser User             @relation(fields: [responsibleUserId], references: [id])
+  responsibleUserId String
+  
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  // Relations
+  activities      Activity[]
+  projects        Project[]
+  fundings        ActivityFunding[]
+  
+  @@map("conventions")
+}
+
+// Modèle pour les fiches individuelles des agents (MODIFIÉ)
+model IndividualProfile {
+  id            String   @id @default(cuid())
+  
+  // Informations administratives
+  matricule     String   @unique
+  grade         String   // Ex: "7", "CR", "CST"
+  classe        String?  // Ex: "1", "6.3"
+  dateNaissance DateTime
+  dateRecrutement DateTime
+  localite      String   // Lieu d'affectation
+  diplome       String   // DOCTORAT, MASTER, etc.
+  
+  // Répartition du temps par activité (en pourcentage)
+  tempsRecherche          Int @default(0)      // % temps recherche
+  tempsEnseignement       Int @default(0)      // % temps enseignement/formation à dispenser
+  tempsFormation          Int @default(0)      // % temps formation à recevoir
+  tempsConsultation       Int @default(0)      // % temps consultation/expertise
+  tempsGestionScientifique Int @default(0)     // % temps gestion scientifique
+  tempsAdministration     Int @default(0)      // % temps administration
+  
+  // NOUVEAU : Historique des répartitions de temps
+  timeAllocations IndividualTimeAllocation[]
+  
+  // Validation
+  isValidated   Boolean  @default(false)   // Fiche validée par le chercheur
+  validatedAt   DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String   @unique
+  
+  @@map("individual_profiles")
+}
+
+// NOUVEAU : Modèle pour l'historique des répartitions de temps
+model IndividualTimeAllocation {
+  id          String   @id @default(cuid())
+  year        Int
+  
+  // Répartition du temps
+  tempsRecherche          Int @default(0)
+  tempsEnseignement       Int @default(0)
+  tempsFormation          Int @default(0)
+  tempsConsultation       Int @default(0)
+  tempsGestionScientifique Int @default(0)
+  tempsAdministration     Int @default(0)
+  
+  // Validation
+  isValidated   Boolean  @default(false)
+  validatedAt   DateTime?
+  validatedBy   String?  // Qui a validé
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  profile       IndividualProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId     String
+  
+  @@unique([profileId, year])
+  @@map("individual_time_allocations")
+}
+
+// NOUVEAU : Modèle pour les demandes de mesures nouvelles
+model PersonnelRequest {
+  id              String   @id @default(cuid())
+  
+  // Informations sur le poste
+  postType        String   // "Chargé de Recherche", "Ingénieur", etc.
+  discipline      String   // Discipline demandée
+  profile         String   // Profil souhaité
+  diploma         String   // Diplôme requis
+  
+  // Détails de la demande
+  description     String   // Description du poste
+  competencies    String[] // Compétences requises
+  activities      String[] // Activités à mener
+  
+  // Informations contractuelles
+  contractType    String   // CDI, CDD, etc.
+  location        String   // Lieu d'affectation
+  estimatedCost   Float?   // Coût annuel estimé
+  fundingSource   String?  // Source de financement
+  
+  // Dates
+  requestedDate   DateTime? // Date de recrutement demandée
+  
+  // Justification
+  justification   String   // Justification par rapport au plan stratégique
+  
+  // Statut
+  status          String   @default("EN_ATTENTE") // EN_ATTENTE, APPROUVE, REJETE
+  comments        String?  // Commentaires DG
+  decidedAt       DateTime?
+  decidedBy       String?
+  
+  // Relations
+  requestedBy     User     @relation(fields: [requestedById], references: [id])
+  requestedById   String
+  
+  center          String   // Centre demandeur
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("personnel_requests")
+}
+
+// =============================================
+// NOUVEAUX MODÈLES POUR LES INDICATEURS DE PERFORMANCE
+// =============================================
+
+// Indicateurs de performance scientifique annuels
+model ScientificIndicator {
+  id                String   @id @default(cuid())
+  year              Int
+  
+  // Indicateurs de production scientifique
+  publicationsCount    Int      @default(0)
+  articlesCount        Int      @default(0)
+  conferencesCount     Int      @default(0)
+  technicalReportsCount Int     @default(0)
+  
+  // Indicateurs de projet et financement
+  projectsLeadCount    Int      @default(0)
+  projectsParticipantCount Int  @default(0)
+  totalFundingAmount   Float    @default(0)
+  
+  // Indicateurs d'encadrement et formation
+  masterSupervisionsCount    Int @default(0)
+  phdSupervisionsCount       Int @default(0)
+  trainingsGivenCount        Int @default(0)
+  trainingsReceivedCount     Int @default(0)
+  
+  // Indicateurs de transfert et valorisation
+  knowledgeTransfersCount    Int @default(0)
+  demonstrationsCount        Int @default(0)
+  mediaAppearancesCount      Int @default(0)
+  
+  // Indicateurs de collaboration
+  partnershipsCount          Int @default(0)
+  internationalCollabCount   Int @default(0)
+  
+  // Métadonnées
+  calculatedAt      DateTime @default(now())
+  isValidated       Boolean  @default(false)
+  validatedAt       DateTime?
+  validatedBy       String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  user              User     @relation(fields: [userId], references: [id])
+  userId            String
+  
+  @@unique([userId, year])
+  @@map("scientific_indicators")
+}
+
+// Publications scientifiques détaillées
+model Publication {
+  id          String          @id @default(cuid())
+  title       String
+  type        PublicationType
+  journal     String?         // Nom de la revue/conférence
+  isbn        String?         // Pour les livres
+  doi         String?         // Digital Object Identifier
+  url         String?         // Lien vers la publication
+  
+  // Détails bibliographiques
+  volume      String?
+  issue       String?
+  pages       String?
+  publisher   String?
+  
+  // Classification et impact
+  impactFactor      Float?
+  quartile          String?     // Q1, Q2, Q3, Q4
+  citationsCount    Int         @default(0)
+  isOpenAccess      Boolean     @default(false)
+  
+  // Dates importantes
+  submissionDate    DateTime?
+  acceptanceDate    DateTime?
+  publicationDate   DateTime?
+  
+  // Statut et visibilité
+  status            String      @default("PUBLIE") // SOUMIS, ACCEPTE, PUBLIE
+  isInternational   Boolean     @default(false)
+  language          String      @default("fr")
+  
+  // Métadonnées
+  abstract          String?
+  keywords          String[]
+  
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // Relations
+  authors           PublicationAuthor[]
+  linkedProjects    Project[]   @relation("ProjectPublications")
+  linkedActivities  Activity[]  @relation("ActivityPublications")
+  document          Document?   @relation(fields: [documentId], references: [id])
+  documentId        String?     @unique
+  
+  @@map("publications")
+}
+
+// Table de liaison pour les auteurs de publications
+model PublicationAuthor {
+  id            String      @id @default(cuid())
+  authorOrder   Int         // Ordre d'authorship (1er auteur, 2ème, etc.)
+  isCorresponding Boolean   @default(false)
+  affiliation   String?     // Affiliation au moment de la publication
+  
+  // Relations
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  publicationId String
+  
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String
+  
+  createdAt     DateTime    @default(now())
+  
+  @@unique([publicationId, userId])
+  @@map("publication_authors")
+}
+
+// Objectifs personnels de recherche
+model ResearchObjective {
+  id          String          @id @default(cuid())
+  title       String
+  description String?
+  category    String?         // "PUBLICATION", "PROJET", "FORMATION", "PERSONNEL"
+  
+  // Planning
+  startDate   DateTime?
+  deadline    DateTime?
+  status      ObjectiveStatus @default(EN_COURS)
+  priority    TaskPriority    @default(NORMALE)
+  progress    Int             @default(0) // Pourcentage de completion
+  
+  // Métriques
+  targetValue     Float?      // Valeur cible (ex: 3 publications)
+  currentValue    Float?      // Valeur actuelle
+  unit            String?     // Unité de mesure
+  
+  // Suivi
+  notes           String?
+  milestones      String[]    // Étapes importantes
+  completedAt     DateTime?
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  // Relations
+  user            User        @relation(fields: [userId], references: [id])
+  userId          String
+  
+  linkedProjects  Project[]   @relation("ProjectObjectives")
+  linkedActivities Activity[] @relation("ActivityObjectives")
+  
+  @@map("research_objectives")
+}
+
+// Évaluations et feedback des performances
+model PerformanceEvaluation {
+  id              String   @id @default(cuid())
+  year            Int
+  evaluationType  String   // "ANNUELLE", "SEMESTRIELLE", "PROJET"
+  
+  // Scores par catégorie (sur 5 ou sur 20)
+  researchScore          Float?
+  publicationScore       Float?
+  collaborationScore     Float?
+  innovationScore        Float?
+  transferScore          Float?
+  leadershipScore        Float?
+  
+  // Commentaires
+  strengths              String[]
+  areasForImprovement    String[]
+  evaluatorComments      String?
+  selfAssessmentComments String?
+  
+  // Objectifs pour la période suivante
+  nextPeriodGoals        String[]
+  
+  // Validation
+  isFinalized            Boolean  @default(false)
+  finalizedAt            DateTime?
+  
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  
+  // Relations
+  evaluatedUser          User     @relation("EvaluatedUser", fields: [evaluatedUserId], references: [id])
+  evaluatedUserId        String
+  
+  evaluator              User?    @relation("Evaluator", fields: [evaluatorId], references: [id])
+  evaluatorId            String?
+  
+  @@unique([evaluatedUserId, year, evaluationType])
+  @@map("performance_evaluations")
+}
+
+// =============================================
+// GESTION DES UTILISATEURS (MODIFIÉ)
 // =============================================
 
 model User {
@@ -85,9 +742,24 @@ model User {
   role          UserRole
   isActive      Boolean  @default(true)
   profileImage  String?
+  dateOfBirth  DateTime?
+  dateOfHire  DateTime?
   phoneNumber   String?
+  diploma      String?
   specialization String?
   department    String?
+  discipline    String?  // Discipline scientifique
+  
+  // Nouvelles informations académiques
+  orcidId           String?
+  researchGateId    String?
+  googleScholarId   String?
+  linkedinId        String?
+  
+  // Préférences et configuration
+  notificationPrefs Json?
+  dashboardConfig   Json?    // Configuration du tableau de bord personnel
+  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -96,6 +768,12 @@ model User {
   
   // Relations - Participation aux projets
   projectParticipations ProjectParticipant[]
+  
+  // Relations - Activités sous responsabilité
+  responsibleActivities Activity[] @relation("ActivityResponsible")
+  
+  // Relations - Participation aux activités
+  activityParticipations ActivityParticipant[]
   
   // Relations - Tâches assignées
   assignedTasks Task[] @relation("TaskAssignee")
@@ -129,30 +807,110 @@ model User {
   // Relations - Partage de documents (documents partagés avec cet utilisateur)
   documentShares DocumentShare[]
   
+  // Relations pour les formulaires
+  receivedFormShares FormShare[] @relation("FormShareReceiver")
+  createdFormShares  FormShare[] @relation("FormShareCreator")
+  
   // Relations - Notifications
   sentNotifications     Notification[] @relation("NotificationSender")
   receivedNotifications Notification[] @relation("NotificationReceiver")
   
   // Relations - Audit logs
   auditLogs AuditLog[]
+  
+  // NOUVELLES RELATIONS SPÉCIFIQUES AU CRA
+  individualProfile IndividualProfile?
+  trainingParticipations TrainingParticipant[]
+  supervisedInternships Internship[] @relation("InternshipSupervisor")
+  internships Internship[] @relation("InternshipIntern")
+  supervisedTheses Supervision[] @relation("SupervisionSupervisor")
+  studentSupervisions Supervision[] @relation("SupervisionStudent")
+  knowledgeTransfers KnowledgeTransfer[]
+  createdEvents CalendarEvent[] @relation("EventCreator")
+  eventParticipations EventParticipant[]
+
+  // NOUVELLES RELATIONS POUR LES INDICATEURS DE PERFORMANCE
+  scientificIndicators    ScientificIndicator[]
+  publications            PublicationAuthor[]
+  researchObjectives      ResearchObjective[]
+  evaluations             PerformanceEvaluation[] @relation("EvaluatedUser")
+  conductedEvaluations    PerformanceEvaluation[] @relation("Evaluator")
+
+  // NOUVELLES RELATIONS POUR LA STRUCTURE ORGANISATIONNELLE
+  coordinatedPrograms     ResearchProgram[]
+  responsibleConventions  Convention[]
+  personnelRequests       PersonnelRequest[]
 
   @@map("users")
 }
 
 // =============================================
-// GESTION DES PROJETS
+// GESTION DES PARTENAIRES INSTITUTIONNELS
+// =============================================
+
+model Partner {
+  id            String      @id @default(cuid())
+  name          String
+  type          PartnerType
+  category      String?     // National, International, Privé, Public, ONG, etc.
+  description   String?
+  
+  // Informations de contact
+  address       String?
+  phone         String?
+  email         String?
+  website       String?
+  
+  // Représentant
+  contactPerson String?
+  contactTitle  String?
+  contactEmail  String?
+  contactPhone  String?
+  
+  // Domaines de compétence
+  expertise     String[]    // Domaines d'expertise
+  services      String[]    // Services offerts
+  
+  // Relations
+  projectPartnerships   ProjectPartner[]
+  activityPartnerships  ActivityPartner[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("partners")
+}
+
+// =============================================
+// GESTION DES PROJETS (MODIFIÉ)
 // =============================================
 
 model Project {
   id           String        @id @default(cuid())
+  code         String        @unique
   title        String
   description  String?
-  objectives   String[]
+  objectives   String[]      // OBJECTIFS TEXTUELS (EXISTANT)
   status       ProjectStatus @default(PLANIFIE)
   startDate    DateTime?
   endDate      DateTime?
   budget       Float?
   keywords     String[]
+  
+  // NOUVEAU : Cadrage stratégique du projet
+  strategicPlan      String?
+  strategicAxis      String?
+  subAxis           String?
+  program           String?
+  
+  // NOUVELLE RELATION avec le programme de recherche
+  researchProgram   ResearchProgram? @relation(fields: [researchProgramId], references: [id])
+  researchProgramId String?
+  
+  // NOUVELLE RELATION avec les conventions
+  convention        Convention? @relation(fields: [conventionId], references: [id])
+  conventionId      String?
+  
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   
@@ -160,20 +918,20 @@ model Project {
   creator      User          @relation("ProjectCreator", fields: [creatorId], references: [id])
   creatorId    String
   
-  // Participants du projet
+  theme        ResearchTheme @relation(fields: [themeId], references: [id])
+  themeId      String
+  
   participants ProjectParticipant[]
-  
-  // Activités du projet
+  partnerships ProjectPartner[]
   activities   Activity[]
-  
-  // Tâches du projet
   tasks        Task[]
-  
-  // Documents du projet
   documents    Document[]
-  
-  // Commentaires
   comments     Comment[]
+  events       CalendarEvent[]
+
+  // NOUVELLES RELATIONS POUR LES INDICATEURS
+  publications Publication[] @relation("ProjectPublications")
+  researchObjectives   ResearchObjective[] @relation("ProjectObjectives")
 
   @@map("projects")
 }
@@ -196,14 +954,39 @@ model ProjectParticipant {
   @@map("project_participants")
 }
 
+model ProjectPartner {
+  id           String      @id @default(cuid())
+  partnerType  String      // Type de partenariat
+  contribution String?     // Contribution du partenaire
+  benefits     String?     // Bénéfices attendus
+  startDate    DateTime    @default(now())
+  endDate      DateTime?
+  isActive     Boolean     @default(true)
+  
+  // Relations
+  project      Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId    String
+  
+  partner      Partner     @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  partnerId    String
+  
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  @@unique([projectId, partnerId])
+  @@map("project_partners")
+}
+
 // =============================================
-// GESTION DES ACTIVITÉS
+// GESTION DES ACTIVITÉS (MODIFIÉ)
 // =============================================
 
 model Activity {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
+  code        String?         @unique // Code unique de l'activité
   title       String
   description String?
+  type        ActivityType   @default(RECHERCHE_EXPERIMENTALE)
   objectives  String[]
   methodology String?
   location    String?
@@ -211,12 +994,74 @@ model Activity {
   endDate     DateTime?
   results     String?
   conclusions String?
+  
+  // Cadrage stratégique
+  interventionRegion String?
+  strategicPlan      String?
+  strategicAxis      String?
+  subAxis           String?
+  
+  // NOUVEAU : Statut de cycle de vie de l'activité
+  lifecycleStatus   ActivityLifecycleStatus @default(NOUVELLE)
+  
+  // Informations complémentaires
+  researchType      String?        // RD, Recherche fondamentale, etc.
+  status            ActivityStatus @default(PLANIFIEE)
+  priority          TaskPriority   @default(NORMALE)
+  
+  // Gestion de la reconduction
+  isRecurrent       Boolean        @default(false) // Indique si l'activité est récurrente
+  parentActivityId  String?        // ID de l'activité parente (si reconduction)
+  parentActivity    Activity?      @relation("ActivityRecurrence", fields: [parentActivityId], references: [id])
+  childActivities   Activity[]     @relation("ActivityRecurrence") // Activités reconduites
+  recurrenceReason  String?        // Raison de la reconduction
+  recurrenceNotes   String?        // Notes sur les modifications apportées lors de la reconduction
+  recurrenceCount   Int            @default(0) // Nombre de fois que l'activité a été reconduite
+  originalStartDate DateTime?      // Date de début de la première occurrence
+  
+  // Justifications et contexte
+  justifications    String?
+  constraints       String[]
+  expectedResults   String[]
+  transferMethods   String[]
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
   // Relations
-  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId   String
+  project     Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String?    // MODIFIÉ : Maintenant optionnel
+  
+  // NOUVELLE RELATION AVEC THÈME
+  theme       ResearchTheme  @relation(fields: [themeId], references: [id])
+  themeId     String
+  
+  // NOUVELLE RELATION AVEC STATION
+  station     ResearchStation? @relation(fields: [stationId], references: [id])
+  stationId   String?
+  
+  // NOUVELLE RELATION AVEC CONVENTION
+  convention  Convention? @relation(fields: [conventionId], references: [id])
+  conventionId String?
+  
+  // Responsable de l'activité
+  responsible User       @relation("ActivityResponsible", fields: [responsibleId], references: [id])
+  responsibleId String
+  
+  // Participants à l'activité
+  participants ActivityParticipant[]
+  
+  // Partenaires de l'activité
+  partnerships ActivityPartner[]
+  
+  // Ressources financières
+  fundings    ActivityFunding[]
+  
+  // Historique des reconductions (comme activité source)
+  sourceRecurrences ActivityRecurrence[] @relation("SourceRecurrence")
+  
+  // Historique des reconductions (comme nouvelle activité)
+  newRecurrences    ActivityRecurrence[] @relation("NewRecurrence")
   
   // Tâches de l'activité
   tasks       Task[]
@@ -229,8 +1074,154 @@ model Activity {
   
   // Commentaires
   comments    Comment[]
+  
+  // NOUVELLES RELATIONS SPÉCIFIQUES AU CRA
+  trainings   Training[]
+  internships Internship[]
+  supervisions Supervision[]
+  knowledgeTransfers KnowledgeTransfer[]
+  events      CalendarEvent[]
+
+  // NOUVELLES RELATIONS POUR LES INDICATEURS
+  publications Publication[] @relation("ActivityPublications")
+  activityObjectives   ResearchObjective[] @relation("ActivityObjectives")
 
   @@map("activities")
+}
+
+// =============================================
+// GESTION DES PARTICIPANTS AUX ACTIVITÉS
+// =============================================
+
+model ActivityParticipant {
+  id        String          @id @default(cuid())
+  role      ParticipantRole
+  timeAllocation Int?       // Pourcentage de temps alloué
+  startDate DateTime       @default(now())
+  endDate   DateTime?
+  isActive  Boolean        @default(true)
+  responsibilities String?  // Responsabilités spécifiques
+  expertise String?        // Domaine d'expertise apporté
+  
+  // Relations
+  activity  Activity       @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activityId String
+  
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  
+  @@unique([activityId, userId])
+  @@map("activity_participants")
+}
+
+model ActivityPartner {
+  id           String      @id @default(cuid())
+  partnerType  String      // Type de partenariat
+  contribution String?     // Contribution du partenaire
+  benefits     String?     // Bénéfices attendus
+  startDate    DateTime    @default(now())
+  endDate      DateTime?
+  isActive     Boolean     @default(true)
+  
+  // Relations
+  activity     Activity    @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activityId   String
+  
+  partner      Partner     @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  partnerId    String
+  
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  @@unique([activityId, partnerId])
+  @@map("activity_partners")
+}
+
+// =============================================
+// GESTION DES RESSOURCES FINANCIÈRES DES ACTIVITÉS (MODIFIÉ)
+// =============================================
+
+model ActivityFunding {
+  id              String        @id @default(cuid())
+  fundingSource   String        // Nom du bailleur/source de financement
+  fundingType     FundingType
+  status          FundingStatus @default(DEMANDE)
+  
+  // Montants financiers
+  requestedAmount Float         // Montant demandé
+  approvedAmount  Float?        // Montant approuvé
+  receivedAmount  Float?        // Montant effectivement reçu
+  currency        String        @default("XOF") // Devise
+  
+  // Dates
+  applicationDate DateTime?     // Date de demande
+  approvalDate    DateTime?     // Date d'approbation
+  startDate       DateTime?     // Date de début du financement
+  endDate         DateTime?     // Date de fin du financement
+  
+  // Conditions et contraintes
+  conditions      String?       // Conditions spécifiques du financement
+  reportingReqs   String[]      // Exigences de reporting
+  restrictions    String[]      // Restrictions d'utilisation
+  
+  // Informations complémentaires
+  contractNumber  String?       // Numéro de contrat/convention
+  contactPerson   String?       // Personne contact chez le bailleur
+  contactEmail    String?       // Email de contact
+  notes           String?       // Notes diverses
+  
+  // Relations
+  activity        Activity      @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activityId      String
+  
+  // NOUVELLE RELATION avec convention
+  convention      Convention?   @relation(fields: [conventionId], references: [id])
+  conventionId    String?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  @@map("activity_fundings")
+}
+
+// =============================================
+// GESTION DE L'HISTORIQUE DES RECONDUCTIONS
+// =============================================
+
+model ActivityRecurrence {
+  id              String    @id @default(cuid())
+  
+  // Activité source et nouvelle activité
+  sourceActivity  Activity  @relation("SourceRecurrence", fields: [sourceActivityId], references: [id], onDelete: Cascade)
+  sourceActivityId String
+  
+  newActivity     Activity  @relation("NewRecurrence", fields: [newActivityId], references: [id], onDelete: Cascade)
+  newActivityId   String
+  
+  // Informations sur la reconduction
+  recurrenceType  String    // 'ANNUAL', 'CONTINUATION', 'PHASE', etc.
+  reason          String?   // Raison de la reconduction
+  modifications   String[]  // Liste des modifications apportées
+  budgetChanges   String?   // Changements budgétaires
+  teamChanges     String?   // Changements dans l'équipe
+  scopeChanges    String?   // Changements dans le périmètre
+  
+  // Dates importantes
+  decisionDate    DateTime  @default(now()) // Date de décision de reconduction
+  approvalDate    DateTime? // Date d'approbation
+  
+  // Métadonnées
+  approvedBy      String?   // Qui a approuvé la reconduction
+  notes           String?   // Notes additionnelles
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@unique([sourceActivityId, newActivityId])
+  @@map("activity_recurrences")
 }
 
 // =============================================
@@ -306,6 +1297,25 @@ model Document {
   seminar     Seminar?     @relation(fields: [seminarId], references: [id], onDelete: Cascade)
   seminarId   String?
   
+  // NOUVELLES RELATIONS SPÉCIFIQUES AU CRA
+  training    Training?    @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  trainingId  String?
+  
+  internship  Internship?  @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  internshipId String?
+  
+  supervision Supervision? @relation(fields: [supervisionId], references: [id], onDelete: Cascade)
+  supervisionId String?
+  
+  knowledgeTransfer KnowledgeTransfer? @relation(fields: [knowledgeTransferId], references: [id], onDelete: Cascade)
+  knowledgeTransferId String?
+  
+  event       CalendarEvent? @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId     String?
+  
+  // RELATION AVEC PUBLICATIONS
+  publication Publication?
+  
   // Partages du document
   shares      DocumentShare[]
 
@@ -339,6 +1349,10 @@ model Form {
   description String?
   schema      Json     // Structure JSON du formulaire
   isActive    Boolean  @default(true)
+  isPublic    Boolean  @default(false) // Formulaire public via lien
+  shareToken  String?  @unique        // Token unique pour partage public
+  shareCount  Int      @default(0)    // Nombre de vues publiques
+  allowMultipleSubmissions Boolean @default(true) // Par défaut permet plusieurs soumissions
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -349,27 +1363,293 @@ model Form {
   activity    Activity?      @relation(fields: [activityId], references: [id], onDelete: Cascade)
   activityId  String?
   
-  // NOUVELLE RELATION POUR LES COMMENTAIRES
-  comments    Comment[]
+  // Partages du formulaire
+  shares      FormShare[]
+  
   // Réponses au formulaire
   responses   FormResponse[]
+  
+  // Commentaires
+  comments    Comment[]
 
   @@map("forms")
 }
 
+model FormShare {
+  id         String    @id @default(cuid())
+  shareType  ShareType // 'INTERNAL' (utilisateur de la plateforme) ou 'EXTERNAL' (lien public)
+  shareToken String?   @unique // Token pour les partages externes
+  canCollect Boolean   @default(true)  // Peut collecter des réponses
+  canExport  Boolean   @default(false) // Peut exporter les réponses
+  maxSubmissions Int?               // Limite de soumissions (null = illimité)
+  expiresAt  DateTime?             // Date d'expiration du partage
+  createdAt  DateTime @default(now())
+  lastAccessed DateTime?           // Dernière utilisation
+  
+  // Relations
+  form       Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  formId     String
+  
+  // Utilisateur avec qui le formulaire est partagé (null pour partage public)
+  sharedWith User?    @relation("FormShareReceiver", fields: [sharedWithId], references: [id], onDelete: Cascade)
+  sharedWithId String?
+  
+  createdBy  User     @relation("FormShareCreator", fields: [createdById], references: [id])
+  createdById String
+
+  @@map("form_shares")
+}
+
 model FormResponse {
-  id          String   @id @default(cuid())
-  data        Json     // Données de la réponse
-  submittedAt DateTime @default(now())
+  id          String        @id @default(cuid())
+  data        Json          // Données de la réponse
+  submittedAt DateTime      @default(now())
+  isOffline   Boolean       @default(false) // Soumission hors ligne
+  syncedAt    DateTime?     // Date de synchronisation si offline
+  collectorType CollectorType @default(USER) // "USER", "SHARED_USER", "PUBLIC"
+  collectorInfo Json?       // Infos sur le collecteur (nom, email pour public)
   
   // Relations
   form        Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
   formId      String
   
-  respondent  User     @relation(fields: [respondentId], references: [id])
-  respondentId String
+  respondent  User?    @relation(fields: [respondentId], references: [id]) // Null pour collecte publique
+  respondentId String?
+  
+  // Photos associées à la réponse
+  photos      ResponsePhoto[]
 
   @@map("form_responses")
+}
+
+model ResponsePhoto {
+  id          String   @id @default(cuid())
+  filename    String   // Nom du fichier
+  originalName String? // Nom original du fichier
+  filepath    String   // Chemin de stockage
+  mimeType    String   // Type MIME de l'image
+  size        BigInt   // Taille en bytes
+  width       Int?     // Largeur de l'image
+  height      Int?     // Hauteur de l'image
+  fieldId     String   // ID du champ de formulaire associé
+  caption     String?  // Légende optionnelle
+  latitude    Float?   // Coordonnées GPS si disponibles
+  longitude   Float?   // Coordonnées GPS si disponibles
+  takenAt     DateTime @default(now()) // Date de prise de la photo
+  uploadedAt  DateTime @default(now()) // Date d'upload
+  
+  // Relations
+  response    FormResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  responseId  String
+
+  @@map("response_photos")
+}
+
+model OfflineSync {
+  id          String     @id @default(cuid())
+  formId      String     // ID du formulaire
+  deviceId    String     // Identifiant unique de l'appareil
+  data        Json       // Données à synchroniser
+  status      SyncStatus // 'PENDING', 'SYNCED', 'ERROR'
+  attempts    Int        @default(0) // Nombre de tentatives
+  error       String?    // Message d'erreur si échec
+  createdAt   DateTime   @default(now())
+  syncedAt    DateTime?
+  
+  @@map("offline_sync")
+}
+
+// =============================================
+// MODÈLES SPÉCIFIQUES AU CRA - FORMATIONS ET ENCADREMENTS
+// =============================================
+
+// Modèle pour les formations
+model Training {
+  id            String      @id @default(cuid())
+  title         String
+  description   String?
+  type          TrainingType
+  location      String?
+  startDate     DateTime
+  endDate       DateTime?
+  duration      Int?        // Durée en heures
+  objectives    String[]
+  maxParticipants Int?
+  isInternal    Boolean     @default(true) // Formation interne ou externe
+  organizer     String?     // Organisation externe si applicable
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  // Relations
+  activity      Activity?   @relation(fields: [activityId], references: [id])
+  activityId    String?
+  
+  participants  TrainingParticipant[]
+  documents     Document[]
+  
+  @@map("trainings")
+}
+
+model TrainingParticipant {
+  id           String   @id @default(cuid())
+  role         String   // 'FORMATEUR', 'PARTICIPANT', 'ORGANISATEUR'
+  registeredAt DateTime @default(now())
+  attendedAt   DateTime?
+  certificate  Boolean  @default(false)
+  evaluation   Float?   // Note ou évaluation
+  
+  // Relations
+  training     Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  trainingId   String
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  
+  @@unique([trainingId, userId])
+  @@map("training_participants")
+}
+
+// Modèle pour les stages
+model Internship {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  institution String   // Institution d'origine du stagiaire
+  startDate   DateTime
+  endDate     DateTime
+  objectives  String[]
+  results     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  activity    Activity? @relation(fields: [activityId], references: [id])
+  activityId  String?
+  
+  supervisor  User      @relation("InternshipSupervisor", fields: [supervisorId], references: [id])
+  supervisorId String
+  
+  intern      User      @relation("InternshipIntern", fields: [internId], references: [id])
+  internId    String
+  
+  documents   Document[]
+  
+  @@map("internships")
+}
+
+// Modèle pour les encadrements (thèses, mémoires)
+model Supervision {
+  id          String   @id @default(cuid())
+  title       String
+  type        String   // 'DOCTORAT', 'MASTER', 'LICENCE', 'INGENIEUR'
+  university  String
+  startDate   DateTime
+  endDate     DateTime?
+  status      String   // 'EN_COURS', 'SOUTENU', 'ABANDONNE'
+  abstract    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  activity    Activity? @relation(fields: [activityId], references: [id])
+  activityId  String?
+  
+  supervisor  User      @relation("SupervisionSupervisor", fields: [supervisorId], references: [id])
+  supervisorId String
+  
+  student     User      @relation("SupervisionStudent", fields: [studentId], references: [id])
+  studentId   String
+  
+  documents   Document[]
+  
+  @@map("supervisions")
+}
+
+// Modèle pour les transferts d'acquis
+model KnowledgeTransfer {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  type        TransferType
+  targetAudience String[]  // 'PRODUCTEURS', 'TECHNICIENS', 'CHERCHEURS', etc.
+  location    String?
+  date        DateTime
+  participants Int?        // Nombre de participants
+  impact      String?     // Impact mesuré
+  feedback    String?     // Retours des bénéficiaires
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Relations
+  activity    Activity?   @relation(fields: [activityId], references: [id])
+  activityId  String?
+  
+  organizer   User        @relation(fields: [organizerId], references: [id])
+  organizerId String
+  
+  documents   Document[]
+  
+  @@map("knowledge_transfers")
+}
+
+// =============================================
+// GESTION DES ÉVÉNEMENTS ET CALENDRIER
+// =============================================
+
+// Modèle pour le calendrier des événements
+model CalendarEvent {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  type        EventType
+  status      EventStatus @default(PLANIFIE)
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  isAllDay    Boolean     @default(false)
+  isRecurring Boolean     @default(false)
+  recurrenceRule String?  // Règle de récurrence (RRULE format)
+  color       String?     // Couleur pour l'affichage
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Relations
+  creator     User         @relation("EventCreator", fields: [creatorId], references: [id])
+  creatorId   String
+  
+  station     ResearchStation? @relation(fields: [stationId], references: [id])
+  stationId   String?
+  
+  project     Project?     @relation(fields: [projectId], references: [id])
+  projectId   String?
+  
+  activity    Activity?    @relation(fields: [activityId], references: [id])
+  activityId  String?
+  
+  // Relation avec les séminaires
+  seminar     Seminar?     @relation
+  
+  participants EventParticipant[]
+  documents   Document[]
+  
+  @@map("calendar_events")
+}
+
+model EventParticipant {
+  id           String   @id @default(cuid())
+  status       String   @default("INVITED") // 'INVITED', 'ACCEPTED', 'DECLINED', 'TENTATIVE'
+  invitedAt    DateTime @default(now())
+  respondedAt  DateTime?
+  
+  // Relations
+  event        CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId      String
+  
+  participant  User     @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId String
+  
+  @@unique([eventId, participantId])
+  @@map("event_participants")
 }
 
 // =============================================
@@ -398,6 +1678,10 @@ model Seminar {
   
   // Documents du séminaire
   documents   Document[]
+  
+  // NOUVELLE RELATION : Un séminaire peut avoir un événement calendrier associé
+  calendarEvent CalendarEvent? @relation(fields: [calendarEventId], references: [id])
+  calendarEventId String? @unique
 
   @@map("seminars")
 }
@@ -432,7 +1716,7 @@ model Comment {
   author    User     @relation(fields: [authorId], references: [id])
   authorId  String
   
-  // Référence polymorphe - peut être lié à projet, activité ou tâche
+  // Référence polymorphe - peut être lié à projet, activité, tâche ou formulaire
   project   Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String?
   
@@ -441,9 +1725,10 @@ model Comment {
   
   task      Task?     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId    String?
-  // NOUVELLE RELATION POUR LES FORMULAIRES
+  
   form      Form?     @relation(fields: [formId], references: [id], onDelete: Cascade)
   formId    String?
+  
   @@map("comments")
 }
 
@@ -458,9 +1743,10 @@ model Notification {
   type      String   // 'task_assigned', 'project_update', 'seminar_reminder', etc.
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt // ← AJOUT DU CHAMP MANQUANT
-  readAt    DateTime? // ← AJOUT DU CHAMP MANQUANT
-  actionUrl String?  // ← AJOUT DU CHAMP MANQUANT - URL pour l'action (optionnel)
+  updatedAt DateTime @updatedAt
+  readAt    DateTime?
+  actionUrl String?
+  
   // Relations
   sender    User?    @relation("NotificationSender", fields: [senderId], references: [id])
   senderId  String?

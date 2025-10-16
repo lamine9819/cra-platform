@@ -100,7 +100,15 @@ export class RateLimitError extends Error {
 }
 
 // Type guard pour vérifier si une erreur est une erreur personnalisée
-export function isCustomError(error: any): error is ValidationError | AuthError | NotFoundError | ConflictError | DatabaseError | ServiceUnavailableError | RateLimitError {
+export function isCustomError(error: any): error is 
+  | ValidationError 
+  | AuthError 
+  | AuthorizationError
+  | NotFoundError 
+  | ConflictError 
+  | DatabaseError 
+  | ServiceUnavailableError 
+  | RateLimitError {
   return error && typeof error.statusCode === 'number' && typeof error.code === 'string';
 }
 
@@ -128,4 +136,18 @@ export function createErrorResponse(error: Error) {
     },
     statusCode: 500
   };
+  
+}
+export class AuthorizationError extends Error {
+  public readonly code: string = 'AUTHORIZATION_ERROR';
+  public readonly statusCode: number = 403;
+
+  constructor(message: string = 'Vous n\'êtes pas autorisé à effectuer cette action') {
+    super(message);
+    this.name = 'AuthorizationError';
+    
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, AuthorizationError);
+    }
+  }
 }

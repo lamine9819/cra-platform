@@ -1,92 +1,58 @@
-// src/types/notification.types.ts
 export interface CreateNotificationRequest {
   title: string;
   message: string;
   type: NotificationType;
   receiverId: string;
   senderId?: string;
-  entityType?: EntityType;
-  entityId?: string;
-  priority?: NotificationPriority;
   actionUrl?: string;
+  entityType?: string;
+  entityId?: string;
 }
-
-export type NotificationType = 
-  | 'task_assigned' 
-  | 'task_completed' 
-  | 'task_overdue'
-  | 'project_created' 
-  | 'project_updated' 
-  | 'project_participant_added'
-  | 'activity_created' 
-  | 'activity_updated'
-  | 'seminar_created' 
-  | 'seminar_reminder' 
-  | 'seminar_registration'
-  | 'comment_added'
-  | 'document_shared'
-  | 'form_response_submitted'
-  | 'user_mentioned'
-  | 'system_maintenance'
-  | 'general';
-
-export type EntityType = 'project' | 'activity' | 'task' | 'seminar' | 'document' | 'form' | 'user' | 'comment';
-
-export type NotificationPriority = 'low' | 'normal' | 'high' | 'urgent';
 
 export interface NotificationListQuery {
   page?: number;
   limit?: number;
   isRead?: boolean;
   type?: NotificationType;
-  entityType?: EntityType;
-  priority?: NotificationPriority;
-  senderId?: string;
-  startDate?: string; // Changé de Date à string pour correspondre à la validation Zod
-  endDate?: string;   // Changé de Date à string pour correspondre à la validation Zod
 }
 
 export interface NotificationResponse {
   id: string;
   title: string;
   message: string;
-  type: NotificationType;
-  priority: NotificationPriority;
+  type: string;
   isRead: boolean;
-  actionUrl?: string | null; // Accepte null de Prisma
+  readAt?: Date;
+  actionUrl?: string;
+  entityType?: string;
+  entityId?: string;
   createdAt: Date;
-  readAt?: Date | null;      // Accepte null de Prisma
+  updatedAt: Date;
+  
   sender?: {
     id: string;
     firstName: string;
     lastName: string;
-    email: string;
-    role: string;
-    profileImage?: string | null; // Accepte null de Prisma
-  } | null; // Accepte null de Prisma
-  entity?: {
-    type: EntityType;
+  };
+  
+  receiver: {
     id: string;
-    title?: string;
-    url?: string;
-  } | null; // Accepte null
+    firstName: string;
+    lastName: string;
+  };
 }
 
-export interface NotificationStatsResponse {
-  total: number;
-  unread: number;
-  byType: Record<NotificationType, number>;
-  byPriority: Record<NotificationPriority, number>;
-  recentCount: number; // Dernières 24h
-}
-
-export interface BulkNotificationRequest {
-  notifications: Array<{
-    receiverId: string;
-    title: string;
-    message: string;
-    type: NotificationType;
-    entityType?: EntityType;
-    entityId?: string;
-  }>;
+export enum NotificationType {
+  TASK_ASSIGNED = 'task_assigned',
+  TASK_COMPLETED = 'task_completed',
+  ACTIVITY_CREATED = 'activity_created',
+  ACTIVITY_UPDATED = 'activity_updated',
+  PARTICIPANT_ADDED = 'participant_added',
+  COMMENT_ADDED = 'comment_added',
+  DOCUMENT_SHARED = 'document_shared',
+  FORM_SUBMITTED = 'form_submitted',
+  FUNDING_APPROVED = 'funding_approved',
+  DEADLINE_APPROACHING = 'deadline_approaching',
+  PROJECT_UPDATE = 'project_update',
+  SYSTEM_ALERT = 'system_alert'
 }

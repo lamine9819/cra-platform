@@ -13,10 +13,14 @@ import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import projectRoutes from './routes/project.routes';
 import activityRoutes from './routes/activity.routes';
-import taskRoutes from './routes/task.routes';
+import formeRoutes from './routes/form.routes';
+import conventionRoutes from './routes/convention.routes';
+import eventRoutes from './routes/event.routes';
+import KnowledgeTransferRoutes from './routes/knowledgeTransfer.routes';
+import publicationRoutes from './routes/publication.routes';
+import planningRoutes from './routes/strategic-planning.routes';
 import documentRoutes from './routes/document.routes';
 import formRoutes from './routes/form.routes';
-import seminarRoutes from './routes/seminar.routes';
 import commentRoutes from './routes/comment.routes';
 import notificationRoutes from './routes/notification.routes';
 import dashboardRoutes from './routes/dashboard.routes';
@@ -28,6 +32,7 @@ import { errorHandler } from './middlewares/errorHandler';
 import { auditSystemError } from './middlewares/auditMiddleware';
 // Sérialisation de BinInt
 import { setupBigIntSerialization } from './utils/bigint';
+import { appendFile } from 'fs';
 setupBigIntSerialization();
 // Variables d'environnement
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -80,6 +85,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposedHeaders: ['X-Total-Count', 'X-Page-Count']
 }));
+
+// Middleware pour servir les fichiers statiques (photos)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Augmenter les limites pour les uploads base64
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Rate limiting général
 const limiter = rateLimit({
@@ -349,6 +361,12 @@ app.get('/api', (_req, res) => {
       users: '/api/users',
       projects: '/api/projects',
       activities: '/api/activities',
+      formes: '/api/formes',
+      publications: '/api/publications',
+      conventions: '/api/conventions',
+      knowledgeTransfers: '/api/knowledge-transfers',
+      plannings: '/api/plannings',
+      events: '/api/events',
       tasks: '/api/tasks',
       documents: '/api/documents',
       forms: '/api/forms',
@@ -374,10 +392,14 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/activities', activityRoutes);
-app.use('/api/tasks', taskRoutes);
+app.use('/api/formes', formeRoutes);
+app.use('/api/publications', publicationRoutes);
+app.use('/api/conventions', conventionRoutes);
+app.use('/api/knowledge-transfers', KnowledgeTransferRoutes);
+app.use('/api/plannings', planningRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/events', eventRoutes);
 app.use('/api/forms', formRoutes);
-app.use('/api/seminars', seminarRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);

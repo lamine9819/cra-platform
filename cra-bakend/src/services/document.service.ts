@@ -1,4 +1,4 @@
-// src/services/document.service.ts - Version améliorée
+// src/services/document.service.ts - Version mise à jour conforme au schéma Prisma
 import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 import { ValidationError, AuthError } from '../utils/errors';
@@ -7,7 +7,7 @@ import { getFileTypeFromMime, deleteFile } from '../utils/fileHelpers';
 
 const prisma = new PrismaClient();
 
-// Type pour les documents avec relations incluses
+// Type pour les documents avec toutes les relations possibles
 type DocumentWithRelations = {
   id: string;
   title: string;
@@ -16,16 +16,23 @@ type DocumentWithRelations = {
   mimeType: string;
   size: bigint;
   type: string;
-  description?: string | null;
+  description: string | null;
   tags: string[];
   isPublic: boolean;
   createdAt: Date;
   updatedAt: Date;
   ownerId: string;
-  projectId?: string | null;
-  activityId?: string | null;
-  taskId?: string | null;
-  seminarId?: string | null;
+  
+  // Relations optionnelles
+  projectId: string | null;
+  activityId: string | null;
+  taskId: string | null;
+  seminarId: string | null;
+  trainingId: string | null;
+  internshipId: string | null;
+  supervisionId: string | null;
+  knowledgeTransferId: string | null;
+  eventId: string | null;
   
   owner: {
     id: string;
@@ -38,57 +45,70 @@ type DocumentWithRelations = {
   project?: {
     id: string;
     title: string;
-    description?: string | null;
+    description: string | null;
     creatorId: string;
-    participants?: {
-      id: string;
-      userId: string;
-      isActive: boolean;
-      role: string;
-    }[];
+    participants?: { userId: string; isActive: boolean }[];
   } | null;
   
   activity?: {
     id: string;
     title: string;
-    projectId: string;
+    projectId: string | null;
     project: {
       id: string;
       title: string;
       creatorId: string;
-      participants?: {
-        userId: string;
-        isActive: boolean;
-      }[];
-    };
+      participants?: { userId: string; isActive: boolean }[];
+    } | null;
   } | null;
   
   task?: {
     id: string;
     title: string;
     creatorId: string;
-    assigneeId?: string | null;
-    projectId?: string | null;
-    project?: {
-      id: string;
-      title: string;
-      creatorId: string;
-      participants?: {
-        userId: string;
-        isActive: boolean;
-      }[];
-    } | null;
+    assigneeId: string | null;
   } | null;
   
   seminar?: {
     id: string;
     title: string;
     organizerId: string;
-    organizer: {
-      id: string;
-      firstName: string;
-      lastName: string;
-    };
+    organizer: { id: string; firstName: string; lastName: string };
+  } | null;
+  
+  training?: {
+    id: string;
+    title: string;
+    type: string;
+  } | null;
+  
+  internship?: {
+    id: string;
+    title: string;
+    supervisorId: string;
+    internId: string;
+  } | null;
+  
+  supervision?: {
+    id: string;
+    title: string;
+    type: string;
+    supervisorId: string;
+    studentId: string;
+  } | null;
+  
+  knowledgeTransfer?: {
+    id: string;
+    title: string;
+    type: string;
+    organizerId: string;
+  } | null;
+  
+  event?: {
+    id: string;
+    title: string;
+    type: string;
+    creatorId: string;
   } | null;
   
   shares?: {
@@ -118,10 +138,8 @@ export class DocumentService {
     // Vérifier les permissions d'accès aux entités liées
     await this.validateEntityAccess(documentData, ownerId, userRole);
 
-    // Auto-déterminer le type si pas fourni
-    if (!documentData.type) {
-      documentData.type = getFileTypeFromMime(file.mimetype) as any;
-    }
+    // Auto-déterminer le type si pas fourni et le caster en DocumentType
+    const documentType = (documentData.type || getFileTypeFromMime(file.mimetype)) as any;
 
     // Créer le document en base
     const document = await prisma.document.create({
@@ -131,15 +149,20 @@ export class DocumentService {
         filepath: file.path,
         mimeType: file.mimetype,
         size: BigInt(file.size),
-        type: documentData.type,
-        description: documentData.description,
+        type: documentType,
+        description: documentData.description || null,
         tags: documentData.tags || [],
         isPublic: documentData.isPublic || false,
         ownerId,
-        projectId: documentData.projectId,
-        activityId: documentData.activityId,
-        taskId: documentData.taskId,
-        seminarId: documentData.seminarId,
+        projectId: documentData.projectId || null,
+        activityId: documentData.activityId || null,
+        taskId: documentData.taskId || null,
+        seminarId: documentData.seminarId || null,
+        trainingId: documentData.trainingId || null,
+        internshipId: documentData.internshipId || null,
+        supervisionId: documentData.supervisionId || null,
+        knowledgeTransferId: documentData.knowledgeTransferId || null,
+        eventId: documentData.eventId || null,
       },
       include: this.getDocumentIncludes()
     });
@@ -161,6 +184,12 @@ export class DocumentService {
     if (query.projectId) where.projectId = query.projectId;
     if (query.activityId) where.activityId = query.activityId;
     if (query.taskId) where.taskId = query.taskId;
+    if (query.seminarId) where.seminarId = query.seminarId;
+    if (query.trainingId) where.trainingId = query.trainingId;
+    if (query.internshipId) where.internshipId = query.internshipId;
+    if (query.supervisionId) where.supervisionId = query.supervisionId;
+    if (query.knowledgeTransferId) where.knowledgeTransferId = query.knowledgeTransferId;
+    if (query.eventId) where.eventId = query.eventId;
     if (query.mimeType) where.mimeType = query.mimeType;
     if (query.isPublic !== undefined) where.isPublic = query.isPublic;
 
@@ -177,56 +206,43 @@ export class DocumentService {
       ];
     }
 
-    // Filtrer selon les droits d'accès (amélioré)
+    // Filtrer selon les droits d'accès
     if (userRole !== 'ADMINISTRATEUR') {
       where.OR = [
-        { ownerId: userId }, // Mes documents
-        { isPublic: true }, // Documents publics
-        { 
-          shares: {
-            some: { sharedWithId: userId }
-          }
-        }, // Documents partagés avec moi
+        { ownerId: userId },
+        { isPublic: true },
+        { shares: { some: { sharedWithId: userId } } },
         {
           project: {
             OR: [
               { creatorId: userId },
+              { participants: { some: { userId: userId, isActive: true } } }
+            ]
+          }
+        },
+        {
+          activity: {
+            OR: [
+              { responsibleId: userId },
+              { participants: { some: { userId: userId, isActive: true } } },
               {
-                participants: {
-                  some: {
-                    userId: userId,
-                    isActive: true
-                  }
+                project: {
+                  OR: [
+                    { creatorId: userId },
+                    { participants: { some: { userId: userId, isActive: true } } }
+                  ]
                 }
               }
             ]
           }
-        }, // Documents de projets où je participe
-        {
-          activity: {
-            project: {
-              OR: [
-                { creatorId: userId },
-                {
-                  participants: {
-                    some: {
-                      userId: userId,
-                      isActive: true
-                    }
-                  }
-                }
-              ]
-            }
-          }
-        }, // Documents d'activités de mes projets
-        {
-          task: {
-            OR: [
-              { creatorId: userId },
-              { assigneeId: userId }
-            ]
-          }
-        } // Documents de mes tâches
+        },
+        { task: { OR: [{ creatorId: userId }, { assigneeId: userId }] } },
+        { seminar: { organizerId: userId } },
+        { training: { participants: { some: { userId: userId } } } },
+        { internship: { OR: [{ supervisorId: userId }, { internId: userId }] } },
+        { supervision: { OR: [{ supervisorId: userId }, { studentId: userId }] } },
+        { knowledgeTransfer: { organizerId: userId } },
+        { event: { OR: [{ creatorId: userId }, { participants: { some: { participantId: userId } } }] } }
       ];
     }
 
@@ -267,7 +283,7 @@ export class DocumentService {
     }
 
     // Vérifier les droits d'accès
-    const hasAccess = this.checkDocumentAccess(document as DocumentWithRelations, userId, userRole);
+    const hasAccess = await this.checkDocumentAccess(document as DocumentWithRelations, userId, userRole);
     if (!hasAccess) {
       throw new AuthError('Accès refusé à ce document');
     }
@@ -275,7 +291,7 @@ export class DocumentService {
     return this.formatDocumentResponse(document as DocumentWithRelations);
   }
 
-  // Partager un document (IMPLÉMENTATION COMPLÈTE)
+  // Partager un document
   async shareDocument(
     documentId: string,
     shareData: ShareDocumentRequest,
@@ -284,16 +300,7 @@ export class DocumentService {
   ) {
     const document = await prisma.document.findUnique({
       where: { id: documentId },
-      include: {
-        project: {
-          include: { participants: true }
-        },
-        activity: {
-          include: {
-            project: { include: { participants: true } }
-          }
-        }
-      }
+      include: this.getDocumentIncludes()
     });
 
     if (!document) {
@@ -301,12 +308,12 @@ export class DocumentService {
     }
 
     // Vérifier les droits de partage
-    const canShare = this.canShareDocument(document as any, userId, userRole);
+    const canShare = await this.canShareDocument(document as any, userId, userRole);
     if (!canShare) {
       throw new AuthError('Permissions insuffisantes pour partager ce document');
     }
 
-    // Vérifier que tous les utilisateurs existent et ont accès au contexte
+    // Vérifier que tous les utilisateurs existent
     const users = await prisma.user.findMany({
       where: {
         id: { in: shareData.userIds },
@@ -316,14 +323,6 @@ export class DocumentService {
 
     if (users.length !== shareData.userIds.length) {
       throw new ValidationError('Un ou plusieurs utilisateurs sont introuvables ou inactifs');
-    }
-
-    // Vérifier l'accès au contexte pour chaque utilisateur
-    for (const user of users) {
-      const hasContextAccess = await this.checkUserContextAccess(document as any, user.id, user.role);
-      if (!hasContextAccess) {
-        throw new AuthError(`L'utilisateur ${user.firstName} ${user.lastName} n'a pas accès au contexte de ce document`);
-      }
     }
 
     // Créer les partages
@@ -372,22 +371,12 @@ export class DocumentService {
     };
   }
 
-  // Supprimer un document (IMPLÉMENTATION COMPLÈTE)
+  // Supprimer un document
   async deleteDocument(documentId: string, userId: string, userRole: string): Promise<void> {
     const document = await prisma.document.findUnique({
       where: { id: documentId },
       include: {
-        shares: {
-          where: { sharedWithId: userId }
-        },
-        project: {
-          include: { participants: true }
-        },
-        activity: {
-          include: {
-            project: { include: { participants: true } }
-          }
-        }
+        shares: { where: { sharedWithId: userId } }
       }
     });
 
@@ -395,8 +384,8 @@ export class DocumentService {
       throw new ValidationError('Document non trouvé');
     }
 
-    // Vérifier les droits de suppression (amélioré)
-    const canDelete = this.canDeleteDocument(document as any, userId, userRole);
+    // Vérifier les droits de suppression
+    const canDelete = await this.canDeleteDocument(document as any, userId, userRole);
     if (!canDelete) {
       throw new AuthError('Permissions insuffisantes pour supprimer ce document');
     }
@@ -406,141 +395,12 @@ export class DocumentService {
       await deleteFile(document.filepath);
     } catch (error) {
       console.error('Erreur lors de la suppression du fichier:', error);
-      // Continuer même si la suppression physique échoue
     }
 
-    // Supprimer de la base (les partages sont supprimés en cascade)
+    // Supprimer de la base
     await prisma.document.delete({
       where: { id: documentId }
     });
-  }
-
-  // Lier un document à un projet
-  async linkToProject(documentId: string, projectId: string, userId: string, userRole: string): Promise<DocumentResponse> {
-    // Vérifier que le document existe et que l'utilisateur peut le modifier
-    const document = await prisma.document.findUnique({
-      where: { id: documentId },
-      include: { shares: true }
-    });
-
-    if (!document) {
-      throw new ValidationError('Document non trouvé');
-    }
-
-    const canEdit = this.canEditDocument(document as any, userId, userRole);
-    if (!canEdit) {
-      throw new AuthError('Permissions insuffisantes pour modifier ce document');
-    }
-
-    // Vérifier l'accès au projet
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
-      include: { participants: true }
-    });
-
-    if (!project) {
-      throw new ValidationError('Projet non trouvé');
-    }
-
-    const hasProjectAccess = project.creatorId === userId ||
-                           project.participants.some(p => p.userId === userId && p.isActive) ||
-                           userRole === 'ADMINISTRATEUR';
-
-    if (!hasProjectAccess) {
-      throw new AuthError('Accès refusé au projet');
-    }
-
-    // Mettre à jour le document
-    const updatedDocument = await prisma.document.update({
-      where: { id: documentId },
-      data: { 
-        projectId,
-        activityId: null // Un document ne peut être lié qu'à un projet OU une activité
-      },
-      include: this.getDocumentIncludes()
-    });
-
-    return this.formatDocumentResponse(updatedDocument as DocumentWithRelations);
-  }
-
-  // Lier un document à une activité
-  async linkToActivity(documentId: string, activityId: string, userId: string, userRole: string): Promise<DocumentResponse> {
-    // Vérifier que le document existe et que l'utilisateur peut le modifier
-    const document = await prisma.document.findUnique({
-      where: { id: documentId },
-      include: { shares: true }
-    });
-
-    if (!document) {
-      throw new ValidationError('Document non trouvé');
-    }
-
-    const canEdit = this.canEditDocument(document as any, userId, userRole);
-    if (!canEdit) {
-      throw new AuthError('Permissions insuffisantes pour modifier ce document');
-    }
-
-    // Vérifier l'accès à l'activité
-    const activity = await prisma.activity.findUnique({
-      where: { id: activityId },
-      include: {
-        project: {
-          include: { participants: true }
-        }
-      }
-    });
-
-    if (!activity) {
-      throw new ValidationError('Activité non trouvée');
-    }
-
-    const hasActivityAccess = activity.project.creatorId === userId ||
-                            activity.project.participants.some(p => p.userId === userId && p.isActive) ||
-                            userRole === 'ADMINISTRATEUR';
-
-    if (!hasActivityAccess) {
-      throw new AuthError('Accès refusé à cette activité');
-    }
-
-    // Mettre à jour le document
-    const updatedDocument = await prisma.document.update({
-      where: { id: documentId },
-      data: { 
-        activityId,
-        projectId: activity.projectId // Maintenir la cohérence avec le projet parent
-      },
-      include: this.getDocumentIncludes()
-    });
-
-    return this.formatDocumentResponse(updatedDocument as DocumentWithRelations);
-  }
-
-  // Délier un document (retirer du projet/activité)
-  async unlinkDocument(documentId: string, userId: string, userRole: string): Promise<DocumentResponse> {
-    const document = await prisma.document.findUnique({
-      where: { id: documentId },
-      include: { shares: true }
-    });
-
-    if (!document) {
-      throw new ValidationError('Document non trouvé');
-    }
-
-    const canEdit = this.canEditDocument(document as any, userId, userRole);
-    if (!canEdit) {
-      throw new AuthError('Permissions insuffisantes pour modifier ce document');
-    }
-
-    const updatedDocument = await prisma.document.update({
-      where: { id: documentId },
-      data: { 
-        projectId: null,
-        activityId: null
-      },
-      include: this.getDocumentIncludes()
-    });
-
-    return this.formatDocumentResponse(updatedDocument as DocumentWithRelations);
   }
 
   // Obtenir le chemin du fichier pour téléchargement
@@ -551,7 +411,6 @@ export class DocumentService {
   }> {
     const document = await this.getDocumentById(documentId, userId, userRole);
     
-    // Vérifier que le fichier existe physiquement
     if (!fs.existsSync(document.filepath)) {
       throw new ValidationError('Fichier physique non trouvé');
     }
@@ -563,7 +422,7 @@ export class DocumentService {
     };
   }
 
-  // MÉTHODES PRIVÉES AMÉLIORÉES
+  // MÉTHODES PRIVÉES
 
   // Valider l'accès aux entités liées
   private async validateEntityAccess(
@@ -571,182 +430,117 @@ export class DocumentService {
     userId: string,
     userRole: string
   ) {
-    if (documentData.projectId) {
-      const project = await prisma.project.findUnique({
-        where: { id: documentData.projectId },
-        include: {
-          participants: {
-            where: { userId: userId }
-          }
+    // Validation pour chaque type d'entité
+    const validations = [
+      { id: documentData.projectId, type: 'project' },
+      { id: documentData.activityId, type: 'activity' },
+      { id: documentData.taskId, type: 'task' },
+      { id: documentData.seminarId, type: 'seminar' },
+      { id: documentData.trainingId, type: 'training' },
+      { id: documentData.internshipId, type: 'internship' },
+      { id: documentData.supervisionId, type: 'supervision' },
+      { id: documentData.knowledgeTransferId, type: 'knowledgeTransfer' },
+      { id: documentData.eventId, type: 'event' }
+    ];
+
+    for (const { id, type } of validations) {
+      if (id) {
+        const hasAccess = await this.validateSpecificEntityAccess(id, type, userId, userRole);
+        if (!hasAccess) {
+          throw new AuthError(`Accès refusé à ce(tte) ${type}`);
         }
-      });
-
-      if (!project) {
-        throw new ValidationError('Projet non trouvé');
-      }
-
-      const hasAccess = project.creatorId === userId ||
-                       project.participants.some((p: { isActive: boolean }) => p.isActive) ||
-                       userRole === 'ADMINISTRATEUR';
-
-      if (!hasAccess) {
-        throw new AuthError('Accès refusé à ce projet');
       }
     }
+  }
 
-    if (documentData.activityId) {
-      const activity = await prisma.activity.findUnique({
-        where: { id: documentData.activityId },
-        include: {
-          project: {
-            include: {
-              participants: {
-                where: { userId: userId }
-              }
-            }
-          }
-        }
-      });
+  // Valider l'accès à une entité spécifique
+  private async validateSpecificEntityAccess(
+    entityId: string,
+    entityType: string,
+    userId: string,
+    userRole: string
+  ): Promise<boolean> {
+    if (userRole === 'ADMINISTRATEUR') return true;
 
-      if (!activity) {
-        throw new ValidationError('Activité non trouvée');
-      }
+    switch (entityType) {
+      case 'project':
+        const project = await prisma.project.findUnique({
+          where: { id: entityId },
+          include: { participants: { where: { userId } } }
+        });
+        return !!project && (project.creatorId === userId || project.participants.some(p => p.isActive));
 
-      const hasAccess = activity.project.creatorId === userId ||
-                       activity.project.participants.some((p: { isActive: boolean }) => p.isActive) ||
-                       userRole === 'ADMINISTRATEUR';
+      case 'activity':
+        const activity = await prisma.activity.findUnique({
+          where: { id: entityId },
+          include: { participants: { where: { userId } } }
+        });
+        return !!activity && (activity.responsibleId === userId || activity.participants.some(p => p.isActive));
 
-      if (!hasAccess) {
-        throw new AuthError('Accès refusé à cette activité');
-      }
-    }
+      case 'task':
+        const task = await prisma.task.findUnique({ where: { id: entityId } });
+        return !!task && (task.creatorId === userId || task.assigneeId === userId);
 
-    if (documentData.taskId) {
-      const task = await prisma.task.findUnique({
-        where: { id: documentData.taskId }
-      });
+      case 'training':
+        const training = await prisma.training.findUnique({
+          where: { id: entityId },
+          include: { participants: { where: { userId } } }
+        });
+        return !!training && training.participants.length > 0;
 
-      if (!task) {
-        throw new ValidationError('Tâche non trouvée');
-      }
+      case 'internship':
+        const internship = await prisma.internship.findUnique({ where: { id: entityId } });
+        return !!internship && (internship.supervisorId === userId || internship.internId === userId);
 
-      const hasAccess = task.creatorId === userId ||
-                       task.assigneeId === userId ||
-                       userRole === 'ADMINISTRATEUR';
+      case 'supervision':
+        const supervision = await prisma.supervision.findUnique({ where: { id: entityId } });
+        return !!supervision && (supervision.supervisorId === userId || supervision.studentId === userId);
 
-      if (!hasAccess) {
-        throw new AuthError('Accès refusé à cette tâche');
-      }
+      default:
+        return true;
     }
   }
 
   // Vérifier l'accès à un document
-  private checkDocumentAccess(document: DocumentWithRelations, userId: string, userRole: string): boolean {
-    // Admin a accès à tout
+  private async checkDocumentAccess(document: DocumentWithRelations, userId: string, userRole: string): Promise<boolean> {
     if (userRole === 'ADMINISTRATEUR') return true;
-    
-    // Propriétaire a accès
     if (document.ownerId === userId) return true;
-    
-    // Document public
     if (document.isPublic) return true;
-    
-    // Document partagé avec l'utilisateur
-    if (document.shares?.some((share: { sharedWithId: string }) => share.sharedWithId === userId)) return true;
-    
-    // Accès via projet
-    if (document.project) {
-      const isProjectMember = document.project.creatorId === userId ||
-                             document.project.participants?.some((p: { userId: string; isActive: boolean }) => p.userId === userId && p.isActive);
-      if (isProjectMember) return true;
+    if (document.shares?.some(share => share.sharedWithId === userId)) return true;
+
+    // Vérifier l'accès via les entités liées
+    if (document.projectId) {
+      const project = await prisma.project.findUnique({
+        where: { id: document.projectId },
+        include: { participants: { where: { userId, isActive: true } } }
+      });
+      if (project && (project.creatorId === userId || project.participants.length > 0)) return true;
     }
 
-    // Accès via activité
-    if (document.activity) {
-      const isActivityMember = document.activity.project.creatorId === userId ||
-                              document.activity.project.participants?.some((p: { userId: string; isActive: boolean }) => p.userId === userId && p.isActive);
-      if (isActivityMember) return true;
+    if (document.activityId) {
+      const activity = await prisma.activity.findUnique({
+        where: { id: document.activityId },
+        include: { participants: { where: { userId, isActive: true } } }
+      });
+      if (activity && (activity.responsibleId === userId || activity.participants.length > 0)) return true;
     }
 
-    // Accès via tâche
-    if (document.task) {
-      if (document.task.creatorId === userId || document.task.assigneeId === userId) return true;
-    }
-    
     return false;
   }
 
   // Vérifier si l'utilisateur peut partager le document
-  private canShareDocument(document: any, userId: string, userRole: string): boolean {
+  private async canShareDocument(document: any, userId: string, userRole: string): Promise<boolean> {
     if (userRole === 'ADMINISTRATEUR') return true;
     if (document.ownerId === userId) return true;
-    
-    // Créateur du projet peut partager les documents du projet
-    if (document.project && document.project.creatorId === userId) return true;
-    
-    // Créateur de l'activité (via projet) peut partager les documents de l'activité
-    if (document.activity && document.activity.project.creatorId === userId) return true;
-    
     return false;
   }
 
   // Vérifier si l'utilisateur peut supprimer le document
-  private canDeleteDocument(document: any, userId: string, userRole: string): boolean {
+  private async canDeleteDocument(document: any, userId: string, userRole: string): Promise<boolean> {
     if (userRole === 'ADMINISTRATEUR') return true;
     if (document.ownerId === userId) return true;
-    
-    // Partage avec droits de suppression
-    if (document.shares?.some((share: { sharedWithId: string; canDelete: boolean }) => 
-        share.sharedWithId === userId && share.canDelete)) return true;
-    
+    if (document.shares?.some((s: any) => s.sharedWithId === userId && s.canDelete)) return true;
     return false;
-  }
-
-  // Vérifier si l'utilisateur peut modifier le document
-  private canEditDocument(document: any, userId: string, userRole: string): boolean {
-    if (userRole === 'ADMINISTRATEUR') return true;
-    if (document.ownerId === userId) return true;
-    
-    // Partage avec droits d'édition
-    if (document.shares?.some((share: { sharedWithId: string; canEdit: boolean }) => 
-        share.sharedWithId === userId && share.canEdit)) return true;
-    
-    return false;
-  }
-
-  // Vérifier l'accès d'un utilisateur au contexte du document
-  private async checkUserContextAccess(document: any, userId: string, userRole: string): Promise<boolean> {
-    if (userRole === 'ADMINISTRATEUR') return true;
-    
-    // Si document lié à un projet
-    if (document.projectId) {
-      const project = await prisma.project.findUnique({
-        where: { id: document.projectId },
-        include: { participants: true }
-      });
-      
-      if (project) {
-        return project.creatorId === userId || 
-               project.participants.some(p => p.userId === userId && p.isActive);
-      }
-    }
-    
-    // Si document lié à une activité
-    if (document.activityId) {
-      const activity = await prisma.activity.findUnique({
-        where: { id: document.activityId },
-        include: {
-          project: { include: { participants: true } }
-        }
-      });
-      
-      if (activity) {
-        return activity.project.creatorId === userId || 
-               activity.project.participants.some(p => p.userId === userId && p.isActive);
-      }
-    }
-    
-    return true; // Si pas de contexte spécifique, autoriser
   }
 
   // Inclusions pour les requêtes
@@ -767,14 +561,7 @@ export class DocumentService {
           title: true,
           description: true,
           creatorId: true,
-          participants: {
-            select: {
-              id: true,
-              userId: true,
-              isActive: true,
-              role: true,
-            }
-          }
+          participants: { select: { userId: true, isActive: true } }
         }
       },
       activity: {
@@ -787,12 +574,7 @@ export class DocumentService {
               id: true,
               title: true,
               creatorId: true,
-              participants: {
-                select: {
-                  userId: true,
-                  isActive: true,
-                }
-              }
+              participants: { select: { userId: true, isActive: true } }
             }
           }
         }
@@ -803,20 +585,6 @@ export class DocumentService {
           title: true,
           creatorId: true,
           assigneeId: true,
-          projectId: true,
-          project: {
-            select: {
-              id: true,
-              title: true,
-              creatorId: true,
-              participants: {
-                select: {
-                  userId: true,
-                  isActive: true,
-                }
-              }
-            }
-          }
         }
       },
       seminar: {
@@ -831,6 +599,46 @@ export class DocumentService {
               lastName: true,
             }
           }
+        }
+      },
+      training: {
+        select: {
+          id: true,
+          title: true,
+          type: true,
+        }
+      },
+      internship: {
+        select: {
+          id: true,
+          title: true,
+          supervisorId: true,
+          internId: true,
+        }
+      },
+      supervision: {
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          supervisorId: true,
+          studentId: true,
+        }
+      },
+      knowledgeTransfer: {
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          organizerId: true,
+        }
+      },
+      event: {
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          creatorId: true,
         }
       },
       shares: {
@@ -858,28 +666,38 @@ export class DocumentService {
       mimeType: document.mimeType,
       size: Number(document.size),
       type: document.type,
-      description: document.description || undefined,
+      description: document.description ?? undefined,
       tags: document.tags,
       isPublic: document.isPublic,
       createdAt: document.createdAt,
       updatedAt: document.updatedAt,
       owner: document.owner,
-      project: document.project || undefined,
-      activity: document.activity || undefined,
-      task: document.task || undefined,
+      project: document.project ? {
+        id: document.project.id,
+        title: document.project.title,
+        description: document.project.description ?? undefined,
+        creatorId: document.project.creatorId,
+        participants: document.project.participants
+      } : undefined,
+      activity: document.activity ? {
+        id: document.activity.id,
+        title: document.activity.title,
+        projectId: document.activity.projectId,
+        project: document.activity.project ?? null
+      } : undefined,
+      task: document.task ? {
+        id: document.task.id,
+        title: document.task.title,
+        creatorId: document.task.creatorId,
+        assigneeId: document.task.assigneeId ?? undefined
+      } : undefined,
       seminar: document.seminar || undefined,
-      shares: document.shares?.map((share: {
-        id: string;
-        canEdit: boolean;
-        canDelete: boolean;
-        sharedAt: Date;
-        sharedWith: {
-          id: string;
-          firstName: string;
-          lastName: string;
-          email: string;
-        };
-      }) => ({
+      training: document.training || undefined,
+      internship: document.internship || undefined,
+      supervision: document.supervision || undefined,
+      knowledgeTransfer: document.knowledgeTransfer || undefined,
+      event: document.event || undefined,
+      shares: document.shares?.map((share) => ({
         id: share.id,
         canEdit: share.canEdit,
         canDelete: share.canDelete,

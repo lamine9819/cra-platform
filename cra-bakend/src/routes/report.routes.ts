@@ -1,166 +1,106 @@
 // src/routes/report.routes.ts
-import { Router, Request, Response, NextFunction } from 'express';
-import { ReportController } from '../controllers/report.controller';
-import { authenticate } from '../middlewares/auth';
-import { authorize } from '../middlewares/authorization';
-import { AuthenticatedRequest } from '../types/auth.types';
 
-const router = Router();
-const reportController = new ReportController();
+import express from 'express';
+import { reportController } from '../controllers/report.controller';
+import { checkReportAccess } from '../middlewares/report.middleware';
+import { authenticate } from '../middlewares/auth'; // Votre middleware existant
 
-// Toutes les routes nécessitent une authentification
-router.use(authenticate);
+const router = express.Router();
 
-// =============================================
-// ROUTES DIRECTES (avec wrappers pour la compatibilité TypeScript)
-// =============================================
-
-// Obtenir les templates disponibles
-router.get('/templates', (req: Request, res: Response, _next: NextFunction) => {
-  reportController.getTemplates(req as AuthenticatedRequest, res);
-});
-
-// Statistiques pour les rapports
-router.get('/stats', (req: Request, res: Response, _next: NextFunction) => {
-  reportController.getReportStats(req as AuthenticatedRequest, res);
-});
-
-// Historique des rapports générés
-router.get('/history', (req: Request, res: Response, _next: NextFunction) => {
-  reportController.getReportHistory(req as AuthenticatedRequest, res);
-});
-
-// Prévisualiser un rapport
-router.get('/preview', (req: Request, res: Response, _next: NextFunction) => {
-  reportController.previewReport(req as AuthenticatedRequest, res);
-});
-
-// Export Excel/CSV
-router.get('/export', (req: Request, res: Response, _next: NextFunction) => {
-  reportController.exportToExcel(req as AuthenticatedRequest, res);
-});
-
-// Générer un rapport PDF
-router.post('/generate', (req: Request, res: Response, _next: NextFunction) => {
-  reportController.generateReport(req as AuthenticatedRequest, res);
-});
-
-// Planifier un rapport récurrent (Admin et Chercheur seulement)
-router.post('/schedule', 
-  authorize(['ADMINISTRATEUR', 'CHERCHEUR']),
-  (req: Request, res: Response, _next: NextFunction) => {
-    reportController.scheduleReport(req as AuthenticatedRequest, res);
-  }
+/**
+ * @route   POST /api/reports/generate
+ * @desc    Génère un rapport trimestriel
+ * @access  Coordinateur de projet, Administrateur
+ */
+router.post(
+  '/generate',
+  authenticate,
+  checkReportAccess,
+  reportController.generateReport.bind(reportController)
 );
 
-// =============================================
-// RAPPORTS PRÉDÉFINIS PAR TYPE
-// =============================================
-
-// Rapport de projet (Chercheur, Admin)
-router.post('/project/:projectId', 
-  authorize(['CHERCHEUR', 'ADMINISTRATEUR']),
-  (req: Request, res: Response, _next: NextFunction) => {
-    req.body = {
-      type: 'project',
-      entityId: req.params.projectId,
-      ...req.body
-    };
-    reportController.generateReport(req as AuthenticatedRequest, res);
-  }
+/**
+ * @route   POST /api/reports/generate-annual
+ * @desc    Génère un rapport annuel (tous les trimestres)
+ * @access  Coordinateur de projet, Administrateur
+ */
+router.post(
+  '/generate-annual',
+  authenticate,
+  checkReportAccess,
+  reportController.generateAnnualReport.bind(reportController)
 );
 
-// Rapport d'activité (Chercheur, Assistant, Admin)
-router.post('/activity/:activityId', 
-  authorize(['CHERCHEUR', 'ASSISTANT_CHERCHEUR', 'ADMINISTRATEUR']),
-  (req: Request, res: Response, _next: NextFunction) => {
-    req.body = {
-      type: 'activity',
-      entityId: req.params.activityId,
-      ...req.body
-    };
-    reportController.generateReport(req as AuthenticatedRequest, res);
-  }
+/**
+ * @route   GET /api/reports/available
+ * @desc    Récupère la liste des rapports disponibles
+ * @access  Coordinateur de projet, Administrateur
+ */
+router.get(
+  '/available',
+  authenticate,
+  checkReportAccess,
+  reportController.getAvailableReports.bind(reportController)
 );
 
-// Rapport utilisateur (Tous les utilisateurs pour leur propre rapport)
-router.post('/user/:userId', 
-  (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-      const targetUserId = req.params.userId;
-      
-      // Vérifier que l'utilisateur peut générer ce rapport
-      if (userRole !== 'ADMINISTRATEUR' && userId !== targetUserId) {
-        return res.status(403).json({
-          success: false,
-          message: 'Vous ne pouvez générer que votre propre rapport'
-        });
-      }
-      
-      req.body = {
-        type: 'user',
-        entityId: targetUserId,
-        ...req.body
-      };
-      
-      reportController.generateReport(authenticatedReq, res);
-    } catch (error) {
-      next(error);
-    }
-  }
+/**
+ * @route   GET /api/reports/quarters
+ * @desc    Récupère les trimestres disponibles pour une année
+ * @access  Coordinateur de projet, Administrateur
+ */
+router.get(
+  '/quarters',
+  authenticate,
+  checkReportAccess,
+  reportController.getAvailableQuarters.bind(reportController)
 );
 
-// Rapport global (Admin seulement)
-router.post('/global', 
-  authorize(['ADMINISTRATEUR']),
-  (req: Request, res: Response, _next: NextFunction) => {
-    req.body = {
-      type: 'global',
-      ...req.body
-    };
-    reportController.generateReport(req as AuthenticatedRequest, res);
-  }
+/**
+ * @route   GET /api/reports/stats/quarterly
+ * @desc    Récupère les statistiques trimestrielles
+ * @access  Coordinateur de projet, Administrateur
+ */
+router.get(
+  '/stats/quarterly',
+  authenticate,
+  checkReportAccess,
+  reportController.getQuarterlyStats.bind(reportController)
 );
 
-// =============================================
-// EXPORTS SPÉCIALISÉS PAR TYPE DE DONNÉES
-// =============================================
-
-// Export des utilisateurs (Admin et Chercheur)
-router.get('/export/users',
-  authorize(['ADMINISTRATEUR', 'CHERCHEUR']),
-  (req: Request, res: Response, _next: NextFunction) => {
-    req.query.type = 'users';
-    reportController.exportToExcel(req as AuthenticatedRequest, res);
-  }
+/**
+ * @route   GET /api/reports/stats/annual
+ * @desc    Récupère les statistiques annuelles
+ * @access  Coordinateur de projet, Administrateur
+ */
+router.get(
+  '/stats/annual',
+  authenticate,
+  checkReportAccess,
+  reportController.getAnnualStats.bind(reportController)
 );
 
-// Export des projets (Admin, Chercheur, Assistant)
-router.get('/export/projects',
-  authorize(['ADMINISTRATEUR', 'CHERCHEUR', 'ASSISTANT_CHERCHEUR']),
-  (req: Request, res: Response, _next: NextFunction) => {
-    req.query.type = 'projects';
-    reportController.exportToExcel(req as AuthenticatedRequest, res);
-  }
+/**
+ * @route   GET /api/reports/compare
+ * @desc    Compare les statistiques entre deux trimestres
+ * @access  Coordinateur de projet, Administrateur
+ */
+router.get(
+  '/compare',
+  authenticate,
+  checkReportAccess,
+  reportController.compareQuarters.bind(reportController)
 );
 
-// Export des tâches (Tous les rôles)
-router.get('/export/tasks',
-  (req: Request, res: Response, _next: NextFunction) => {
-    req.query.type = 'tasks';
-    reportController.exportToExcel(req as AuthenticatedRequest, res);
-  }
-);
-
-// Export des documents (Tous les rôles)
-router.get('/export/documents',
-  (req: Request, res: Response, _next: NextFunction) => {
-    req.query.type = 'documents';
-    reportController.exportToExcel(req as AuthenticatedRequest, res);
-  }
+/**
+ * @route   DELETE /api/reports/clean
+ * @desc    Nettoie les anciens rapports
+ * @access  Administrateur
+ */
+router.delete(
+  '/clean',
+  authenticate,
+  checkReportAccess,
+  reportController.cleanOldReports.bind(reportController)
 );
 
 export default router;

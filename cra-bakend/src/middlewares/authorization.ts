@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../types/auth.types';
 
-type UserRole = 'CHERCHEUR' | 'ASSISTANT_CHERCHEUR' | 'TECHNICIEN_SUPERIEUR' | 'ADMINISTRATEUR';
+type UserRole = 'CHERCHEUR' | 'COORDONATEUR_PROJET' | 'ADMINISTRATEUR';
 
 export const authorize = (allowedRoles: UserRole[]) => {
   return (req: Request, res: Response, next: NextFunction) => {

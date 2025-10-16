@@ -1,0 +1,161 @@
+// src/routes/strategic-planning.routes.ts - VERSION COMPLÈTE
+import { Router } from 'express';
+import { StrategicPlanningController } from '../controllers/strategic-planning.controller';
+import { authenticate } from '../middlewares/auth';
+import { authorize } from '../middlewares/authorization';
+
+const router = Router();
+const strategicPlanningController = new StrategicPlanningController();
+
+// Middleware d'authentification obligatoire pour toutes les routes
+router.use(authenticate);
+
+// ========================================
+// ROUTES POUR LES PLANS STRATÉGIQUES
+// ========================================
+
+// GET /api/strategic-planning/plans - Lister tous les plans stratégiques
+router.get('/plans', strategicPlanningController.getStrategicPlans);
+
+// GET /api/strategic-planning/plans/:id - Obtenir un plan stratégique par ID
+router.get('/plans/:id', strategicPlanningController.getStrategicPlanById);
+
+// POST /api/strategic-planning/plans - Créer un nouveau plan stratégique
+router.post('/plans', 
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+  strategicPlanningController.createStrategicPlan
+);
+
+// PUT /api/strategic-planning/plans/:id - Modifier un plan stratégique
+router.put('/plans/:id', 
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+  strategicPlanningController.updateStrategicPlan
+);
+
+// DELETE /api/strategic-planning/plans/:id - Supprimer un plan stratégique
+router.delete('/plans/:id', 
+  authorize(['ADMINISTRATEUR']), 
+  strategicPlanningController.deleteStrategicPlan
+);
+
+// ========================================
+// ROUTES POUR LES AXES STRATÉGIQUES
+// ========================================
+
+// GET /api/strategic-planning/axes - Lister tous les axes stratégiques
+router.get('/axes', strategicPlanningController.getStrategicAxes);
+
+// GET /api/strategic-planning/axes/:id - Obtenir un axe stratégique par ID
+router.get('/axes/:id', strategicPlanningController.getStrategicAxisById);
+
+// POST /api/strategic-planning/axes - Créer un nouvel axe stratégique
+router.post('/axes', 
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+  strategicPlanningController.createStrategicAxis
+);
+
+// PUT /api/strategic-planning/axes/:id - Modifier un axe stratégique
+router.put('/axes/:id', 
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+  strategicPlanningController.updateStrategicAxis
+);
+
+// DELETE /api/strategic-planning/axes/:id - Supprimer un axe stratégique
+router.delete('/axes/:id', 
+  authorize(['ADMINISTRATEUR']), 
+  strategicPlanningController.deleteStrategicAxis
+);
+
+// ========================================
+// ROUTES POUR LES SOUS-AXES STRATÉGIQUES
+// ========================================
+
+// GET /api/strategic-planning/sub-axes - Lister tous les sous-axes stratégiques
+router.get('/sub-axes', strategicPlanningController.getStrategicSubAxes);
+
+// POST /api/strategic-planning/sub-axes - Créer un nouveau sous-axe stratégique
+router.post('/sub-axes', 
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+  strategicPlanningController.createStrategicSubAxis
+);
+
+// ========================================
+// ROUTES POUR LES PROGRAMMES DE RECHERCHE
+// ========================================
+
+// GET /api/strategic-planning/programs - Lister tous les programmes de recherche
+router.get('/programs', strategicPlanningController.getResearchPrograms);
+
+// POST /api/strategic-planning/programs - Créer un nouveau programme de recherche
+router.post('/programs', 
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+  strategicPlanningController.createResearchProgram
+);
+
+// ========================================
+// ROUTES POUR LES THÈMES DE RECHERCHE
+// ========================================
+
+// GET /api/strategic-planning/themes - Lister tous les thèmes de recherche
+router.get('/themes', strategicPlanningController.getResearchThemes);
+
+// POST /api/strategic-planning/themes - Créer un nouveau thème de recherche
+router.post('/themes', 
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+  strategicPlanningController.createResearchTheme
+);
+
+// PUT /api/strategic-planning/themes/:id - Modifier un thème de recherche
+router.put('/themes/:id', 
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+  strategicPlanningController.updateResearchTheme
+);
+
+// DELETE /api/strategic-planning/themes/:id - Supprimer un thème de recherche
+router.delete('/themes/:id', 
+  authorize(['ADMINISTRATEUR']), 
+  strategicPlanningController.deleteResearchTheme
+);
+
+// ========================================
+// ROUTES POUR LES STATIONS DE RECHERCHE
+// ========================================
+
+// GET /api/strategic-planning/stations - Lister toutes les stations de recherche
+router.get('/stations', strategicPlanningController.getResearchStations);
+
+// POST /api/strategic-planning/stations - Créer une nouvelle station de recherche
+router.post('/stations', 
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+  strategicPlanningController.createResearchStation
+);
+
+// PUT /api/strategic-planning/stations/:id - Modifier une station de recherche
+router.put('/stations/:id', 
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+  strategicPlanningController.updateResearchStation
+);
+
+// DELETE /api/strategic-planning/stations/:id - Supprimer une station de recherche
+router.delete('/stations/:id', 
+  authorize(['ADMINISTRATEUR']), 
+  strategicPlanningController.deleteResearchStation
+);
+
+// ========================================
+// ROUTES UTILITAIRES
+// ========================================
+
+// GET /api/strategic-planning/hierarchy - Obtenir la hiérarchie stratégique complète
+router.get('/hierarchy', strategicPlanningController.getStrategicHierarchy);
+
+// GET /api/strategic-planning/stats - Obtenir les statistiques de planification stratégique
+router.get('/stats', strategicPlanningController.getStrategicPlanningStats);
+
+// GET /api/strategic-planning/coordinators - Obtenir la liste des coordinateurs éligibles
+router.get('/coordinators', 
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+  strategicPlanningController.getEligibleCoordinators
+);
+
+export default router;

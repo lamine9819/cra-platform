@@ -1,66 +1,24 @@
-// src/services/project.service.ts
-import { PrismaClient } from '@prisma/client';
+// src/services/project.service.ts - CORRECTION DES ERREURS ORDERBY
+import { PrismaClient, Prisma } from '@prisma/client';
 import { ValidationError, AuthError } from '../utils/errors';
-import { CreateProjectRequest, UpdateProjectRequest, ProjectListQuery, ProjectResponse } from '../types/project.types';
- 
+import { 
+  CreateProjectRequest, 
+  UpdateProjectRequest, 
+  ProjectListQuery, 
+  ProjectResponse,
+  AddParticipantRequest,
+  UpdateParticipantRequest,
+  AddPartnershipRequest,
+  UpdatePartnershipRequest,
+  AddFundingRequest,
+  UpdateFundingRequest
+} from '../types/project.types';
 
 const prisma = new PrismaClient();
 
-// Type pour les projets avec relations incluses
-type ProjectWithRelations = {
-  id: string;
-  title: string;
-  description?: string | null;
-  objectives: string[];
-  status: string;
-  startDate?: Date | null;
-  endDate?: Date | null;
-  budget?: number | null;
-  keywords: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  creatorId: string;
-  creator: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    role: string;
-  };
-  participants?: {
-    id: string;
-    role: string;
-    joinedAt: Date;
-    isActive: boolean;
-    userId: string;
-    user: {
-      id: string;
-      firstName: string;
-      lastName: string;
-      email: string;
-      role: string;
-      specialization?: string | null;
-    };
-  }[];
-  activities?: {
-    id: string;
-    title: string;
-    description?: string | null;
-    startDate?: Date | null;
-    endDate?: Date | null;
-    createdAt: Date;
-  }[];
-  _count?: {
-    participants: number;
-    activities: number;
-    tasks: number;
-    documents: number;
-  };
-};
-
 export class ProjectService {
 
-  // Créer un projet
+  // Créer un projet avec spécificités CRA
   async createProject(projectData: CreateProjectRequest, creatorId: string): Promise<ProjectResponse> {
     // Vérifier que le créateur est un chercheur ou admin
     const creator = await prisma.user.findUnique({
@@ -75,40 +33,102 @@ export class ProjectService {
       throw new AuthError('Seuls les chercheurs et administrateurs peuvent créer des projets');
     }
 
-    // Créer le projet
-    const project = await prisma.project.create({
-      data: {
-        title: projectData.title,
-        description: projectData.description,
-        objectives: projectData.objectives,
-        startDate: projectData.startDate ? new Date(projectData.startDate) : null,
-        endDate: projectData.endDate ? new Date(projectData.endDate) : null,
-        budget: projectData.budget,
-        keywords: projectData.keywords,
-        creatorId,
-      },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            role: true,
-          }
-        },
-        _count: {
-          select: {
-            participants: true,
-            activities: true,
-            tasks: true,
-            documents: true,
-          }
-        }
-      }
+    // Vérifier que le thème existe
+    const theme = await prisma.researchTheme.findUnique({
+      where: { id: projectData.themeId }
     });
 
-    // Ajouter automatiquement le créateur comme participant principal
+    if (!theme || !theme.isActive) {
+      throw new ValidationError('Thème de recherche non trouvé ou inactif');
+    }
+
+    // Vérifier le programme de recherche si spécifié
+    if (projectData.researchProgramId) {
+      const program = await prisma.researchProgram.findUnique({
+        where: { id: projectData.researchProgramId }
+      });
+
+      if (!program || !program.isActive) {
+        throw new ValidationError('Programme de recherche non trouvé ou inactif');
+      }
+    }
+
+    // Vérifier la convention si spécifiée
+    if (projectData.conventionId) {
+      const convention = await prisma.convention.findUnique({
+        where: { id: projectData.conventionId }
+      });
+
+      if (!convention) {
+        throw new ValidationError('Convention non trouvée');
+      }
+    }
+
+    // Générer un code unique si pas fourni
+    let projectCode = projectData.code;
+    if (!projectCode) {
+      const year = new Date().getFullYear();
+      const themeCode = theme.code || theme.name.substring(0, 3).toUpperCase();
+      const count = await prisma.project.count({
+        where: {
+          code: {
+            startsWith: `${themeCode}-${year}`
+          }
+        }
+      });
+      projectCode = `${themeCode}-${year}-${(count + 1).toString().padStart(3, '0')}`;
+    }
+
+    // Préparer les données pour la création
+    const createData: any = {
+      title: projectData.title,
+      description: projectData.description,
+      objectives: projectData.objectives,
+      startDate: projectData.startDate ? new Date(projectData.startDate) : null,
+      endDate: projectData.endDate ? new Date(projectData.endDate) : null,
+      budget: projectData.budget,
+      keywords: projectData.keywords,
+      creatorId,
+      themeId: projectData.themeId,
+    };
+
+    // Ajouter les champs conditionnellement
+    if (projectCode) {
+      createData.code = projectCode;
+    }
+
+    if (projectData.researchProgramId) {
+      createData.researchProgramId = projectData.researchProgramId;
+    }
+
+    if (projectData.conventionId) {
+      createData.conventionId = projectData.conventionId;
+    }
+
+    // Champs stratégiques (disponibles dans votre schéma)
+    if (projectData.strategicPlan) {
+      createData.strategicPlan = projectData.strategicPlan;
+    }
+
+    if (projectData.strategicAxis) {
+      createData.strategicAxis = projectData.strategicAxis;
+    }
+
+    if (projectData.subAxis) {
+      createData.subAxis = projectData.subAxis;
+    }
+
+    if (projectData.program) {
+      createData.program = projectData.program;
+    }
+
+    // Créer le projet
+    const project = await prisma.project.create({
+      data: createData,
+      include: this.getProjectIncludes()
+    });
+
+    // Ajouter automatiquement le créateur comme responsable principal
     await prisma.projectParticipant.create({
       data: {
         projectId: project.id,
@@ -120,13 +140,13 @@ export class ProjectService {
     return this.formatProjectResponse(project);
   }
 
-  // Lister les projets accessibles par l'utilisateur
+  // Lister les projets avec filtres CRA
   async listProjects(userId: string, userRole: string, query: ProjectListQuery) {
     const page = query.page || 1;
     const limit = query.limit || 10;
     const skip = (page - 1) * limit;
 
-    // Construire les filtres de base
+    // Construire les filtres
     const where: any = {};
 
     if (query.status) {
@@ -137,12 +157,34 @@ export class ProjectService {
       where.creatorId = query.creatorId;
     }
 
+    if (query.themeId) {
+      where.themeId = query.themeId;
+    }
+
+    if (query.researchProgramId) {
+      where.researchProgramId = query.researchProgramId;
+    }
+
+    if (query.conventionId) {
+      where.conventionId = query.conventionId;
+    }
+
+    if (query.strategicAxis) {
+      where.strategicAxis = { contains: query.strategicAxis, mode: 'insensitive' };
+    }
+
     if (query.search) {
       where.OR = [
         { title: { contains: query.search, mode: 'insensitive' } },
         { description: { contains: query.search, mode: 'insensitive' } },
         { keywords: { has: query.search } },
+        { theme: { name: { contains: query.search, mode: 'insensitive' } } },
       ];
+
+      // Ajouter la recherche par code si disponible
+      if (query.search) {
+        where.OR.push({ code: { contains: query.search, mode: 'insensitive' } });
+      }
     }
 
     if (query.startDate) {
@@ -155,7 +197,6 @@ export class ProjectService {
 
     // Filtrer selon les droits d'accès
     if (userRole !== 'ADMINISTRATEUR') {
-      // Non-admin : seulement les projets où l'utilisateur est créateur ou participant
       where.OR = [
         { creatorId: userId },
         {
@@ -175,25 +216,7 @@ export class ProjectService {
         where,
         skip,
         take: limit,
-        include: {
-          creator: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              role: true,
-            }
-          },
-          _count: {
-            select: {
-              participants: true,
-              activities: true,
-              tasks: true,
-              documents: true,
-            }
-          }
-        },
+        include: this.getProjectIncludes(),
         orderBy: {
           updatedAt: 'desc'
         }
@@ -202,7 +225,7 @@ export class ProjectService {
     ]);
 
     return {
-      projects: projects.map((project: ProjectWithRelations) => this.formatProjectResponse(project)),
+      projects: projects.map((project: any) => this.formatProjectResponse(project)),
       pagination: {
         page,
         limit,
@@ -214,59 +237,11 @@ export class ProjectService {
     };
   }
 
-  // Obtenir un projet par ID avec détails complets
+  // Obtenir un projet par ID avec toutes les relations CRA
   async getProjectById(projectId: string, userId: string, userRole: string): Promise<ProjectResponse> {
     const project = await prisma.project.findUnique({
       where: { id: projectId },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            role: true,
-          }
-        },
-        participants: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                role: true,
-                specialization: true,
-              }
-            }
-          },
-          orderBy: {
-            joinedAt: 'asc'
-          }
-        },
-        activities: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            startDate: true,
-            endDate: true,
-            createdAt: true,
-          },
-          orderBy: {
-            createdAt: 'desc'
-          }
-        },
-        _count: {
-          select: {
-            participants: true,
-            activities: true,
-            tasks: true,
-            documents: true,
-          }
-        }
-      }
+      include: this.getProjectIncludes()
     });
 
     if (!project) {
@@ -282,7 +257,7 @@ export class ProjectService {
     return this.formatProjectResponse(project);
   }
 
-  // Mettre à jour un projet
+  // Mettre à jour un projet avec spécificités CRA
   async updateProject(projectId: string, updateData: UpdateProjectRequest, userId: string, userRole: string): Promise<ProjectResponse> {
     const project = await prisma.project.findUnique({
       where: { id: projectId },
@@ -311,6 +286,13 @@ export class ProjectService {
     if (updateData.status !== undefined) dataToUpdate.status = updateData.status;
     if (updateData.budget !== undefined) dataToUpdate.budget = updateData.budget;
     if (updateData.keywords !== undefined) dataToUpdate.keywords = updateData.keywords;
+    if (updateData.themeId !== undefined) dataToUpdate.themeId = updateData.themeId;
+    if (updateData.researchProgramId !== undefined) dataToUpdate.researchProgramId = updateData.researchProgramId;
+    if (updateData.conventionId !== undefined) dataToUpdate.conventionId = updateData.conventionId;
+    if (updateData.strategicPlan !== undefined) dataToUpdate.strategicPlan = updateData.strategicPlan;
+    if (updateData.strategicAxis !== undefined) dataToUpdate.strategicAxis = updateData.strategicAxis;
+    if (updateData.subAxis !== undefined) dataToUpdate.subAxis = updateData.subAxis;
+    if (updateData.program !== undefined) dataToUpdate.program = updateData.program;
     
     if (updateData.startDate !== undefined) {
       dataToUpdate.startDate = updateData.startDate ? new Date(updateData.startDate) : null;
@@ -322,39 +304,7 @@ export class ProjectService {
     const updatedProject = await prisma.project.update({
       where: { id: projectId },
       data: dataToUpdate,
-      include: {
-        creator: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            role: true,
-          }
-        },
-        participants: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                role: true,
-                specialization: true,
-              }
-            }
-          }
-        },
-        _count: {
-          select: {
-            participants: true,
-            activities: true,
-            tasks: true,
-            documents: true,
-          }
-        }
-      }
+      include: this.getProjectIncludes()
     });
 
     return this.formatProjectResponse(updatedProject);
@@ -368,6 +318,12 @@ export class ProjectService {
         id: true,
         creatorId: true,
         status: true,
+        _count: {
+          select: {
+            activities: true,
+            tasks: true,
+          }
+        }
       }
     });
 
@@ -385,14 +341,23 @@ export class ProjectService {
       throw new ValidationError('Impossible de supprimer un projet en cours. Changez d\'abord le statut.');
     }
 
-    // Supprimer le projet (cascade dans Prisma supprimera les entités liées)
+    // Empêcher la suppression si le projet a des activités ou tâches
+    if (project._count.activities > 0) {
+      throw new ValidationError('Impossible de supprimer un projet qui contient des activités');
+    }
+
+    if (project._count.tasks > 0) {
+      throw new ValidationError('Impossible de supprimer un projet qui contient des tâches');
+    }
+
+    // Supprimer le projet
     await prisma.project.delete({
       where: { id: projectId }
     });
   }
 
   // Ajouter un participant au projet
-  async addParticipant(projectId: string, userId: string, role: string, requesterId: string, requesterRole: string) {
+  async addParticipant(projectId: string, participantData: AddParticipantRequest, requesterId: string, requesterRole: string) {
     const project = await prisma.project.findUnique({
       where: { id: projectId }
     });
@@ -401,14 +366,14 @@ export class ProjectService {
       throw new ValidationError('Projet non trouvé');
     }
 
-    // Vérifier les droits (créateur ou admin)
-    if (project.creatorId !== requesterId && requesterRole !== 'ADMINISTRATEUR') {
-      throw new AuthError('Seul le créateur du projet ou un administrateur peut ajouter des participants');
+    // Vérifier les droits
+    if (!this.canManageParticipants(project, requesterId, requesterRole)) {
+      throw new AuthError('Permissions insuffisantes pour gérer les participants');
     }
 
     // Vérifier que l'utilisateur existe
     const user = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: participantData.userId }
     });
 
     if (!user || !user.isActive) {
@@ -420,7 +385,7 @@ export class ProjectService {
       where: {
         projectId_userId: {
           projectId,
-          userId,
+          userId: participantData.userId,
         }
       }
     });
@@ -433,84 +398,127 @@ export class ProjectService {
     await prisma.projectParticipant.create({
       data: {
         projectId,
-        userId,
-        role,
+        userId: participantData.userId,
+        role: participantData.role,
       }
     });
 
-    return { message: 'Participant ajouté avec succès' };
+    return { message: 'Participant ajouté avec succès au projet' };
+  }
+
+  // Mettre à jour un participant
+  async updateParticipant(projectId: string, updateData: UpdateParticipantRequest, requesterId: string, requesterRole: string) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId }
+    });
+
+    if (!project) {
+      throw new ValidationError('Projet non trouvé');
+    }
+
+    // Vérifier les droits
+    if (!this.canManageParticipants(project, requesterId, requesterRole)) {
+      throw new AuthError('Permissions insuffisantes pour modifier les participants');
+    }
+
+    // Vérifier que le participant existe
+    const participant = await prisma.projectParticipant.findUnique({
+      where: { id: updateData.participantId },
+      include: { user: true }
+    });
+
+    if (!participant || participant.projectId !== projectId) {
+      throw new ValidationError('Participant non trouvé dans ce projet');
+    }
+
+    // Empêcher de modifier le créateur du projet
+    if (participant.userId === project.creatorId && updateData.isActive === false) {
+      throw new ValidationError('Impossible de désactiver le créateur du projet');
+    }
+
+    // Préparer les données de mise à jour
+    const dataToUpdate: any = {};
+    if (updateData.role !== undefined) dataToUpdate.role = updateData.role;
+    if (updateData.isActive !== undefined) dataToUpdate.isActive = updateData.isActive;
+
+    // Ces champs seront activés après migration du schéma
+    
+    if (updateData.timeAllocation !== undefined) dataToUpdate.timeAllocation = updateData.timeAllocation;
+    if (updateData.responsibilities !== undefined) dataToUpdate.responsibilities = updateData.responsibilities;
+    if (updateData.expertise !== undefined) dataToUpdate.expertise = updateData.expertise;
+    
+
+    await prisma.projectParticipant.update({
+      where: { id: updateData.participantId },
+      data: dataToUpdate
+    });
+
+    return { message: 'Participant mis à jour avec succès' };
   }
 
   // Retirer un participant du projet
-  // DANS ProjectService.removeParticipant, remplace la méthode par :
+  async removeParticipant(projectId: string, participantId: string, requesterId: string, requesterRole: string) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId }
+    });
 
-async removeParticipant(projectId: string, participantId: string, requesterId: string, requesterRole: string) {
-  const project = await prisma.project.findUnique({
-    where: { id: projectId }
-  });
-
-  if (!project) {
-    throw new ValidationError('Projet non trouvé');
-  }
-
-  // Vérifier les droits (créateur ou admin)
-  if (project.creatorId !== requesterId && requesterRole !== 'ADMINISTRATEUR') {
-    throw new AuthError('Seul le créateur du projet ou un administrateur peut retirer des participants');
-  }
-
-  // Vérifier que le participant existe et obtenir ses infos
-  const participant = await prisma.projectParticipant.findUnique({
-    where: { id: participantId },
-    include: {
-      user: true
+    if (!project) {
+      throw new ValidationError('Projet non trouvé');
     }
-  });
 
-  if (!participant) {
-    throw new ValidationError('Participant non trouvé');
+    // Vérifier les droits
+    if (!this.canManageParticipants(project, requesterId, requesterRole)) {
+      throw new AuthError('Permissions insuffisantes pour retirer des participants');
+    }
+
+    // Vérifier que le participant existe
+    const participant = await prisma.projectParticipant.findUnique({
+      where: { id: participantId },
+      include: { user: true }
+    });
+
+    if (!participant || participant.projectId !== projectId) {
+      throw new ValidationError('Participant non trouvé dans ce projet');
+    }
+
+    // Empêcher de retirer le créateur du projet
+    if (participant.userId === project.creatorId) {
+      throw new ValidationError('Impossible de retirer le créateur du projet');
+    }
+
+    // Supprimer le participant
+    await prisma.projectParticipant.delete({
+      where: { id: participantId }
+    });
+
+    return { message: 'Participant retiré avec succès du projet' };
   }
 
-  if (participant.projectId !== projectId) {
-    throw new ValidationError('Ce participant n\'appartient pas à ce projet');
+  // Méthodes placeholder pour les partenariats
+  async addPartnership(projectId: string, partnershipData: AddPartnershipRequest, requesterId: string, requesterRole: string) {
+    return { 
+      message: 'Les partenariats seront disponibles après la migration de la base de données' 
+    };
   }
 
-  // Empêcher de retirer le créateur du projet
-  if (participant.userId === project.creatorId) {
-    throw new ValidationError('Impossible de retirer le créateur du projet');
+  async addFunding(projectId: string, fundingData: AddFundingRequest, requesterId: string, requesterRole: string) {
+    return { 
+      message: 'Le financement doit être géré au niveau des activités.' 
+    };
   }
-
-  // Supprimer le participant (suppression complète, pas juste désactivation)
-  await prisma.projectParticipant.delete({
-    where: { id: participantId }
-  });
-
-  return { message: 'Participant retiré avec succès' };
-}
-
   // Vérifier l'accès à un projet
-  private checkProjectAccess(project: ProjectWithRelations, userId: string, userRole: string): boolean {
-    // Admin a accès à tout
+  private checkProjectAccess(project: any, userId: string, userRole: string): boolean {
     if (userRole === 'ADMINISTRATEUR') return true;
-    
-  // Créateur a accès
     if (project.creatorId === userId) return true;
-    
-    // Participant actif a accès
     if (project.participants?.some((p: any) => p.userId === userId && p.isActive)) return true;
-    
     return false;
   }
 
   // Vérifier les droits d'édition
   private checkProjectEditRights(project: any, userId: string, userRole: string): boolean {
-    // Admin peut tout modifier
     if (userRole === 'ADMINISTRATEUR') return true;
-    
-    // Créateur peut modifier
     if (project.creatorId === userId) return true;
     
-    // Participant avec rôle spécial (à définir selon vos besoins)
-    // Par exemple, un participant avec le rôle "Chef de projet adjoint"
     const participantRole = project.participants?.find((p: any) => p.userId === userId)?.role;
     if (participantRole && ['Chef de projet', 'Responsable','Co-Responsable','Chercheur principal','Chercheur associé'].includes(participantRole)) {
       return true;
@@ -519,10 +527,387 @@ async removeParticipant(projectId: string, participantId: string, requesterId: s
     return false;
   }
 
-  // Formater la réponse projet
-  private formatProjectResponse(project: ProjectWithRelations): ProjectResponse {
+  // Vérifier les droits de gestion des participants
+  private canManageParticipants(project: any, userId: string, userRole: string): boolean {
+    if (userRole === 'ADMINISTRATEUR') return true;
+    if (project.creatorId === userId) return true;
+    return this.checkProjectEditRights(project, userId, userRole);
+  }
+
+  // Lister les partenariats d'un projet
+  async getProjectPartnerships(projectId: string, userId: string, userRole: string) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId }
+    });
+
+    if (!project) {
+      throw new ValidationError('Projet non trouvé');
+    }
+
+    // Vérifier l'accès au projet
+    const hasAccess = this.checkProjectAccess(project, userId, userRole);
+    if (!hasAccess) {
+      throw new AuthError('Accès refusé à ce projet');
+    }
+
+    const partnerships = await prisma.projectPartner.findMany({
+      where: { projectId },
+      include: {
+        partner: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            category: true,
+            description: true,
+            address: true,
+            phone: true,
+            email: true,
+            website: true,
+            contactPerson: true,
+            contactTitle: true,
+            contactEmail: true,
+            contactPhone: true,
+            expertise: true,
+            services: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return partnerships.map((partnership: any) => this.formatPartnershipResponse(partnership));
+  }
+
+  // Mettre à jour un partenariat
+  async updatePartnership(projectId: string, updateData: UpdatePartnershipRequest, requesterId: string, requesterRole: string) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId }
+    });
+
+    if (!project) {
+      throw new ValidationError('Projet non trouvé');
+    }
+
+    // Vérifier les droits de gestion des partenariats
+    if (!this.canManagePartnerships(project, requesterId, requesterRole)) {
+      throw new AuthError('Permissions insuffisantes pour modifier les partenariats');
+    }
+
+    // Vérifier que le partenariat existe dans ce projet
+    const partnership = await prisma.projectPartner.findUnique({
+      where: { id: updateData.partnershipId },
+      include: { partner: true }
+    });
+
+    if (!partnership || partnership.projectId !== projectId) {
+      throw new ValidationError('Partenariat non trouvé dans ce projet');
+    }
+
+    // Préparer les données de mise à jour
+    const dataToUpdate: any = {};
+    if (updateData.partnerType !== undefined) dataToUpdate.partnerType = updateData.partnerType;
+    if (updateData.contribution !== undefined) dataToUpdate.contribution = updateData.contribution;
+    if (updateData.benefits !== undefined) dataToUpdate.benefits = updateData.benefits;
+    if (updateData.isActive !== undefined) dataToUpdate.isActive = updateData.isActive;
+    
+    if (updateData.endDate !== undefined) {
+      dataToUpdate.endDate = updateData.endDate ? new Date(updateData.endDate) : null;
+      
+      // Valider que la date de fin est postérieure à la date de début
+      if (updateData.endDate && partnership.startDate) {
+        const endDate = new Date(updateData.endDate);
+        if (partnership.startDate >= endDate) {
+          throw new ValidationError('La date de fin doit être postérieure à la date de début');
+        }
+      }
+    }
+
+    const updatedPartnership = await prisma.projectPartner.update({
+      where: { id: updateData.partnershipId },
+      data: dataToUpdate,
+      include: {
+        partner: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            category: true,
+            contactPerson: true,
+            contactEmail: true,
+            expertise: true
+          }
+        }
+      }
+    });
+
+    return {
+      message: 'Partenariat mis à jour avec succès',
+      partnership: this.formatPartnershipResponse(updatedPartnership)
+    };
+  }
+
+  // Retirer un partenariat du projet
+  async removePartnership(projectId: string, partnershipId: string, requesterId: string, requesterRole: string) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId }
+    });
+
+    if (!project) {
+      throw new ValidationError('Projet non trouvé');
+    }
+
+    // Vérifier les droits de gestion des partenariats
+    if (!this.canManagePartnerships(project, requesterId, requesterRole)) {
+      throw new AuthError('Permissions insuffisantes pour retirer des partenariats');
+    }
+
+    // Vérifier que le partenariat existe dans ce projet
+    const partnership = await prisma.projectPartner.findUnique({
+      where: { id: partnershipId },
+      include: { partner: true }
+    });
+
+    if (!partnership || partnership.projectId !== projectId) {
+      throw new ValidationError('Partenariat non trouvé dans ce projet');
+    }
+
+    // Supprimer le partenariat
+    await prisma.projectPartner.delete({
+      where: { id: partnershipId }
+    });
+
+    return { message: `Partenariat avec ${partnership.partner.name} retiré avec succès du projet` };
+  }
+
+  // Rechercher des partenaires potentiels pour un projet
+  async searchPotentialPartners(projectId: string, query?: string, expertise?: string[], type?: string) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        partnerships: {
+          select: { partnerId: true }
+        }
+      }
+    });
+
+    if (!project) {
+      throw new ValidationError('Projet non trouvé');
+    }
+
+    // Obtenir les IDs des partenaires déjà liés au projet
+    const excludedPartnerIds = project.partnerships.map(p => p.partnerId);
+
+    // Construire les filtres de recherche
+    const where: any = {
+      id: { notIn: excludedPartnerIds } // Exclure les partenaires déjà liés
+    };
+
+    if (type) {
+      where.type = type;
+    }
+
+    if (expertise && expertise.length > 0) {
+      where.OR = [
+        { expertise: { hassome: expertise } },
+        { services: { hassome: expertise } }
+      ];
+    }
+
+    if (query) {
+      const searchConditions = [
+        { name: { contains: query, mode: 'insensitive' } },
+        { description: { contains: query, mode: 'insensitive' } },
+        { contactPerson: { contains: query, mode: 'insensitive' } }
+      ];
+
+      if (where.OR) {
+        where.AND = [
+          { OR: where.OR },
+          { OR: searchConditions }
+        ];
+        delete where.OR;
+      } else {
+        where.OR = searchConditions;
+      }
+    }
+
+    const potentialPartners = await prisma.partner.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        category: true,
+        description: true,
+        contactPerson: true,
+        contactEmail: true,
+        expertise: true,
+        services: true
+      },
+      orderBy: { name: 'asc' },
+      take: 20 // Limiter les résultats
+    });
+
+    return potentialPartners;
+  }
+
+  // MÉTHODES UTILITAIRES PRIVÉES POUR LES PARTENARIATS
+
+  // Vérifier les droits de gestion des partenariats
+  private canManagePartnerships(project: any, userId: string, userRole: string): boolean {
+    if (userRole === 'ADMINISTRATEUR') return true;
+    if (project.creatorId === userId) return true;
+    
+    // Les responsables de projet peuvent aussi gérer les partenariats
+    return this.checkProjectEditRights(project, userId, userRole);
+  }
+
+  // Formater la réponse d'un partenariat
+  private formatPartnershipResponse(partnership: any) {
+    return {
+      id: partnership.id,
+      partnerType: partnership.partnerType,
+      contribution: partnership.contribution || undefined,
+      benefits: partnership.benefits || undefined,
+      startDate: partnership.startDate,
+      endDate: partnership.endDate || undefined,
+      isActive: partnership.isActive,
+      createdAt: partnership.createdAt,
+      updatedAt: partnership.updatedAt,
+      
+      partner: {
+        id: partnership.partner.id,
+        name: partnership.partner.name,
+        type: partnership.partner.type,
+        category: partnership.partner.category || undefined,
+        description: partnership.partner.description || undefined,
+        address: partnership.partner.address || undefined,
+        phone: partnership.partner.phone || undefined,
+        email: partnership.partner.email || undefined,
+        website: partnership.partner.website || undefined,
+        contactPerson: partnership.partner.contactPerson || undefined,
+        contactTitle: partnership.partner.contactTitle || undefined,
+        contactEmail: partnership.partner.contactEmail || undefined,
+        contactPhone: partnership.partner.contactPhone || undefined,
+        expertise: partnership.partner.expertise || [],
+        services: partnership.partner.services || []
+      }
+    };
+  }
+
+  // Mettre à jour la méthode getProjectIncludes pour inclure les partenariats
+  private getProjectIncludes(): Prisma.ProjectInclude {
+    return {
+      creator: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          role: true,
+          specialization: true,
+          discipline: true,
+        }
+      },
+      theme: {
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          description: true,
+        }
+      },
+      researchProgram: {
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          description: true,
+        }
+      },
+      convention: {
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          status: true,
+          contractNumber: true,
+        }
+      },
+      participants: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              role: true,
+              specialization: true,
+              discipline: true,
+            }
+          }
+        },
+        orderBy: {
+          joinedAt: Prisma.SortOrder.asc
+        }
+      },
+      // AJOUT DES PARTENARIATS
+      partnerships: {
+        include: {
+          partner: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              category: true,
+              description: true,
+              contactPerson: true,
+              contactEmail: true,
+              expertise: true,
+              services: true
+            }
+          }
+        },
+        where: { isActive: true },
+        orderBy: {
+          createdAt: Prisma.SortOrder.desc
+        }
+      },
+      activities: {
+        select: {
+          id: true,
+          code: true,
+          title: true,
+          description: true,
+          type: true,
+          status: true,
+          startDate: true,
+          endDate: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: Prisma.SortOrder.desc
+        }
+      },
+      _count: {
+        select: {
+          participants: true,
+          activities: true,
+          tasks: true,
+          documents: true,
+          partnerships: true // AJOUT DU COMPTEUR
+        }
+      }
+    };
+  }
+
+  // Mettre à jour la méthode formatProjectResponse pour inclure les partenariats
+  private formatProjectResponse(project: any): ProjectResponse {
     return {
       id: project.id,
+      code: project.code || undefined,
       title: project.title,
       description: project.description || undefined,
       objectives: project.objectives,
@@ -531,9 +916,46 @@ async removeParticipant(projectId: string, participantId: string, requesterId: s
       endDate: project.endDate || undefined,
       budget: project.budget || undefined,
       keywords: project.keywords || undefined,
+      
+      strategicPlan: project.strategicPlan || undefined,
+      strategicAxis: project.strategicAxis || undefined,
+      subAxis: project.subAxis || undefined,
+      program: project.program || undefined,
+      
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
-      creator: project.creator,
+      
+      creator: {
+        id: project.creator.id,
+        firstName: project.creator.firstName,
+        lastName: project.creator.lastName,
+        email: project.creator.email,
+        role: project.creator.role,
+        specialization: project.creator.specialization || undefined,
+      },
+      
+      theme: {
+        id: project.theme.id,
+        name: project.theme.name,
+        code: project.theme.code || undefined,
+        description: project.theme.description || undefined,
+      },
+      
+      researchProgram: project.researchProgram ? {
+        id: project.researchProgram.id,
+        name: project.researchProgram.name,
+        code: project.researchProgram.code || undefined,
+        description: project.researchProgram.description || undefined,
+      } : undefined,
+      
+      convention: project.convention ? {
+        id: project.convention.id,
+        title: project.convention.title,
+        type: project.convention.type,
+        status: project.convention.status,
+        contractNumber: project.convention.contractNumber || undefined,
+      } : undefined,
+      
       participants: project.participants ? project.participants.map((p: any) => ({
         id: p.id,
         role: p.role,
@@ -547,17 +969,51 @@ async removeParticipant(projectId: string, participantId: string, requesterId: s
           email: p.user.email,
           role: p.user.role,
           specialization: p.user.specialization || undefined,
+          discipline: p.user.discipline || undefined,
         }
-      })) : [], 
+      })) : [],
+      
+      // AJOUT DES PARTENARIATS
+      partnerships: project.partnerships ? project.partnerships.map((p: any) => ({
+        id: p.id,
+        partnerType: p.partnerType,
+        contribution: p.contribution || undefined,
+        benefits: p.benefits || undefined,
+        startDate: p.startDate,
+        endDate: p.endDate || undefined,
+        isActive: p.isActive,
+        partner: {
+          id: p.partner.id,
+          name: p.partner.name,
+          type: p.partner.type,
+          category: p.partner.category || undefined,
+          description: p.partner.description || undefined,
+          contactPerson: p.partner.contactPerson || undefined,
+          contactEmail: p.partner.contactEmail || undefined,
+          expertise: p.partner.expertise || [],
+          services: p.partner.services || []
+        }
+      })) : [],
+      
       activities: project.activities ? project.activities.map((a: any) => ({
         id: a.id,
+        code: a.code || undefined,
         title: a.title,
         description: a.description || undefined,
+        type: a.type,
+        status: a.status,
         startDate: a.startDate || undefined,
         endDate: a.endDate || undefined,
         createdAt: a.createdAt,
       })) : [],
-      _count: project._count ,
+      
+      _count: project._count || {
+        participants: 0,
+        activities: 0,
+        tasks: 0,
+        documents: 0,
+        partnerships: 0, // AJOUT DU COMPTEUR
+      },
     };
   }
 }

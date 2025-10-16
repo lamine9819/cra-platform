@@ -1,9 +1,9 @@
-// src/services/auth.service.ts
+// src/services/auth.service.ts - Version mise à jour avec changement de mot de passe
 import { PrismaClient } from '@prisma/client';
 import { hashPassword, comparePassword } from '../utils/bcrypt';
 import { generateToken } from '../config/jwt';
 import { AuthError, ValidationError } from '../utils/errors';
-import { RegisterRequest, LoginRequest } from '../types/auth.types';
+import { RegisterRequest, LoginRequest, ChangePasswordRequest } from '../types/auth.types';
 
 const prisma = new PrismaClient();
 
@@ -119,5 +119,60 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  // NOUVELLE MÉTHODE : Changer le mot de passe
+  async changePassword(userId: string, passwordData: ChangePasswordRequest) {
+    // Récupérer l'utilisateur avec son mot de passe
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        password: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+      }
+    });
+
+    if (!user) {
+      throw new AuthError('Utilisateur non trouvé');
+    }
+
+    // Vérifier le mot de passe actuel
+    const isCurrentPasswordValid = await comparePassword(
+      passwordData.currentPassword, 
+      user.password
+    );
+
+    if (!isCurrentPasswordValid) {
+      throw new AuthError('Le mot de passe actuel est incorrect');
+    }
+
+    // Vérifier que le nouveau mot de passe est différent de l'ancien
+    const isSamePassword = await comparePassword(
+      passwordData.newPassword, 
+      user.password
+    );
+
+    if (isSamePassword) {
+      throw new ValidationError('Le nouveau mot de passe doit être différent de l\'ancien');
+    }
+
+    // Hacher le nouveau mot de passe
+    const hashedNewPassword = await hashPassword(passwordData.newPassword);
+
+    // Mettre à jour le mot de passe dans la base de données
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedNewPassword,
+        updatedAt: new Date(),
+      }
+    });
+
+    return {
+      message: 'Mot de passe modifié avec succès'
+    };
   }
 }

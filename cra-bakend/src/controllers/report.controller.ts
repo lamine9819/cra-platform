@@ -1,909 +1,652 @@
-// src/controllers/report.controller.ts - CONTROLLER COMPLET
+// src/controllers/report.controller.ts
+
 import { Request, Response } from 'express';
-import { ReportService, ReportOptions } from '../services/report.service';
-import { AuthenticatedRequest } from '../types/auth.types';
-import { z } from 'zod';
-
-
-const reportService = new ReportService();
-
-// Schémas de validation
-const generateReportSchema = z.object({
-  type: z.enum(['project', 'activity', 'user', 'global']),
-  entityId: z.string().optional(),
-  dateRange: z.object({
-    start: z.coerce.date(),
-    end: z.coerce.date()
-  }).optional(),
-  includeGraphics: z.boolean().default(false),
-  language: z.enum(['fr', 'en']).default('fr')
-});
+import { reportService } from '../services/report.service';
+import { documentGeneratorService } from '../services/document-generator.service';
+import { quarterService } from '../services/quarter.service';
+import { generateReportSchema } from '../utils/report.validation';
+import { ReportType, ReportFormat, Quarter } from '../types/reports.types';
+import { GenerateReportInput } from '../utils/report.validation';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class ReportController {
-  // Générer un rapport
-  generateReport = async (req: AuthenticatedRequest, res: Response) => {
+  /**
+   * Génère un rapport trimestriel
+   */
+  async generateReport(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user!.userId;
-      const userRole = req.user!.role;
-      
       const validatedData = generateReportSchema.parse(req.body);
-      
-      // Vérifier les permissions
-      if (!this.checkReportPermissions(userRole, validatedData.type, validatedData.entityId, userId)) {
-        return res.status(403).json({
-          success: false,
-          message: 'Permissions insuffisantes pour générer ce rapport'
-        });
-      }
 
-      // Valider les paramètres
-      const validation = this.validateReportParams(validatedData.type, validatedData.entityId);
-      if (!validation.isValid) {
-        return res.status(400).json({
-          success: false,
-          message: 'Paramètres invalides',
-          errors: validation.errors
-        });
-      }
-
-      const options: ReportOptions = {
-        ...validatedData,
-        userId,
-        dateRange: validatedData.dateRange ? {
-          start: validatedData.dateRange.start,
-          end: validatedData.dateRange.end
-        } : undefined
-      };
-
-      const reportBuffer = await reportService.generateReport(options);
-      
-      // Audit de la génération
-      await this.auditReportGeneration(userId, validatedData.type, validatedData.entityId, true);
-      
-      // Définir le nom du fichier
-      const filename = this.generateFilename(validatedData.type, validatedData.entityId);
-      
-      // Envoyer le PDF
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.setHeader('Content-Length', reportBuffer.length);
-      
-      res.send(reportBuffer);
-    } catch (error) {
-      console.error('Erreur génération rapport:', error);
-      
-      // Audit de l'échec
-      await this.auditReportGeneration(req.user!.userId, req.body.type, req.body.entityId, false);
-      
-      res.status(500).json({
-        success: false,
-        message: 'Erreur lors de la génération du rapport'
-      });
-    }
-  };
-
-  // Prévisualiser un rapport (métadonnées sans génération)
-  previewReport = async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userId = req.user!.userId;
-      const userRole = req.user!.role;
-      const { type, entityId } = req.query;
-
-      if (!type || !['project', 'activity', 'user', 'global'].includes(type as string)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Type de rapport invalide'
-        });
-      }
-
-      // Vérifier les permissions
-      if (!this.checkReportPermissions(userRole, type as string, entityId as string, userId)) {
-        return res.status(403).json({
-          success: false,
-          message: 'Permissions insuffisantes'
-        });
-      }
-
-      const preview = await this.generateReportPreview(type as string, entityId as string);
-      
-      res.json({
-        success: true,
-        data: preview
-      });
-    } catch (error) {
-      console.error('Erreur prévisualisation rapport:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erreur lors de la prévisualisation'
-      });
-    }
-  };
-
-  // Obtenir les templates disponibles
-  getTemplates = async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userRole = req.user!.role;
-      const templates = await reportService.getAvailableTemplates();
-      
-      // Filtrer selon le rôle
-      const filteredTemplates = templates.filter(template => {
-        switch (userRole) {
-          case 'ADMINISTRATEUR':
-            return true; // Tous les templates
-          case 'CHERCHEUR':
-            return ['project_report', 'activity_report', 'user_report'].includes(template.id);
-          case 'ASSISTANT_CHERCHEUR':
-            return ['activity_report', 'user_report'].includes(template.id);
-          case 'TECHNICIEN_SUPERIEUR':
-            return ['activity_report', 'user_report'].includes(template.id);
-          default:
-            return false;
+      if (!validatedData.quarter && !validatedData.startDate) {
+        const currentQuarter = quarterService.getCurrentQuarter();
+        validatedData.quarter = currentQuarter.quarter;
+        if (!validatedData.year) {
+          validatedData.year = currentQuarter.year;
         }
-      });
-
-      res.json({
-        success: true,
-        data: filteredTemplates
-      });
-    } catch (error) {
-      console.error('Erreur récupération templates:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erreur lors de la récupération des templates'
-      });
-    }
-  };
-
-  // Obtenir l'historique des rapports générés
-  getReportHistory = async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userId = req.user!.userId;
-      const userRole = req.user!.role;
-      const { page = 1, limit = 10 } = req.query;
-
-      const pageNum = parseInt(page as string);
-      const limitNum = parseInt(limit as string);
-
-      // Pour l'historique, on peut utiliser la table audit_logs
-      const { PrismaClient } = await import('@prisma/client');
-      const prisma = new PrismaClient();
-
-      let whereClause: any = {
-        action: 'GENERATE_REPORT'
-      };
-
-      if (userRole !== 'ADMINISTRATEUR') {
-        whereClause.userId = userId;
       }
 
-      const [history, total] = await Promise.all([
-        prisma.auditLog.findMany({
-          where: whereClause,
-          orderBy: { createdAt: 'desc' },
-          skip: (pageNum - 1) * limitNum,
-          take: limitNum
-        }),
-        prisma.auditLog.count({ where: whereClause })
-      ]);
+      let filepath: string;
 
-      res.json({
-        success: true,
-        data: history,
-        pagination: {
-          page: pageNum,
-          limit: limitNum,
-          total,
-          pages: Math.ceil(total / limitNum)
-        }
-      });
-    } catch (error) {
-      console.error('Erreur historique rapports:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erreur lors de la récupération de l\'historique'
-      });
-    }
-  };
+      switch (validatedData.reportType) {
+        case ReportType.ACTIVITIES:
+          filepath = await this.generateActivitiesReport(
+            validatedData.format,
+            validatedData
+          );
+          break;
 
-  // Exporter les données en Excel (alternative aux rapports PDF)
-  exportToExcel = async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userId = req.user!.userId;
-      const userRole = req.user!.role;
-      const { type, entityId, format = 'xlsx' } = req.query;
+        case ReportType.CONVENTIONS:
+          filepath = await this.generateConventionsReport(
+            validatedData.format,
+            validatedData
+          );
+          break;
 
-      if (!type || !['users', 'projects', 'tasks', 'documents'].includes(type as string)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Type d\'export invalide'
-        });
-      }
-
-      const exportData = await this.getExportData(type as string, entityId as string, userRole, userId);
-      
-      if (!exportData || exportData.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Aucune donnée à exporter'
-        });
-      }
-
-      // Nettoyer les données
-      const sanitizedData = this.sanitizeExportData(exportData);
-
-      // Créer le fichier Excel
-      const XLSX = require('xlsx');
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(sanitizedData);
-      XLSX.utils.book_append_sheet(workbook, worksheet, type as string);
-
-      // Définir le nom du fichier
-      const filename = `export_${type}_${new Date().toISOString().split('T')[0]}.${format}`;
-
-      // Générer le buffer
-      const buffer = XLSX.write(workbook, { 
-        bookType: format as any, 
-        type: 'buffer' 
-      });
-
-      // Définir les headers
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.setHeader('Content-Type', 
-        format === 'csv' 
-          ? 'text/csv' 
-          : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      );
-
-      res.send(buffer);
-    } catch (error) {
-      console.error('Erreur export Excel:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erreur lors de l\'export'
-      });
-    }
-  };
-
-  // Statistiques pour les rapports
-  getReportStats = async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userId = req.user!.userId;
-      const userRole = req.user!.role;
-      const { period = '30' } = req.query;
-
-      const periodDays = parseInt(period as string);
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - periodDays);
-
-      const { PrismaClient } = await import('@prisma/client');
-      const prisma = new PrismaClient();
-
-      let whereClause: any = {};
-      
-      if (userRole !== 'ADMINISTRATEUR') {
-        whereClause = {
-          OR: [
-            { creatorId: userId },
-            { assigneeId: userId },
-            { 
-              project: {
-                OR: [
-                  { creatorId: userId },
-                  { participants: { some: { userId } } }
-                ]
-              }
-            }
-          ]
-        };
-      }
-
-      const [
-        recentTasks,
-        recentProjects,
-        recentDocuments,
-        recentForms
-      ] = await Promise.all([
-        prisma.task.count({
-          where: {
-            ...whereClause,
-            createdAt: { gte: startDate }
-          }
-        }),
-        prisma.project.count({
-          where: {
-            createdAt: { gte: startDate },
-            ...(userRole !== 'ADMINISTRATEUR' ? { creatorId: userId } : {})
-          }
-        }),
-        prisma.document.count({
-          where: {
-            createdAt: { gte: startDate },
-            ...(userRole !== 'ADMINISTRATEUR' ? { ownerId: userId } : {})
-          }
-        }),
-        prisma.form.count({
-          where: {
-            createdAt: { gte: startDate },
-            ...(userRole !== 'ADMINISTRATEUR' ? { creatorId: userId } : {})
-          }
-        })
-      ]);
-
-      res.json({
-        success: true,
-        data: {
-          period: periodDays,
-          recentActivity: {
-            tasks: recentTasks,
-            projects: recentProjects,
-            documents: recentDocuments,
-            forms: recentForms
-          }
-        }
-      });
-    } catch (error) {
-      console.error('Erreur stats rapports:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erreur lors du calcul des statistiques'
-      });
-    }
-  };
-
-  // Planifier un rapport récurrent
-  scheduleReport = async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userId = req.user!.userId;
-      const userRole = req.user!.role;
-      
-      const {
-        type,
-        entityId,
-        schedule, // 'daily', 'weekly', 'monthly'
-        recipients,
-        isActive = true
-      } = req.body;
-
-      // Seuls les admins et chercheurs peuvent planifier des rapports
-      if (!['ADMINISTRATEUR', 'CHERCHEUR'].includes(userRole)) {
-        return res.status(403).json({
-          success: false,
-          message: 'Permissions insuffisantes pour planifier des rapports'
-        });
-      }
-
-      // Dans une implémentation complète, vous stockeriez ceci dans une table
-      // et utiliseriez un scheduler comme node-cron pour exécuter les rapports
-
-      res.json({
-        success: true,
-        message: 'Rapport planifié avec succès',
-        data: {
-          type,
-          entityId,
-          schedule,
-          recipients,
-          isActive,
-          scheduledBy: userId,
-          createdAt: new Date().toISOString()
-        }
-      });
-    } catch (error) {
-      console.error('Erreur planification rapport:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erreur lors de la planification du rapport'
-      });
-    }
-  };
-
-  // ========== MÉTHODES PRIVÉES ==========
-
-  // Vérifier les permissions pour un type de rapport
-  private checkReportPermissions(userRole: string, reportType: string, entityId: string | undefined, userId: string): boolean {
-    switch (userRole) {
-      case 'ADMINISTRATEUR':
-        return true; // Tous les rapports
-      
-      case 'CHERCHEUR':
-        if (reportType === 'global') return false;
-        if (reportType === 'user' && entityId && entityId !== userId) return false;
-        return true;
-      
-      case 'ASSISTANT_CHERCHEUR':
-        if (['global', 'project'].includes(reportType)) return false;
-        if (reportType === 'user' && entityId && entityId !== userId) return false;
-        return true;
-      
-      case 'TECHNICIEN_SUPERIEUR':
-        if (['global', 'project'].includes(reportType)) return false;
-        if (reportType === 'user' && entityId && entityId !== userId) return false;
-        return true;
-      
-      default:
-        return false;
-    }
-  }
-
-  // Générer le nom de fichier selon le type de rapport
-  private generateFilename(type: string, entityId?: string): string {
-    const timestamp = new Date().toISOString().split('T')[0];
-    const suffix = entityId ? `_${entityId}` : '';
-    
-    switch (type) {
-      case 'project':
-        return `rapport_projet${suffix}_${timestamp}.pdf`;
-      case 'activity':
-        return `rapport_activite${suffix}_${timestamp}.pdf`;
-      case 'user':
-        return `rapport_utilisateur${suffix}_${timestamp}.pdf`;
-      case 'global':
-        return `rapport_global_${timestamp}.pdf`;
-      default:
-        return `rapport_${timestamp}.pdf`;
-    }
-  }
-
-  // Générer un aperçu de rapport sans le créer
-  private async generateReportPreview(type: string, entityId?: string): Promise<any> {
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new PrismaClient();
-
-    try {
-      switch (type) {
-        case 'project':
-          if (!entityId) throw new Error('ID projet requis');
-          const project = await prisma.project.findUnique({
-            where: { id: entityId },
-            include: {
-              creator: {
-                select: {
-                  firstName: true,
-                  lastName: true
-                }
-              },
-              _count: {
-                select: {
-                  activities: true,
-                  tasks: true,
-                  documents: true,
-                  participants: true
-                }
-              }
-            }
-          });
-          
-          if (!project) {
-            throw new Error('Projet non trouvé');
-          }
-
-          return {
-            type: 'project',
-            title: project.title,
-            creator: `${project.creator.firstName} ${project.creator.lastName}`,
-            status: project.status,
-            summary: {
-              activities: project._count.activities,
-              tasks: project._count.tasks,
-              documents: project._count.documents,
-              participants: project._count.participants
-            },
-            estimatedPages: Math.ceil(project._count.activities / 5) + 3,
-            sections: [
-              'Informations générales',
-              'Participants',
-              'Activités et tâches',
-              'Documents',
-              'Statistiques'
-            ]
-          };
-
-        case 'activity':
-          if (!entityId) throw new Error('ID activité requis');
-          const activity = await prisma.activity.findUnique({
-            where: { id: entityId },
-            include: {
-              project: { 
-                select: { 
-                  title: true,
-                  creator: {
-                    select: {
-                      firstName: true,
-                      lastName: true
-                    }
-                  }
-                } 
-              },
-              _count: {
-                select: {
-                  tasks: true,
-                  documents: true,
-                  forms: true
-                }
-              }
-            }
-          });
-          
-          if (!activity) {
-            throw new Error('Activité non trouvée');
-          }
-
-          return {
-            type: 'activity',
-            title: activity.title,
-            project: activity.project?.title,
-            projectCreator: activity.project?.creator ? 
-              `${activity.project.creator.firstName} ${activity.project.creator.lastName}` : '',
-            summary: {
-              tasks: activity._count.tasks,
-              documents: activity._count.documents,
-              forms: activity._count.forms
-            },
-            estimatedPages: Math.ceil(activity._count.tasks / 10) + 2,
-            sections: [
-              'Informations de l\'activité',
-              'Objectifs et méthodologie',
-              'Tâches et progression',
-              'Formulaires et collecte',
-              'Documents et résultats'
-            ]
-          };
-
-        case 'user':
-          if (!entityId) throw new Error('ID utilisateur requis');
-          const user = await prisma.user.findUnique({
-            where: { id: entityId },
-            include: {
-              _count: {
-                select: {
-                  createdProjects: true,
-                  assignedTasks: true,
-                  documents: true,
-                  forms: true,
-                  organizedSeminars: true
-                }
-              }
-            }
-          });
-          
-          if (!user) {
-            throw new Error('Utilisateur non trouvé');
-          }
-
-          return {
-            type: 'user',
-            title: `${user.firstName} ${user.lastName}`,
-            role: user.role,
-            department: user.department,
-            summary: {
-              projects: user._count.createdProjects,
-              tasks: user._count.assignedTasks,
-              documents: user._count.documents,
-              forms: user._count.forms,
-              seminars: user._count.organizedSeminars
-            },
-            estimatedPages: 4,
-            sections: [
-              'Profil utilisateur',
-              'Projets dirigés',
-              'Tâches et contributions',
-              'Documents et formulaires',
-              'Activités et séminaires'
-            ]
-          };
-
-        case 'global':
-          const [usersCount, projectsCount, tasksCount, documentsCount, formsCount] = await Promise.all([
-            prisma.user.count(),
-            prisma.project.count(),
-            prisma.task.count(),
-            prisma.document.count(),
-            prisma.form.count()
-          ]);
-          
-          return {
-            type: 'global',
-            title: 'Rapport Global de la Plateforme CRA',
-            summary: {
-              users: usersCount,
-              projects: projectsCount,
-              tasks: tasksCount,
-              documents: documentsCount,
-              forms: formsCount
-            },
-            estimatedPages: 8,
-            sections: [
-              'Vue d\'ensemble de la plateforme',
-              'Statistiques des utilisateurs',
-              'Analyse des projets',
-              'Gestion des tâches',
-              'Gestion documentaire',
-              'Système de formulaires',
-              'Activités et tendances',
-              'Recommandations'
-            ]
-          };
+        case ReportType.KNOWLEDGE_TRANSFERS:
+          filepath = await this.generateKnowledgeTransfersReport(
+            validatedData.format,
+            validatedData
+          );
+          break;
 
         default:
-          throw new Error('Type de rapport non supporté');
+          res.status(400).json({
+            success: false,
+            message: 'Type de rapport non supporté'
+          });
+          return;
       }
-    } catch (error) {
-      console.error('Erreur génération aperçu:', error);
-      throw error;
+
+      this.sendFile(res, filepath);
+    } catch (error: any) {
+      console.error('Erreur lors de la génération du rapport:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erreur lors de la génération du rapport',
+        error: error.message
+      });
     }
   }
 
-  // Valider les paramètres de génération de rapport
-  private validateReportParams(type: string, entityId?: string): { isValid: boolean; errors: string[] } {
-    const errors: string[] = [];
+  /**
+   * Génère un rapport annuel (tous les trimestres)
+   */
+  async generateAnnualReport(req: Request, res: Response): Promise<void> {
+    try {
+      const { year, reportType, format } = req.body;
 
-    // Valider le type
-    const validTypes = ['project', 'activity', 'user', 'global'];
-    if (!validTypes.includes(type)) {
-      errors.push(`Type de rapport invalide. Types supportés: ${validTypes.join(', ')}`);
+      if (!year || !reportType || !format) {
+        res.status(400).json({
+          success: false,
+          message: 'Paramètres manquants: year, reportType, format requis'
+        });
+        return;
+      }
+
+      const targetYear = parseInt(year);
+
+      // Collecter les données de tous les trimestres
+      const dataByQuarter = new Map();
+      const quarters = [Quarter.Q1, Quarter.Q2, Quarter.Q3, Quarter.Q4];
+
+      for (const quarter of quarters) {
+        const filters: GenerateReportInput = {
+          reportType: reportType as ReportType,
+          format: format as ReportFormat,
+          year: targetYear,
+          quarter: quarter,
+          includeArchived: false,
+          includeCharts: false,
+          includeStatistics: false
+        };
+
+        let quarterData;
+        switch (reportType) {
+          case ReportType.ACTIVITIES:
+            quarterData = await reportService.getActivitiesData(filters);
+            break;
+          case ReportType.CONVENTIONS:
+            quarterData = await reportService.getConventionsData(filters);
+            break;
+          case ReportType.KNOWLEDGE_TRANSFERS:
+            quarterData = await reportService.getKnowledgeTransfersData(filters);
+            break;
+        }
+
+        dataByQuarter.set(quarter, quarterData || []);
+      }
+
+      // Récupérer les statistiques annuelles
+      const statistics = await this.getAnnualStatistics(targetYear);
+
+      // Générer le document
+      let filepath: string;
+
+      switch (reportType) {
+        case ReportType.ACTIVITIES:
+          if (format === ReportFormat.PDF) {
+            filepath = await documentGeneratorService.generateAnnualActivitiesPDF(
+              dataByQuarter,
+              targetYear,
+              statistics
+            );
+          } else {
+            filepath = await documentGeneratorService.generateAnnualActivitiesWORD(
+              dataByQuarter,
+              targetYear,
+              statistics
+            );
+          }
+          break;
+
+        case ReportType.CONVENTIONS:
+          if (format === ReportFormat.PDF) {
+            filepath = await documentGeneratorService.generateAnnualConventionsPDF(
+              dataByQuarter,
+              targetYear,
+              statistics
+            );
+          } else {
+            filepath = await documentGeneratorService.generateAnnualConventionsWORD(
+              dataByQuarter,
+              targetYear,
+              statistics
+            );
+          }
+          break;
+
+        case ReportType.KNOWLEDGE_TRANSFERS:
+          if (format === ReportFormat.PDF) {
+            filepath = await documentGeneratorService.generateAnnualKnowledgeTransfersPDF(
+              dataByQuarter,
+              targetYear,
+              statistics
+            );
+          } else {
+            filepath = await documentGeneratorService.generateAnnualKnowledgeTransfersWORD(
+              dataByQuarter,
+              targetYear,
+              statistics
+            );
+          }
+          break;
+
+        default:
+          res.status(400).json({
+            success: false,
+            message: 'Type de rapport non supporté'
+          });
+          return;
+      }
+
+      this.sendFile(res, filepath);
+    } catch (error: any) {
+      console.error('Erreur lors de la génération du rapport annuel:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erreur lors de la génération du rapport annuel',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Récupère les statistiques annuelles
+   */
+  private async getAnnualStatistics(year: number): Promise<any> {
+    const quarters = [Quarter.Q1, Quarter.Q2, Quarter.Q3, Quarter.Q4];
+    const byQuarter: any = {};
+
+    // Statistiques par trimestre
+    for (const quarter of quarters) {
+      const filters: GenerateReportInput = {
+        reportType: ReportType.ACTIVITIES,
+        format: ReportFormat.PDF,
+        year: year,
+        quarter: quarter,
+        includeArchived: false,
+        includeCharts: false,
+        includeStatistics: true
+      };
+      byQuarter[quarter] = await reportService.getQuarterlyStatistics(filters);
     }
 
-    // Valider entityId selon le type
-    if (['project', 'activity', 'user'].includes(type) && !entityId) {
-      errors.push(`ID d'entité requis pour le type de rapport: ${type}`);
+    // Statistiques annuelles (agrégation)
+    const annual = {
+      activities: {
+        total: 0,
+        new: 0,
+        reconducted: 0,
+        closed: 0
+      },
+      conventions: {
+        total: 0
+      },
+      transfers: {
+        total: 0
+      },
+      budget: {
+        totalGlobal: 0,
+        totalMobilized: 0
+      }
+    };
+
+    for (const quarter of quarters) {
+      const qStats = byQuarter[quarter];
+      
+      annual.activities.new += qStats.activities.new;
+      annual.activities.reconducted += qStats.activities.reconducted;
+      annual.activities.closed += qStats.activities.closed;
+      
+      annual.budget.totalGlobal += qStats.budget?.totalGlobal || 0;
+      annual.budget.totalMobilized += qStats.budget?.totalMobilized || 0;
     }
 
-    if (type === 'global' && entityId) {
-      errors.push('ID d\'entité non autorisé pour le rapport global');
-    }
+    annual.activities.total = annual.activities.new + annual.activities.reconducted;
+
+    // Pour obtenir le nombre exact de conventions et transferts uniques sur l'année
+    const yearStartDate = new Date(year, 0, 1);
+    const yearEndDate = new Date(year, 11, 31, 23, 59, 59);
+
+    const conventionsFilters: GenerateReportInput = {
+      reportType: ReportType.CONVENTIONS,
+      format: ReportFormat.PDF,
+      year: year,
+      startDate: yearStartDate.toISOString(),
+      endDate: yearEndDate.toISOString(),
+      includeArchived: false,
+      includeCharts: false,
+      includeStatistics: false
+    };
+
+    const transfersFilters: GenerateReportInput = {
+      reportType: ReportType.KNOWLEDGE_TRANSFERS,
+      format: ReportFormat.PDF,
+      year: year,
+      startDate: yearStartDate.toISOString(),
+      endDate: yearEndDate.toISOString(),
+      includeArchived: false,
+      includeCharts: false,
+      includeStatistics: false
+    };
+
+    const [totalConventions, totalTransfers] = await Promise.all([
+      reportService.getConventionsData(conventionsFilters),
+      reportService.getKnowledgeTransfersData(transfersFilters)
+    ]);
+
+    annual.conventions.total = totalConventions.length;
+    annual.transfers.total = totalTransfers.length;
 
     return {
-      isValid: errors.length === 0,
-      errors
+      annual,
+      byQuarter
     };
   }
 
-  // Auditer la génération de rapport
-  private async auditReportGeneration(userId: string, type: string, entityId?: string, success: boolean = true) {
+  /**
+   * Récupère les trimestres disponibles pour les rapports
+   */
+  async getAvailableQuarters(req: Request, res: Response): Promise<void> {
     try {
-      const { PrismaClient } = await import('@prisma/client');
-      const prisma = new PrismaClient();
+      const { year } = req.query;
+      const targetYear = year ? parseInt(year as string) : new Date().getFullYear();
 
-      await prisma.auditLog.create({
+      const quarters = quarterService.getYearQuarters(targetYear);
+      const currentQuarter = quarterService.getCurrentQuarter();
+
+      res.json({
+        success: true,
         data: {
-          action: 'GENERATE_REPORT',
-          entityType: 'REPORT',
-          entityId: entityId || null,
-          userId,
-          details: {
-            reportType: type,
-            success,
-            timestamp: new Date().toISOString()
-          }
+          year: targetYear,
+          currentQuarter: {
+            quarter: currentQuarter.quarter,
+            year: currentQuarter.year,
+            label: currentQuarter.label
+          },
+          quarters: quarters.map(q => ({
+            quarter: q.quarter,
+            label: quarterService.formatQuarterLabel(q.year, q.quarter),
+            startDate: q.startDate,
+            endDate: q.endDate
+          }))
         }
       });
-    } catch (error) {
-      console.error('Erreur audit rapport:', error);
+    } catch (error: any) {
+      console.error('Erreur lors de la récupération des trimestres:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erreur lors de la récupération des trimestres',
+        error: error.message
+      });
     }
   }
 
-  // Nettoyer et formater les données pour l'export
-  private sanitizeExportData(data: any[]): any[] {
-    return data.map(item => {
-      const sanitized: any = {};
+  /**
+   * Récupère les statistiques trimestrielles
+   */
+  async getQuarterlyStats(req: Request, res: Response): Promise<void> {
+    try {
+      const { year, quarter } = req.query;
       
-      Object.entries(item).forEach(([key, value]) => {
-        if (value === null || value === undefined) {
-          sanitized[key] = '';
-        }
-        else if (value instanceof Date) {
-          sanitized[key] = value.toLocaleDateString();
-        }
-        else if (typeof value === 'bigint') {
-          sanitized[key] = Number(value);
-        }
-        else if (typeof value === 'boolean') {
-          sanitized[key] = value ? 'Oui' : 'Non';
-        }
-        else {
-          sanitized[key] = value;
-        }
+      const targetYear = year ? parseInt(year as string) : new Date().getFullYear();
+      const targetQuarter = quarter ? parseInt(quarter as string) as Quarter : quarterService.getCurrentQuarter().quarter;
+
+      const filters: GenerateReportInput = {
+        reportType: ReportType.ACTIVITIES,
+        format: ReportFormat.PDF,
+        year: targetYear,
+        quarter: targetQuarter,
+        includeArchived: false,
+        includeCharts: false,
+        includeStatistics: true
+      };
+
+      const stats = await reportService.getQuarterlyStatistics(filters);
+
+      res.json({
+        success: true,
+        data: stats
       });
-      
-      return sanitized;
+    } catch (error: any) {
+      console.error('Erreur lors de la récupération des statistiques:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erreur lors de la récupération des statistiques',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Récupère les statistiques annuelles
+   */
+  async getAnnualStats(req: Request, res: Response): Promise<void> {
+    try {
+      const { year } = req.query;
+      const targetYear = year ? parseInt(year as string) : new Date().getFullYear();
+
+      const statistics = await this.getAnnualStatistics(targetYear);
+
+      res.json({
+        success: true,
+        data: statistics
+      });
+    } catch (error: any) {
+      console.error('Erreur lors de la récupération des statistiques annuelles:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erreur lors de la récupération des statistiques annuelles',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Compare les statistiques entre deux trimestres
+   */
+  async compareQuarters(req: Request, res: Response): Promise<void> {
+    try {
+      const { year1, quarter1, year2, quarter2 } = req.query;
+
+      if (!year1 || !quarter1 || !year2 || !quarter2) {
+        res.status(400).json({
+          success: false,
+          message: 'Paramètres manquants: year1, quarter1, year2, quarter2 requis'
+        });
+        return;
+      }
+
+      const filters1: GenerateReportInput = {
+        reportType: ReportType.ACTIVITIES,
+        format: ReportFormat.PDF,
+        year: parseInt(year1 as string),
+        quarter: parseInt(quarter1 as string) as Quarter,
+        includeArchived: false,
+        includeCharts: false,
+        includeStatistics: true
+      };
+
+      const filters2: GenerateReportInput = {
+        reportType: ReportType.ACTIVITIES,
+        format: ReportFormat.PDF,
+        year: parseInt(year2 as string),
+        quarter: parseInt(quarter2 as string) as Quarter,
+        includeArchived: false,
+        includeCharts: false,
+        includeStatistics: true
+      };
+
+      const [stats1, stats2] = await Promise.all([
+        reportService.getQuarterlyStatistics(filters1),
+        reportService.getQuarterlyStatistics(filters2)
+      ]);
+
+      // Calcul des variations
+      const comparison = {
+        period1: stats1.period,
+        period2: stats2.period,
+        activities: {
+          total: {
+            value1: stats1.activities.total,
+            value2: stats2.activities.total,
+            variation: stats2.activities.total - stats1.activities.total,
+            variationPercent: stats1.activities.total > 0 
+              ? ((stats2.activities.total - stats1.activities.total) / stats1.activities.total * 100).toFixed(2)
+              : 'N/A'
+          },
+          new: {
+            value1: stats1.activities.new,
+            value2: stats2.activities.new,
+            variation: stats2.activities.new - stats1.activities.new
+          },
+          reconducted: {
+            value1: stats1.activities.reconducted,
+            value2: stats2.activities.reconducted,
+            variation: stats2.activities.reconducted - stats1.activities.reconducted
+          },
+          closed: {
+            value1: stats1.activities.closed,
+            value2: stats2.activities.closed,
+            variation: stats2.activities.closed - stats1.activities.closed
+          }
+        },
+        conventions: {
+          total: {
+            value1: stats1.conventions.total,
+            value2: stats2.conventions.total,
+            variation: stats2.conventions.total - stats1.conventions.total
+          }
+        },
+        transfers: {
+          total: {
+            value1: stats1.transfers.total,
+            value2: stats2.transfers.total,
+            variation: stats2.transfers.total - stats1.transfers.total
+          }
+        },
+        budget: {
+          totalMobilized: {
+            value1: stats1.budget.totalMobilized,
+            value2: stats2.budget.totalMobilized,
+            variation: stats2.budget.totalMobilized - stats1.budget.totalMobilized,
+            variationPercent: stats1.budget.totalMobilized > 0
+              ? ((stats2.budget.totalMobilized - stats1.budget.totalMobilized) / stats1.budget.totalMobilized * 100).toFixed(2)
+              : 'N/A'
+          }
+        }
+      };
+
+      res.json({
+        success: true,
+        data: comparison
+      });
+    } catch (error: any) {
+      console.error('Erreur lors de la comparaison des trimestres:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erreur lors de la comparaison des trimestres',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Récupère la liste des rapports disponibles
+   */
+  async getAvailableReports(req: Request, res: Response): Promise<void> {
+    try {
+      const reports = [
+        {
+          type: ReportType.ACTIVITIES,
+          name: 'Rapport des activités',
+          description: 'Liste toutes les activités avec leurs responsables et statuts',
+          formats: [ReportFormat.PDF, ReportFormat.WORD],
+          periodicity: ['quarterly', 'annual']
+        },
+        {
+          type: ReportType.CONVENTIONS,
+          name: 'Rapport des conventions',
+          description: 'Liste des conventions avec leurs financements',
+          formats: [ReportFormat.PDF, ReportFormat.WORD],
+          periodicity: ['quarterly', 'annual']
+        },
+        {
+          type: ReportType.KNOWLEDGE_TRANSFERS,
+          name: 'Rapport des transferts de connaissances',
+          description: 'Liste des acquis transférables',
+          formats: [ReportFormat.PDF, ReportFormat.WORD],
+          periodicity: ['quarterly', 'annual']
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: reports
+      });
+    } catch (error: any) {
+      console.error('Erreur lors de la récupération des rapports:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erreur lors de la récupération des rapports',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Nettoie les anciens rapports
+   */
+  async cleanOldReports(req: Request, res: Response): Promise<void> {
+    try {
+      await documentGeneratorService.cleanOldReports();
+
+      res.json({
+        success: true,
+        message: 'Anciens rapports nettoyés avec succès'
+      });
+    } catch (error: any) {
+      console.error('Erreur lors du nettoyage des rapports:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erreur lors du nettoyage des rapports',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Méthodes privées pour générer les rapports trimestriels
+   */
+  private async generateActivitiesReport(
+    format: ReportFormat,
+    filters: GenerateReportInput
+  ): Promise<string> {
+    const activities = await reportService.getActivitiesData(filters);
+
+    if (format === ReportFormat.PDF) {
+      return await documentGeneratorService.generateActivitiesPDF(
+        activities,
+        filters
+      );
+    } else {
+      return await documentGeneratorService.generateActivitiesWORD(
+        activities,
+        filters
+      );
+    }
+  }
+
+  private async generateConventionsReport(
+    format: ReportFormat,
+    filters: GenerateReportInput
+  ): Promise<string> {
+    const conventions = await reportService.getConventionsData(filters);
+
+    if (format === ReportFormat.PDF) {
+      return await documentGeneratorService.generateConventionsPDF(
+        conventions,
+        filters
+      );
+    } else {
+      return await documentGeneratorService.generateConventionsWORD(
+        conventions,
+        filters
+      );
+    }
+  }
+
+  private async generateKnowledgeTransfersReport(
+    format: ReportFormat,
+    filters: GenerateReportInput
+  ): Promise<string> {
+    const transfers = await reportService.getKnowledgeTransfersData(filters);
+
+    if (format === ReportFormat.PDF) {
+      return await documentGeneratorService.generateKnowledgeTransfersPDF(
+        transfers,
+        filters
+      );
+    } else {
+      return await documentGeneratorService.generateKnowledgeTransfersWORD(
+        transfers,
+        filters
+      );
+    }
+  }
+
+  /**
+   * Envoie le fichier généré au client
+   */
+  private sendFile(res: Response, filepath: string): void {
+    const filename = path.basename(filepath);
+    const ext = path.extname(filepath);
+    const mimeType = ext === '.pdf' 
+      ? 'application/pdf'
+      : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    const fileStream = fs.createReadStream(filepath);
+    fileStream.pipe(res);
+
+    fileStream.on('end', () => {
+      // Nettoyer le fichier après envoi
+      fs.unlinkSync(filepath);
+    });
+
+    fileStream.on('error', (error) => {
+      console.error('Erreur lors de l\'envoi du fichier:', error);
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          message: 'Erreur lors de l\'envoi du fichier'
+        });
+      }
     });
   }
-
-  // Obtenir les données pour l'export selon le type
-  private async getExportData(type: string, entityId: string, userRole: string, userId: string): Promise<any[]> {
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new PrismaClient();
-
-    let whereClause: any = {};
-    
-    // Filtrer selon le rôle
-    if (userRole !== 'ADMINISTRATEUR') {
-      switch (type) {
-        case 'projects':
-          whereClause = {
-            OR: [
-              { creatorId: userId },
-              { participants: { some: { userId } } }
-            ]
-          };
-          break;
-        case 'tasks':
-          whereClause = {
-            OR: [
-              { creatorId: userId },
-              { assigneeId: userId }
-            ]
-          };
-          break;
-        case 'documents':
-          whereClause = { ownerId: userId };
-          break;
-        case 'users':
-          if (userRole === 'CHERCHEUR') {
-            whereClause = { supervisorId: userId };
-          } else {
-            return [];
-          }
-          break;
-      }
-    }
-
-    // Si un entityId est spécifié, l'ajouter au filtre
-    if (entityId) {
-      if (type === 'projects') {
-        whereClause.id = entityId;
-      } else if (type === 'tasks') {
-        whereClause.projectId = entityId;
-      } else if (type === 'documents') {
-        whereClause.projectId = entityId;
-      }
-    }
-
-    switch (type) {
-      case 'users':
-        const users = await prisma.user.findMany({
-          where: whereClause,
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            role: true,
-            department: true,
-            specialization: true,
-            isActive: true,
-            createdAt: true
-          }
-        });
-        return users.map((user:any) => ({
-          'ID': user.id,
-          'Prénom': user.firstName,
-          'Nom': user.lastName,
-          'Email': user.email,
-          'Rôle': user.role,
-          'Département': user.department || '',
-          'Spécialisation': user.specialization || '',
-          'Actif': user.isActive ? 'Oui' : 'Non',
-          'Date de création': new Date(user.createdAt).toLocaleDateString()
-        }));
-
-      case 'projects':
-        const projects = await prisma.project.findMany({
-          where: whereClause,
-          include: {
-            creator: {
-              select: {
-                firstName: true,
-                lastName: true
-              }
-            },
-            _count: {
-              select: {
-                activities: true,
-                tasks: true,
-                documents: true,
-                participants: true
-              }
-            }
-          }
-        });
-        return projects.map((project:any) => ({
-          'ID': project.id,
-          'Titre': project.title,
-          'Description': project.description || '',
-          'Statut': project.status,
-          'Créateur': `${project.creator.firstName} ${project.creator.lastName}`,
-          'Date de début': project.startDate ? new Date(project.startDate).toLocaleDateString() : '',
-          'Date de fin': project.endDate ? new Date(project.endDate).toLocaleDateString() : '',
-          'Budget': project.budget || '',
-          'Activités': project._count.activities,
-          'Tâches': project._count.tasks,
-          'Documents': project._count.documents,
-          'Participants': project._count.participants,
-          'Date de création': new Date(project.createdAt).toLocaleDateString()
-        }));
-
-      case 'tasks':
-        const tasks = await prisma.task.findMany({
-          where: whereClause,
-          include: {
-            creator: {
-              select: {
-                firstName: true,
-                lastName: true
-              }
-            },
-            assignee: {
-              select: {
-                firstName: true,
-                lastName: true
-              }
-            },
-            project: {
-              select: {
-                title: true
-              }
-            },
-            activity: {
-              select: {
-                title: true
-              }
-            }
-          }
-        });
-        return tasks.map((task:any) => ({
-          'ID': task.id,
-          'Titre': task.title,
-          'Description': task.description || '',
-          'Statut': task.status,
-          'Priorité': task.priority,
-          'Créateur': `${task.creator.firstName} ${task.creator.lastName}`,
-          'Assigné à': task.assignee ? `${task.assignee.firstName} ${task.assignee.lastName}` : '',
-          'Projet': task.project?.title || '',
-          'Activité': task.activity?.title || '',
-          'Progression': `${task.progress}%`,
-          'Date d\'échéance': task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '',
-          'Date de création': new Date(task.createdAt).toLocaleDateString(),
-          'Date de completion': task.completedAt ? new Date(task.completedAt).toLocaleDateString() : ''
-        }));
-
-      case 'documents':
-        const documents = await prisma.document.findMany({
-          where: whereClause,
-          include: {
-            owner: {
-              select: {
-                firstName: true,
-                lastName: true
-              }
-            },
-            project: {
-              select: {
-                title: true
-              }
-            },
-            activity: {
-              select: {
-                title: true
-              }
-            }
-          }
-        });
-        return documents.map((doc:any) => ({
-          'ID': doc.id,
-          'Titre': doc.title,
-          'Nom du fichier': doc.filename,
-          'Type': doc.type,
-          'Taille': `${Math.round(Number(doc.size) / 1024)} KB`,
-          'Propriétaire': `${doc.owner.firstName} ${doc.owner.lastName}`,
-          'Projet': doc.project?.title || '',
-          'Activité': doc.activity?.title || '',
-          'Public': doc.isPublic ? 'Oui' : 'Non',
-          'Date de création': new Date(doc.createdAt).toLocaleDateString()
-        }));
-
-      default:
-        return [];
-    }
-  }
 }
+
+export const reportController = new ReportController();

@@ -10,7 +10,7 @@ export interface RegisterRequest {
   password: string;
   firstName: string;
   lastName: string;
-  role: 'CHERCHEUR' | 'ASSISTANT_CHERCHEUR' | 'TECHNICIEN_SUPERIEUR' | 'ADMINISTRATEUR';
+  role: 'CHERCHEUR' | 'COORDONATEUR_PROJET' | 'ADMINISTRATEUR';
   phoneNumber?: string;
   specialization?: string;
   department?: string;
@@ -32,4 +32,15 @@ export interface JWTPayload {
 // Type amélioré qui étend correctement Request d'Express
 export interface AuthenticatedRequest extends Request {
   user: JWTPayload;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+// Vous pouvez également ajouter ce type pour la réponse
+export interface ChangePasswordResponse {
+  message: string;
 }

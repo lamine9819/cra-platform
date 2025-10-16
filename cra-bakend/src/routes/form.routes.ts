@@ -1,143 +1,146 @@
-// src/routes/form.routes.ts - Version complète avec commentaires
+// src/routes/form.routes.ts - Routes complètes pour les formulaires
 import { Router } from 'express';
-import { FormController } from '../controllers/form.controller';
-import { authenticate } from '../middlewares/auth';
+import formController from '../controllers/form.controller';
+import { authenticate, optionalAuth } from '../middlewares/auth';
 import { authorize } from '../middlewares/authorization';
+import { uploadPhoto } from '../middlewares/upload';
+import { validateShareToken } from '../middlewares/shareValidation';
 
 const router = Router();
-const formController = new FormController();
 
 // =============================================
-// ROUTES PUBLIQUES (SANS AUTHENTIFICATION)
+// ROUTES PUBLIQUES (ACCÈS VIA TOKEN DE PARTAGE)
 // =============================================
 
-// Formulaires publics accessibles sans authentification
-router.get('/public', formController.getPublicForms);
+// Accéder à un formulaire via lien public
+router.get('/public/:shareToken', 
+  validateShareToken,
+  formController.getFormByPublicLink
+);
+
+// Soumettre une réponse via lien public (sans authentification)
+router.post('/public/:shareToken/submit', 
+  validateShareToken,
+  formController.submitPublicFormResponse
+);
 
 // =============================================
 // ROUTES PROTÉGÉES (AUTHENTIFICATION REQUISE)
 // =============================================
 
-// Toutes les routes suivantes nécessitent une authentification
 router.use(authenticate);
 
 // =============================================
-// ROUTES SPÉCIALISÉES (DOIVENT ÊTRE AVANT /:id)
+// GESTION DES FORMULAIRES SELON VOTRE LOGIQUE
 // =============================================
 
-// Mes formulaires
-router.get('/my-forms', formController.getMyForms);
-
-// Templates de formulaires - MODIFIÉ: Chercheurs peuvent créer des templates
-router.get('/templates', formController.getTemplates);
-router.post('/templates', 
-  authorize(['CHERCHEUR', 'TECHNICIEN_SUPERIEUR', 'ADMINISTRATEUR']),
-  formController.createTemplate
+// Créer un formulaire (tous les utilisateurs authentifiés)
+router.post('/',
+  authorize(['CHERCHEUR',  'ADMINISTRATEUR']),
+  formController.createForm
 );
 
-// Statistiques des formulaires
-router.get('/stats', formController.getFormStats);
-
-// Statistiques globales (admin seulement)
-router.get('/global-stats', 
-  authorize(['ADMINISTRATEUR']),
-  formController.getGlobalStats
-);
+// Lister MES formulaires et ceux auxquels j'ai accès
+router.get('/', formController.listForms);
 
 // Prévisualiser un formulaire
 router.post('/preview', formController.previewForm);
 
-// Valider un schéma de formulaire
-router.post('/validate-schema', formController.validateFormSchema);
+// Dashboard du collecteur
+router.get('/dashboard/collector', formController.getCollectorDashboard);
 
 // =============================================
-// ROUTES PAR FORMULAIRE SPÉCIFIQUE
+// PARTAGE DE FORMULAIRES
 // =============================================
 
-// Export des réponses (Excel/CSV)
-router.get('/:id/export', formController.exportResponses);
+// Partager un formulaire avec un utilisateur interne
+router.post('/:id/share', formController.shareFormWithUser);
 
-// Dupliquer un formulaire - MODIFIÉ: Tous les utilisateurs authentifiés
-router.post('/:id/duplicate', 
-  authorize(['CHERCHEUR', 'ASSISTANT_CHERCHEUR', 'TECHNICIEN_SUPERIEUR', 'ADMINISTRATEUR']),
-  formController.duplicateForm
+// Créer un lien de partage public
+router.post('/:id/public-link', formController.createPublicShareLink);
+
+// Obtenir les partages d'un formulaire
+router.get('/:id/shares', formController.getFormShares);
+
+// Supprimer un partage
+router.delete('/shares/:shareId', formController.removeFormShare);
+
+// =============================================
+// COLLECTE DE DONNÉES MULTIPLE
+// =============================================
+
+// Soumettre une réponse (collecte multiple autorisée)
+router.post('/:id/responses',
+  authorize(['CHERCHEUR', 'ADMINISTRATEUR']),
+  formController.submitFormResponse
 );
 
-// Cloner avec réponses (admin seulement)
-router.post('/:id/clone', 
-  authorize(['ADMINISTRATEUR']),
-  formController.cloneFormWithResponses
+// Obtenir les réponses (créateur + participants au projet)
+router.get('/:id/responses', formController.getFormResponses);
+
+// =============================================
+// GESTION DES PHOTOS
+// =============================================
+
+// Upload d'une photo pour un champ
+router.post('/upload-photo',
+  uploadPhoto.single('photo'),
+  formController.uploadFieldPhoto
 );
 
-// Activer/désactiver un formulaire
-router.patch('/:id/toggle-status', formController.toggleFormStatus);
-
-// Audit d'un formulaire
-router.get('/:id/audit', formController.getFormAudit);
-
-// =============================================
-// GESTION DES COMMENTAIRES - NOUVEAU/COMPLET
-// =============================================
-
-// Ajouter un commentaire - MODIFIÉ: Tous les utilisateurs authentifiés
-router.post('/:id/comments', 
-  authorize(['CHERCHEUR', 'ASSISTANT_CHERCHEUR', 'TECHNICIEN_SUPERIEUR', 'ADMINISTRATEUR']),
-  formController.addComment
+// Upload multiple de photos
+router.post('/upload-photos',
+  uploadPhoto.array('photos', 10),
+  formController.uploadMultiplePhotos
 );
 
-// Obtenir les commentaires d'un formulaire
-router.get('/:id/comments', formController.getFormComments);
-
-// Rechercher dans les commentaires
-router.get('/:id/comments/search', formController.searchFormComments);
-
-// Statistiques des commentaires
-router.get('/:id/comments/stats', formController.getFormCommentStats);
-
-// NOUVELLES ROUTES POUR GESTION INDIVIDUELLE DES COMMENTAIRES
-
-// Obtenir un commentaire spécifique
-router.get('/comments/:commentId', formController.getCommentById);
-
-// Modifier un commentaire
-router.patch('/comments/:commentId', formController.updateComment);
-
-// Supprimer un commentaire
-router.delete('/comments/:commentId', formController.deleteComment);
+// Obtenir les photos d'une réponse
+router.get('/responses/:responseId/photos', formController.getResponsePhotos);
 
 // =============================================
-// ROUTES PRINCIPALES DES FORMULAIRES
+// SYNCHRONISATION OFFLINE
 // =============================================
 
-// Créer un formulaire - MODIFIÉ: Tous les utilisateurs authentifiés
-router.post('/', 
-  authorize(['CHERCHEUR', 'ASSISTANT_CHERCHEUR', 'TECHNICIEN_SUPERIEUR', 'ADMINISTRATEUR']),
-  formController.createForm
-);
+// Stocker des données pour synchronisation offline
+router.post('/offline/store', formController.storeOfflineData);
 
-// Lister les formulaires accessibles
-router.get('/', formController.listForms);
+// Synchroniser les données offline
+router.post('/offline/sync', formController.syncOfflineData);
+
+// Obtenir le statut de synchronisation
+router.get('/offline/status/:deviceId', formController.getOfflineSyncStatus);
+
+// =============================================
+// GESTION INDIVIDUELLE DES FORMULAIRES
+// =============================================
 
 // Obtenir un formulaire spécifique
 router.get('/:id', formController.getFormById);
 
-// Mettre à jour un formulaire
+// Mettre à jour un formulaire (créateur seulement)
 router.patch('/:id', formController.updateForm);
 
-// Supprimer un formulaire
+// Supprimer un formulaire (créateur seulement)
 router.delete('/:id', formController.deleteForm);
 
 // =============================================
-// GESTION DES RÉPONSES
+// EXPORT DES DONNÉES
 // =============================================
 
-// Soumettre une réponse - MODIFIÉ: Tous les utilisateurs authentifiés
-router.post('/:id/responses', 
-  authorize(['CHERCHEUR', 'ASSISTANT_CHERCHEUR', 'TECHNICIEN_SUPERIEUR', 'ADMINISTRATEUR']),
-  formController.submitFormResponse
+// Exporter les réponses avec options avancées
+router.get('/:id/export', formController.exportResponses);
+
+// =============================================
+// GESTION DES COMMENTAIRES
+// =============================================
+
+// Ajouter un commentaire
+router.post('/:id/comments',
+  authorize(['CHERCHEUR',  'ADMINISTRATEUR']),
+  formController.addComment
 );
 
-// Obtenir les réponses d'un formulaire
-router.get('/:id/responses', formController.getFormResponses);
+// Obtenir les commentaires
+router.get('/:id/comments', formController.getFormComments);
 
 export default router;

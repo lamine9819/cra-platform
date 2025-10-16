@@ -1,4 +1,4 @@
-// src/controllers/document.controller.ts - Version améliorée
+// src/controllers/document.controller.ts - Version mise à jour
 import { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import { DocumentService } from '../services/document.service';
@@ -15,7 +15,7 @@ const documentService = new DocumentService();
 
 export class DocumentController {
 
-  // Upload de fichier(s)
+  // Upload de fichier unique
   uploadFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
@@ -24,7 +24,7 @@ export class DocumentController {
         throw new ValidationError('Aucun fichier fourni');
       }
 
-      // Validation avec gestion des erreurs détaillées
+      // Validation
       let documentData;
       try {
         documentData = uploadFileSchema.parse(req.body);
@@ -39,7 +39,6 @@ export class DocumentController {
       const userId = authenticatedReq.user.userId;
       const userRole = authenticatedReq.user.role;
 
-      // Créer le document
       const document = await documentService.createDocument(
         req.file,
         documentData,
@@ -65,7 +64,7 @@ export class DocumentController {
     }
   };
 
-  // Upload multiple avec gestion améliorée
+  // Upload multiple
   uploadMultipleFiles = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
@@ -78,11 +77,9 @@ export class DocumentController {
       const userId = authenticatedReq.user.userId;
       const userRole = authenticatedReq.user.role;
 
-      // Pour l'upload multiple, nous devons traiter les données différemment
       const uploadedDocuments = await Promise.all(
         files.map(async (file, index) => {
           try {
-            // Construire les données pour chaque fichier
             const fileData = {
               title: req.body.titles?.[index] || req.body[`title[${index}]`] || file.originalname,
               description: req.body.descriptions?.[index] || req.body[`description[${index}]`] || '',
@@ -93,14 +90,16 @@ export class DocumentController {
               activityId: req.body.activityId,
               taskId: req.body.taskId,
               seminarId: req.body.seminarId,
+              trainingId: req.body.trainingId,
+              internshipId: req.body.internshipId,
+              supervisionId: req.body.supervisionId,
+              knowledgeTransferId: req.body.knowledgeTransferId,
+              eventId: req.body.eventId,
             };
 
-            // Valider les données pour ce fichier
             const documentData = uploadFileSchema.parse(fileData);
-
             return await documentService.createDocument(file, documentData, userId, userRole);
           } catch (error) {
-            // Nettoyer le fichier en cas d'erreur
             await deleteFile(file.path).catch(console.error);
             throw error;
           }
@@ -113,7 +112,6 @@ export class DocumentController {
         data: uploadedDocuments,
       });
     } catch (error) {
-      // Nettoyer tous les fichiers en cas d'erreur
       if (req.files) {
         const files = req.files as Express.Multer.File[];
         await Promise.all(
@@ -173,11 +171,9 @@ export class DocumentController {
 
       const fileInfo = await documentService.getDocumentFilePath(id, userId, userRole);
 
-      // Définir les headers pour le téléchargement
       res.setHeader('Content-Type', fileInfo.mimeType);
       res.setHeader('Content-Disposition', `attachment; filename="${fileInfo.filename}"`);
 
-      // Envoyer le fichier
       res.sendFile(path.resolve(fileInfo.filepath));
     } catch (error) {
       next(error);
@@ -225,80 +221,10 @@ export class DocumentController {
   };
 
   // =============================================
-  // NOUVELLES FONCTIONNALITÉS - LIAISON
+  // ROUTES PAR ENTITÉ - RÉCUPÉRATION DES DOCUMENTS
   // =============================================
 
-  // Lier un document à un projet
-  linkToProject = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const { id } = req.params;
-      const { projectId } = req.body;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-
-      if (!projectId) {
-        throw new ValidationError('ID du projet requis');
-      }
-
-      const document = await documentService.linkToProject(id, projectId, userId, userRole);
-
-      res.status(200).json({
-        success: true,
-        message: 'Document lié au projet avec succès',
-        data: document,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Lier un document à une activité
-  linkToActivity = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const { id } = req.params;
-      const { activityId } = req.body;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-
-      if (!activityId) {
-        throw new ValidationError('ID de l\'activité requis');
-      }
-
-      const document = await documentService.linkToActivity(id, activityId, userId, userRole);
-
-      res.status(200).json({
-        success: true,
-        message: 'Document lié à l\'activité avec succès',
-        data: document,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Délier un document
-  unlinkDocument = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const { id } = req.params;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-
-      const document = await documentService.unlinkDocument(id, userId, userRole);
-
-      res.status(200).json({
-        success: true,
-        message: 'Document délié avec succès',
-        data: document,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Obtenir les documents d'un projet
+  // Documents d'un projet
   getProjectDocuments = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
@@ -307,7 +233,6 @@ export class DocumentController {
       const userId = authenticatedReq.user.userId;
       const userRole = authenticatedReq.user.role;
 
-      // Forcer le filtre par projet
       queryParams.projectId = projectId;
 
       const result = await documentService.listDocuments(userId, userRole, queryParams);
@@ -322,7 +247,7 @@ export class DocumentController {
     }
   };
 
-  // Obtenir les documents d'une activité
+  // Documents d'une activité
   getActivityDocuments = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
@@ -331,7 +256,6 @@ export class DocumentController {
       const userId = authenticatedReq.user.userId;
       const userRole = authenticatedReq.user.role;
 
-      // Forcer le filtre par activité
       queryParams.activityId = activityId;
 
       const result = await documentService.listDocuments(userId, userRole, queryParams);
@@ -346,14 +270,174 @@ export class DocumentController {
     }
   };
 
-  // Obtenir les statistiques des documents
+  // Documents d'une tâche
+  getTaskDocuments = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { taskId } = req.params;
+      const queryParams = documentListQuerySchema.parse(req.query);
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      queryParams.taskId = taskId;
+
+      const result = await documentService.listDocuments(userId, userRole, queryParams);
+
+      res.status(200).json({
+        success: true,
+        data: result.documents,
+        pagination: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Documents d'un séminaire
+  getSeminarDocuments = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { seminarId } = req.params;
+      const queryParams = documentListQuerySchema.parse(req.query);
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      queryParams.seminarId = seminarId;
+
+      const result = await documentService.listDocuments(userId, userRole, queryParams);
+
+      res.status(200).json({
+        success: true,
+        data: result.documents,
+        pagination: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Documents d'une formation
+  getTrainingDocuments = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { trainingId } = req.params;
+      const queryParams = documentListQuerySchema.parse(req.query);
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      queryParams.trainingId = trainingId;
+
+      const result = await documentService.listDocuments(userId, userRole, queryParams);
+
+      res.status(200).json({
+        success: true,
+        data: result.documents,
+        pagination: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Documents d'un stage
+  getInternshipDocuments = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { internshipId } = req.params;
+      const queryParams = documentListQuerySchema.parse(req.query);
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      queryParams.internshipId = internshipId;
+
+      const result = await documentService.listDocuments(userId, userRole, queryParams);
+
+      res.status(200).json({
+        success: true,
+        data: result.documents,
+        pagination: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Documents d'un encadrement
+  getSupervisionDocuments = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { supervisionId } = req.params;
+      const queryParams = documentListQuerySchema.parse(req.query);
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      queryParams.supervisionId = supervisionId;
+
+      const result = await documentService.listDocuments(userId, userRole, queryParams);
+
+      res.status(200).json({
+        success: true,
+        data: result.documents,
+        pagination: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Documents d'un transfert d'acquis
+  getKnowledgeTransferDocuments = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { knowledgeTransferId } = req.params;
+      const queryParams = documentListQuerySchema.parse(req.query);
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      queryParams.knowledgeTransferId = knowledgeTransferId;
+
+      const result = await documentService.listDocuments(userId, userRole, queryParams);
+
+      res.status(200).json({
+        success: true,
+        data: result.documents,
+        pagination: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Documents d'un événement
+  getEventDocuments = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { eventId } = req.params;
+      const queryParams = documentListQuerySchema.parse(req.query);
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      queryParams.eventId = eventId;
+
+      const result = await documentService.listDocuments(userId, userRole, queryParams);
+
+      res.status(200).json({
+        success: true,
+        data: result.documents,
+        pagination: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Statistiques des documents
   getDocumentStats = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
       const userId = authenticatedReq.user.userId;
       const userRole = authenticatedReq.user.role;
 
-      // Obtenir tous les documents accessibles pour calculer les stats
       const result = await documentService.listDocuments(userId, userRole, { limit: 1000 });
       const documents = result.documents;
 
@@ -372,7 +456,17 @@ export class DocumentController {
           projects: documents.filter(d => d.project).length,
           activities: documents.filter(d => d.activity).length,
           tasks: documents.filter(d => d.task).length,
-          standalone: documents.filter(d => !d.project && !d.activity && !d.task && !d.seminar).length,
+          seminars: documents.filter(d => d.seminar).length,
+          trainings: documents.filter(d => d.training).length,
+          internships: documents.filter(d => d.internship).length,
+          supervisions: documents.filter(d => d.supervision).length,
+          knowledgeTransfers: documents.filter(d => d.knowledgeTransfer).length,
+          events: documents.filter(d => d.event).length,
+          standalone: documents.filter(d => 
+            !d.project && !d.activity && !d.task && !d.seminar && 
+            !d.training && !d.internship && !d.supervision && 
+            !d.knowledgeTransfer && !d.event
+          ).length,
         },
         totalSize: documents.reduce((acc, doc) => acc + doc.size, 0),
         recent: documents

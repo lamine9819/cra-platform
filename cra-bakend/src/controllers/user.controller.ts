@@ -1,19 +1,27 @@
 // src/controllers/user.controller.ts
 import { Request, Response, NextFunction } from 'express';
 import { UserService } from '../services/user.service';
+import { IndividualProfileService } from '../services/individualProfile.service';
 import { AuthenticatedRequest } from '../types/auth.types';
 import {
   createUserSchema,
   updateUserSchema,
+  updateIndividualProfileSchema,
   assignSupervisorSchema,
-  userListQuerySchema
+  userListQuerySchema,
+  createTimeAllocationSchema,
+  validateIndividualProfileSchema,
+  downloadIndividualProfileSchema
 } from '../utils/userValidation';
 
 const userService = new UserService();
+const individualProfileService = new IndividualProfileService();
 
 export class UserController {
 
-  // Créer un utilisateur
+  /**
+   * Créer un utilisateur avec profil individuel si nécessaire
+   */
   createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
@@ -31,15 +39,18 @@ export class UserController {
       next(error);
     }
   };
-  // Mettre à jour un utilisateur
+
+  /**
+   * Mettre à jour un utilisateur
+   */
   updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
       const { userId } = req.params;
       const validatedData = updateUserSchema.parse(req.body);
-      const updaterRole = authenticatedReq.user.role;
+      const requesterId = authenticatedReq.user.userId;
 
-      const user = await userService.updateUser(userId, validatedData, updaterRole);
+      const user = await userService.updateUser(userId, validatedData, requesterId);
 
       res.status(200).json({
         success: true,
@@ -50,8 +61,169 @@ export class UserController {
       next(error);
     }
   };
-  
-  // Supprimer un utilisateur
+
+  /**
+   * Mettre à jour le profil individuel d'un chercheur
+   */
+  updateIndividualProfile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { userId } = req.params;
+      const validatedData = updateIndividualProfileSchema.parse(req.body);
+      const requesterId = authenticatedReq.user.userId;
+
+      const user = await userService.updateIndividualProfile(userId, validatedData, requesterId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Profil individuel mis à jour avec succès',
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Créer ou mettre à jour l'allocation de temps pour une année
+   */
+  updateTimeAllocation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { userId } = req.params;
+      const validatedData = createTimeAllocationSchema.parse(req.body);
+      const requesterId = authenticatedReq.user.userId;
+
+      const timeAllocation = await userService.updateTimeAllocation(
+        userId, 
+        validatedData.year, 
+        {
+          tempsRecherche: validatedData.tempsRecherche,
+          tempsEnseignement: validatedData.tempsEnseignement,
+          tempsFormation: validatedData.tempsFormation,
+          tempsConsultation: validatedData.tempsConsultation,
+          tempsGestionScientifique: validatedData.tempsGestionScientifique,
+          tempsAdministration: validatedData.tempsAdministration,
+        },
+        requesterId
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Allocation de temps mise à jour avec succès',
+        data: timeAllocation,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Valider un profil individuel ou une année spécifique
+   */
+  validateIndividualProfile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { userId } = req.params;
+      const { year } = validateIndividualProfileSchema.parse(req.body);
+      const validatorId = authenticatedReq.user.userId;
+
+      await userService.validateIndividualProfile(userId, year || null, validatorId);
+
+      res.status(200).json({
+        success: true,
+        message: year 
+          ? `Allocation de temps pour l'année ${year} validée avec succès`
+          : 'Profil individuel validé avec succès',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Télécharger la fiche individuelle d'un chercheur
+   */
+  downloadIndividualProfile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { userId } = req.params;
+      const { format } = downloadIndividualProfileSchema.parse(req.query);
+      const requesterId = authenticatedReq.user.userId;
+      const requesterRole = authenticatedReq.user.role;
+
+      // Vérifier les permissions
+      if (
+        requesterRole !== 'ADMINISTRATEUR' && 
+        requesterRole !== 'COORDONATEUR_PROJET' && 
+        userId !== requesterId
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: 'Vous n\'avez pas la permission de télécharger cette fiche individuelle'
+        });
+      }
+
+      // Générer le document
+      const result = await individualProfileService.generateIndividualProfileDocument(
+        userId,
+        format
+      );
+
+      // Définir les en-têtes de réponse
+      const contentType = format === 'pdf' 
+        ? 'application/pdf' 
+        : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      
+      const extension = format === 'pdf' ? 'pdf' : 'docx';
+      const filename = `Fiche_Individuelle_${result.matricule}.${extension}`;
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', result.buffer.length);
+
+      res.send(result.buffer);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Télécharger sa propre fiche individuelle
+   */
+  downloadMyIndividualProfile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const userId = authenticatedReq.user.userId;
+      const { format } = downloadIndividualProfileSchema.parse(req.query);
+
+      // Générer le document
+      const result = await individualProfileService.generateIndividualProfileDocument(
+        userId,
+        format
+      );
+
+      // Définir les en-têtes de réponse
+      const contentType = format === 'pdf' 
+        ? 'application/pdf' 
+        : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      
+      const extension = format === 'pdf' ? 'pdf' : 'docx';
+      const filename = `Fiche_Individuelle_${result.matricule}.${extension}`;
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', result.buffer.length);
+
+      res.send(result.buffer);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Supprimer un utilisateur
+   */
   deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
@@ -60,7 +232,7 @@ export class UserController {
 
       await userService.deleteUser(userId, requesterId);
 
-      res.status(204).json({
+      res.status(200).json({
         success: true,
         message: 'Utilisateur supprimé avec succès',
       });
@@ -69,7 +241,9 @@ export class UserController {
     }
   };
 
-  // Associer un superviseur
+  /**
+   * Associer un superviseur
+   */
   assignSupervisor = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
@@ -89,7 +263,9 @@ export class UserController {
     }
   };
 
-  // Activer un utilisateur
+  /**
+   * Activer un utilisateur
+   */
   activateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
@@ -108,7 +284,9 @@ export class UserController {
     }
   };
 
-  // Désactiver un utilisateur
+  /**
+   * Désactiver un utilisateur
+   */
   deactivateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
@@ -127,7 +305,9 @@ export class UserController {
     }
   };
 
-  // Lister tous les utilisateurs
+  /**
+   * Lister tous les utilisateurs avec filtres CRA
+   */
   listUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const queryParams = userListQuerySchema.parse(req.query);
@@ -143,7 +323,9 @@ export class UserController {
     }
   };
 
-  // Lister les utilisateurs supervisés
+  /**
+   * Lister les utilisateurs supervisés
+   */
   getSupervisedUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
@@ -158,9 +340,10 @@ export class UserController {
       next(error);
     }
   };
-  
 
-  // Obtenir un utilisateur par ID
+  /**
+   * Obtenir un utilisateur par ID
+   */
   getUserById = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { userId } = req.params;
@@ -168,6 +351,123 @@ export class UserController {
 
       res.status(200).json({
         success: true,
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Obtenir les statistiques d'un utilisateur
+   */
+  getUserStats = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { userId } = req.params;
+      const stats = await userService.getUserStats(userId);
+
+      res.status(200).json({
+        success: true,
+        data: stats,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Obtenir les chercheurs par thème de recherche
+   */
+  getResearchersByTheme = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { themeId } = req.params;
+      const researchers = await userService.getResearchersByTheme(themeId);
+
+      res.status(200).json({
+        success: true,
+        data: researchers,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Obtenir les coordonateurs de projet actifs
+   */
+  getProjectCoordinators = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const coordinators = await userService.getProjectCoordinators();
+
+      res.status(200).json({
+        success: true,
+        data: coordinators,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Obtenir le profil complet de l'utilisateur connecté
+   */
+  getMyProfile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const userId = authenticatedReq.user.userId;
+      
+      const [user, stats] = await Promise.all([
+        userService.getUserById(userId),
+        userService.getUserStats(userId)
+      ]);
+
+      res.status(200).json({
+        success: true,
+        data: {
+          ...user,
+          stats
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Mettre à jour son propre profil
+   */
+  updateMyProfile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const userId = authenticatedReq.user.userId;
+      const validatedData = updateUserSchema.parse(req.body);
+
+      const user = await userService.updateUser(userId, validatedData, userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Profil mis à jour avec succès',
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Mettre à jour son propre profil individuel
+   */
+  updateMyIndividualProfile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const userId = authenticatedReq.user.userId;
+      const validatedData = updateIndividualProfileSchema.parse(req.body);
+
+      const user = await userService.updateIndividualProfile(userId, validatedData, userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Profil individuel mis à jour avec succès',
         data: user,
       });
     } catch (error) {

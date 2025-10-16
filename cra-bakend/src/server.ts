@@ -76,8 +76,7 @@ server.listen(PORT, HOST, () => {
   console.log('  ✅ Gestion des tâches');
   console.log('  ✅ Gestion des documents');
   console.log('  ✅ Système de formulaires');
-  console.log('  ✅ Gestion des séminaires');
-  console.log('  ✅ Système de commentaires');
+  console.log('  ✅ Gestion des événements');
   console.log('  ✅ Système de reports');
   console.log('  ✅ Notifications temps réel');
   console.log('  ✅ Dashboard analytics');
@@ -108,7 +107,12 @@ server.listen(PORT, HOST, () => {
   console.log('  🔑 POST   /api/auth/register');
   console.log('  👥 GET    /api/users');
   console.log('  📂 GET    /api/projects');
-  console.log('  📋 GET    /api/tasks');
+  console.log('  📋 GET    /api/activities');
+  console.log('     GET       /api/publications');
+  console.log('  📄 GET    /api/conventions');
+  console.log('  📚 GET    /api/knowledge-transfers');
+  console.log('  💰 GET    /api/fundings');
+  console.log('  📅 GET    /api/plannings');
   console.log('  📄 GET    /api/documents');
   console.log('  📝 GET    /api/forms');
   console.log('  📝 GET    /api/reports');

@@ -1,170 +1,115 @@
-// src/services/activity.service.ts - Version corrigée avec modification du projet
+// src/services/activity.service.ts - Version CRA corrigée et complète
 import { PrismaClient } from '@prisma/client';
 import { ValidationError, AuthError } from '../utils/errors';
-import { CreateActivityRequest, UpdateActivityRequest, ActivityListQuery, ActivityResponse } from '../types/activity.types';
+import { 
+  CreateActivityRequest, 
+  UpdateActivityRequest, 
+  ActivityListQuery, 
+  ActivityResponse,
+  ActivityRecurrenceRequest,
+  CRAActivityStats,
+  ActivityType,
+  AddParticipantInput,
+  UpdateParticipantInput,
+  ActivityLifecycleStatus
+} from '../types/activity.types';
+import { 
+  AddActivityPartnerInput,UpdateFundingInput,
+  AddFundingInput,UpdateActivityPartnerInput, 
+  CreateTaskInput, UpdateTaskInput,
+  CreateCommentInput, UpdateCommentInput,LinkKnowledgeTransferInput,ReassignTaskInput } from '@/utils/activityValidation';
 
 const prisma = new PrismaClient();
 
-// Type pour les activités avec relations incluses (gardé identique)
-type ActivityWithRelations = {
-  id: string;
-  title: string;
-  description?: string | null;
-  objectives: string[];
-  methodology?: string | null;
-  location?: string | null;
-  startDate?: Date | null;
-  endDate?: Date | null;
-  results?: string | null;
-  conclusions?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  projectId: string;
-  project: {
-    id: string;
-    title: string;
-    status: string;
-    creatorId: string;
-    startDate?: Date | null;
-    endDate?: Date | null;
-    creator: {
-      id: string;
-      firstName: string;
-      lastName: string;
-    };
-    participants?: {
-      userId: string;
-      isActive: boolean;
-      role: string;
-    }[];
-  };
-  tasks?: {
-    id: string;
-    title: string;
-    status: string;
-    priority: string;
-    dueDate?: Date | null;
-    assignee?: {
-      id: string;
-      firstName: string;
-      lastName: string;
-    } | null;
-  }[];
-  documents?: {
-    id: string;
-    title: string;
-    filename: string;
-    type: string;
-    size: bigint;
-    createdAt: Date;
-    activityId?: string | null;
-    ownerId: string;
-    owner: {
-      id: string;
-      firstName: string;
-      lastName: string;
-    };
-    shares?: {
-      sharedWithId: string;
-    }[];
-    isPublic: boolean;
-  }[];
-  forms?: {
-    id: string;
-    title: string;
-    description?: string | null;
-    isActive: boolean;
-    createdAt: Date;
-    activityId?: string | null;
-    creator: {
-      id: string;
-      firstName: string;
-      lastName: string;
-    };
-    _count: {
-      responses: number;
-    };
-  }[];
-  _count?: {
-    tasks: number;
-    documents: number;
-    forms: number;
-    comments: number;
-  };
-};
-
 export class ActivityService {
 
-  // Créer une activité (gardé identique)
+  // ✅ Créer une activité CRA
   async createActivity(activityData: CreateActivityRequest, userId: string, userRole: string): Promise<ActivityResponse> {
-    // Vérifier que le projet existe et que l'utilisateur a accès
-    const project = await prisma.project.findUnique({
-      where: { id: activityData.projectId },
-      include: {
-        participants: {
-          where: { userId: userId }
-        }
+    // Validation spécifique CRA
+    await this.validateCRAActivity(activityData, userId, userRole);
+
+    // Génération automatique du code si non fourni
+    if (!activityData.code) {
+      activityData.code = await this.generateActivityCode(activityData.themeId);
+    }
+
+    // Si un projet est spécifié, vérifier la cohérence avec le thème
+    if (activityData.projectId) {
+      await this.validateProjectThemeConsistency(activityData.projectId, activityData.themeId);
+      
+      // Vérifier l'accès au projet
+      const project = await prisma.project.findUnique({
+        where: { id: activityData.projectId },
+        include: { participants: { where: { userId: userId } } }
+      });
+
+      if (!project) {
+        throw new ValidationError('Projet non trouvé');
       }
-    });
 
-    if (!project) {
-      throw new ValidationError('Projet non trouvé');
-    }
-
-    // Vérifier les droits d'accès au projet
-    const hasAccess = this.checkProjectAccess(project, userId, userRole);
-    if (!hasAccess) {
-      throw new AuthError('Accès refusé à ce projet');
-    }
-
-    // Vérifier que le projet n'est pas archivé
-    if (project.status === 'ARCHIVE') {
-      throw new ValidationError('Impossible de créer une activité dans un projet archivé');
-    }
-
-    // Vérifier la cohérence des dates avec le projet
-    if (activityData.startDate && project.startDate) {
-      if (new Date(activityData.startDate) < project.startDate) {
-        throw new ValidationError('La date de début de l\'activité ne peut pas être antérieure au début du projet');
+      const hasAccess = this.checkProjectAccess(project, userId, userRole);
+      if (!hasAccess) {
+        throw new AuthError('Accès refusé à ce projet');
       }
-    }
 
-    if (activityData.endDate && project.endDate) {
-      if (new Date(activityData.endDate) > project.endDate) {
-        throw new ValidationError('La date de fin de l\'activité ne peut pas dépasser la fin du projet');
+      if (project.status === 'ARCHIVE') {
+        throw new ValidationError('Impossible de créer une activité dans un projet archivé');
       }
     }
 
-    // Créer l'activité
+    // Créer l'activité avec toutes les relations CRA
     const activity = await prisma.activity.create({
       data: {
+        code: activityData.code,
         title: activityData.title,
         description: activityData.description,
+        type: activityData.type,
         objectives: activityData.objectives,
         methodology: activityData.methodology,
         location: activityData.location,
         startDate: activityData.startDate ? new Date(activityData.startDate) : null,
         endDate: activityData.endDate ? new Date(activityData.endDate) : null,
+        lifecycleStatus: activityData.lifecycleStatus || ActivityLifecycleStatus.NOUVELLE,
+        interventionRegion: activityData.interventionRegion,
+        strategicPlan: activityData.strategicPlan,
+        strategicAxis: activityData.strategicAxis,
+        subAxis: activityData.subAxis,
+        themeId: activityData.themeId,
+        responsibleId: activityData.responsibleId,
+        stationId: activityData.stationId,
+        conventionId: activityData.conventionId,
         projectId: activityData.projectId,
       },
       include: {
+        theme: true,
+        responsible: { 
+          select: { 
+            id: true, 
+            firstName: true, 
+            lastName: true, 
+            email: true 
+          } 
+        },
+        station: true,
+        convention: true,
         project: {
           include: {
-            creator: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-              }
+            creator: { 
+              select: { 
+                id: true, 
+                firstName: true, 
+                lastName: true 
+              } 
             }
           }
         },
         _count: {
-          select: {
-            tasks: true,
-            documents: true,
-            forms: true,
-            comments: true,
+          select: { 
+            tasks: true, 
+            documents: true, 
+            forms: true, 
+            comments: true, 
+            participants: true 
           }
         }
       }
@@ -173,97 +118,144 @@ export class ActivityService {
     return this.formatActivityResponse(activity);
   }
 
-  // Lister les activités avec filtres (gardé identique)
+  // ✅ Lister les activités avec filtres CRA
   async listActivities(userId: string, userRole: string, query: ActivityListQuery) {
     const page = query.page || 1;
     const limit = query.limit || 10;
     const skip = (page - 1) * limit;
 
-    // Construire les filtres de base
+    // Construire les filtres
     const where: any = {};
 
-    if (query.projectId) {
-      where.projectId = query.projectId;
-    }
-
+    // Filtres de recherche
     if (query.search) {
       where.OR = [
         { title: { contains: query.search, mode: 'insensitive' } },
         { description: { contains: query.search, mode: 'insensitive' } },
         { methodology: { contains: query.search, mode: 'insensitive' } },
         { location: { contains: query.search, mode: 'insensitive' } },
+        { code: { contains: query.search, mode: 'insensitive' } }
       ];
     }
 
-    if (query.startDate) {
-      where.startDate = { gte: new Date(query.startDate) };
+    // Filtres CRA spécifiques
+    if (query.themeId) where.themeId = query.themeId;
+    if (query.stationId) where.stationId = query.stationId;
+    if (query.responsibleId) where.responsibleId = query.responsibleId;
+    if (query.type) where.type = query.type;
+    if (query.lifecycleStatus) where.lifecycleStatus = query.lifecycleStatus;
+    if (query.conventionId) where.conventionId = query.conventionId;
+    if (query.projectId) where.projectId = query.projectId;
+    
+    if (query.interventionRegion) {
+      where.interventionRegion = { 
+        contains: query.interventionRegion, 
+        mode: 'insensitive' 
+      };
     }
 
-    if (query.endDate) {
-      where.endDate = { lte: new Date(query.endDate) };
+    // Filtres spéciaux
+    if (query.withoutProject === true) {
+      where.projectId = null;
+    }
+    
+    if (query.isRecurrent !== undefined) {
+      where.isRecurrent = query.isRecurrent;
     }
 
     if (query.hasResults !== undefined) {
       if (query.hasResults) {
-        where.results = { not: null };
+        where.OR = [
+          { results: { not: null } },
+          { conclusions: { not: null } }
+        ];
       } else {
-        where.results = null;
+        where.AND = [
+          { results: null },
+          { conclusions: null }
+        ];
       }
+    }
+
+    // Filtres de dates
+    if (query.startDate) {
+      where.startDate = { gte: new Date(query.startDate) };
+    }
+    if (query.endDate) {
+      where.endDate = { lte: new Date(query.endDate) };
     }
 
     // Filtrer selon les droits d'accès
     if (userRole !== 'ADMINISTRATEUR') {
-      where.project = {
-        OR: [
-          { creatorId: userId },
-          {
-            participants: {
-              some: {
-                userId: userId,
-                isActive: true,
-              }
-            }
+      where.OR = [
+        { responsibleId: userId },
+        { participants: { some: { userId: userId, isActive: true } } },
+        { 
+          project: {
+            OR: [
+              { creatorId: userId },
+              { participants: { some: { userId: userId, isActive: true } } }
+            ]
           }
-        ]
-      };
+        }
+      ];
     }
 
-    // Exécuter la requête avec pagination
+    // Exécuter la requête
     const [activities, total] = await Promise.all([
       prisma.activity.findMany({
         where,
         skip,
         take: limit,
         include: {
+          theme: true,
+          responsible: { 
+            select: { 
+              id: true, 
+              firstName: true, 
+              lastName: true, 
+              email: true 
+            } 
+          },
+          station: true,
+          convention: true,
           project: {
             include: {
-              creator: {
-                select: {
-                  id: true,
-                  firstName: true,
-                  lastName: true,
-                }
+              creator: { 
+                select: { 
+                  id: true, 
+                  firstName: true, 
+                  lastName: true 
+                } 
               }
             }
           },
+          parentActivity: { 
+            select: { 
+              id: true, 
+              title: true, 
+              code: true 
+            } 
+          },
           _count: {
-            select: {
-              tasks: true,
-              documents: true,
-              forms: true,
-              comments: true,
+            select: { 
+              tasks: true, 
+              documents: true, 
+              forms: true, 
+              comments: true, 
+              participants: true 
             }
           }
         },
-        orderBy: {
-          updatedAt: 'desc'
-        }
+        orderBy: [
+          { updatedAt: 'desc' }
+        ]
       }),
       prisma.activity.count({ where })
     ]);
 
     return {
-      activities: activities.map((activity: ActivityWithRelations) => this.formatActivityResponse(activity)),
+      activities: activities.map(activity => this.formatActivityResponse(activity)),
       pagination: {
         page,
         limit,
@@ -275,78 +267,112 @@ export class ActivityService {
     };
   }
 
-  // Obtenir une activité par ID (gardé identique)
+  // ✅ Obtenir une activité par ID
   async getActivityById(activityId: string, userId: string, userRole: string): Promise<ActivityResponse> {
     const activity = await prisma.activity.findUnique({
       where: { id: activityId },
       include: {
+        theme: true,
+        responsible: { 
+          select: { 
+            id: true, 
+            firstName: true, 
+            lastName: true, 
+            email: true 
+          } 
+        },
+        station: true,
+        convention: true,
         project: {
           include: {
-            creator: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-              }
+            creator: { 
+              select: { 
+                id: true, 
+                firstName: true, 
+                lastName: true 
+              } 
             },
-            participants: {
-              where: { userId: userId }
+            participants: { 
+              where: { userId: userId } 
             }
           }
+        },
+        parentActivity: { 
+          select: { 
+            id: true, 
+            title: true, 
+            code: true 
+          } 
+        },
+        childActivities: { 
+          select: { 
+            id: true, 
+            title: true, 
+            code: true, 
+            createdAt: true 
+          },
+          orderBy: { createdAt: 'desc' }
+        },
+        participants: {
+          include: {
+            user: { 
+              select: { 
+                id: true, 
+                firstName: true, 
+                lastName: true 
+              } 
+            }
+          },
+          orderBy: { role: 'asc' }
         },
         tasks: {
           include: {
-            assignee: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-              }
+            assignee: { 
+              select: { 
+                id: true, 
+                firstName: true, 
+                lastName: true 
+              } 
             }
           },
-          orderBy: {
-            createdAt: 'desc'
-          }
+          orderBy: { createdAt: 'desc' }
         },
         documents: {
           include: {
-            owner: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-              }
+            owner: { 
+              select: { 
+                id: true, 
+                firstName: true, 
+                lastName: true 
+              } 
             }
           },
-          orderBy: {
-            createdAt: 'desc'
-          }
+          orderBy: { createdAt: 'desc' }
         },
         forms: {
           include: {
-            creator: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-              }
+            creator: { 
+              select: { 
+                id: true, 
+                firstName: true, 
+                lastName: true 
+              } 
             },
-            _count: {
-              select: {
-                responses: true,
-              }
+            _count: { 
+              select: { 
+                responses: true 
+              } 
             }
           },
-          orderBy: {
-            createdAt: 'desc'
-          }
+          orderBy: { createdAt: 'desc' }
         },
         _count: {
-          select: {
-            tasks: true,
-            documents: true,
-            forms: true,
-            comments: true,
+          select: { 
+            tasks: true, 
+            documents: true, 
+            forms: true, 
+            comments: true, 
+            participants: true 
           }
         }
       }
@@ -357,7 +383,7 @@ export class ActivityService {
     }
 
     // Vérifier les droits d'accès
-    const hasAccess = this.checkProjectAccess(activity.project, userId, userRole);
+    const hasAccess = this.checkActivityAccess(activity, userId, userRole);
     if (!hasAccess) {
       throw new AuthError('Accès refusé à cette activité');
     }
@@ -365,17 +391,15 @@ export class ActivityService {
     return this.formatActivityResponse(activity);
   }
 
-  // ✅ MÉTHODE CORRIGÉE - Mettre à jour une activité AVEC modification du projet
+  // ✅ Mettre à jour une activité CRA
   async updateActivity(activityId: string, updateData: UpdateActivityRequest, userId: string, userRole: string): Promise<ActivityResponse> {
     const activity = await prisma.activity.findUnique({
       where: { id: activityId },
       include: {
+        theme: true,
+        responsible: true,
         project: {
-          include: {
-            participants: {
-              where: { userId: userId }
-            }
-          }
+          include: { participants: { where: { userId: userId } } }
         }
       }
     });
@@ -385,171 +409,139 @@ export class ActivityService {
     }
 
     // Vérifier les droits d'accès et de modification
-    const hasAccess = this.checkProjectAccess(activity.project, userId, userRole);
+    const hasAccess = this.checkActivityAccess(activity, userId, userRole);
     if (!hasAccess) {
       throw new AuthError('Accès refusé à cette activité');
     }
 
-    // Vérifier que le projet n'est pas archivé
-    if (activity.project.status === 'ARCHIVE') {
-      throw new ValidationError('Impossible de modifier une activité dans un projet archivé');
+    const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+    if (!canModify) {
+      throw new AuthError('Permissions insuffisantes pour modifier cette activité');
     }
 
-    // ✅ NOUVELLE LOGIQUE - Gestion du changement de projet
-    let newProject = null;
-    if (updateData.projectId && updateData.projectId !== activity.projectId) {
-      // Vérifier que le nouveau projet existe
-      newProject = await prisma.project.findUnique({
-        where: { id: updateData.projectId },
-        include: {
-          participants: {
-            where: { userId: userId }
-          }
-        }
+    // Validation des changements CRA
+    if (updateData.themeId && updateData.themeId !== activity.themeId) {
+      const theme = await prisma.researchTheme.findUnique({
+        where: { id: updateData.themeId }
       });
-
-      if (!newProject) {
-        throw new ValidationError('Le nouveau projet spécifié n\'existe pas');
+      if (!theme) {
+        throw new ValidationError('Nouveau thème non trouvé');
       }
+    }
 
-      // Vérifier l'accès au nouveau projet
-      const hasAccessToNewProject = this.checkProjectAccess(newProject, userId, userRole);
-      if (!hasAccessToNewProject) {
-        throw new AuthError('Vous n\'avez pas accès au projet spécifié');
+    if (updateData.responsibleId && updateData.responsibleId !== activity.responsibleId) {
+      const responsible = await prisma.user.findUnique({
+        where: { id: updateData.responsibleId }
+      });
+      if (!responsible || !['CHERCHEUR', 'COORDONATEUR_PROJET'].includes(responsible.role)) {
+        throw new ValidationError('Le nouveau responsable doit être un chercheur ou coordinateur');
       }
+    }
 
-      // Vérifier que le nouveau projet n'est pas archivé
-      if (newProject.status === 'ARCHIVE') {
-        throw new ValidationError('Impossible de déplacer une activité vers un projet archivé');
+    // Gestion du changement de projet
+    if (updateData.projectId && updateData.projectId !== activity.projectId) {
+      if (updateData.projectId && updateData.themeId) {
+        await this.validateProjectThemeConsistency(updateData.projectId, updateData.themeId);
+      } else if (updateData.projectId) {
+        await this.validateProjectThemeConsistency(updateData.projectId, activity.themeId);
       }
-
-      // Vérifier la cohérence des dates avec le nouveau projet
-      if (updateData.startDate && newProject.startDate) {
-        if (new Date(updateData.startDate) < newProject.startDate) {
-          throw new ValidationError('La date de début de l\'activité ne peut pas être antérieure au début du nouveau projet');
-        }
-      }
-
-      if (updateData.endDate && newProject.endDate) {
-        if (new Date(updateData.endDate) > newProject.endDate) {
-          throw new ValidationError('La date de fin de l\'activité ne peut pas dépasser la fin du nouveau projet');
-        }
-      }
-
-      console.log(`✅ Déplacement de l'activité "${activity.title}" du projet "${activity.project.title}" vers "${newProject.title}"`);
     }
 
     // Préparer les données de mise à jour
-const dataToUpdate: any = {};
-if (updateData.title !== undefined) dataToUpdate.title = updateData.title;
-if (updateData.description !== undefined) dataToUpdate.description = updateData.description || null;
-if (updateData.objectives !== undefined) dataToUpdate.objectives = updateData.objectives;
-if (updateData.methodology !== undefined) dataToUpdate.methodology = updateData.methodology || null;
-if (updateData.location !== undefined) dataToUpdate.location = updateData.location || null;
-if (updateData.results !== undefined) dataToUpdate.results = updateData.results || null;
-if (updateData.conclusions !== undefined) dataToUpdate.conclusions = updateData.conclusions || null;
+    const dataToUpdate: any = {};
+    
+    if (updateData.title !== undefined) dataToUpdate.title = updateData.title;
+    if (updateData.description !== undefined) dataToUpdate.description = updateData.description || null;
+    if (updateData.objectives !== undefined) dataToUpdate.objectives = updateData.objectives;
+    if (updateData.methodology !== undefined) dataToUpdate.methodology = updateData.methodology || null;
+    if (updateData.location !== undefined) dataToUpdate.location = updateData.location || null;
+    if (updateData.results !== undefined) dataToUpdate.results = updateData.results || null;
+    if (updateData.conclusions !== undefined) dataToUpdate.conclusions = updateData.conclusions || null;
+    if (updateData.code !== undefined) dataToUpdate.code = updateData.code || null;
+    if (updateData.type !== undefined) dataToUpdate.type = updateData.type;
+    if (updateData.lifecycleStatus !== undefined) dataToUpdate.lifecycleStatus = updateData.lifecycleStatus;
+    if (updateData.interventionRegion !== undefined) dataToUpdate.interventionRegion = updateData.interventionRegion || null;
+    if (updateData.strategicPlan !== undefined) dataToUpdate.strategicPlan = updateData.strategicPlan || null;
+    if (updateData.strategicAxis !== undefined) dataToUpdate.strategicAxis = updateData.strategicAxis || null;
+    if (updateData.subAxis !== undefined) dataToUpdate.subAxis = updateData.subAxis || null;
+    if (updateData.themeId !== undefined) dataToUpdate.themeId = updateData.themeId;
+    if (updateData.responsibleId !== undefined) dataToUpdate.responsibleId = updateData.responsibleId;
+    if (updateData.stationId !== undefined) dataToUpdate.stationId = updateData.stationId || null;
+    if (updateData.conventionId !== undefined) dataToUpdate.conventionId = updateData.conventionId || null;
+    if (updateData.projectId !== undefined) dataToUpdate.projectId = updateData.projectId || null;
 
-// ✅ AJOUT - Inclure le projectId dans les données de mise à jour
-if (updateData.projectId !== undefined) dataToUpdate.projectId = updateData.projectId;
+    // Traitement spécial des dates
+    if (updateData.startDate !== undefined) {
+      if (updateData.startDate === '' || updateData.startDate === null) {
+        dataToUpdate.startDate = null;
+      } else {
+        dataToUpdate.startDate = new Date(updateData.startDate);
+      }
+    }
 
-// ✅ CORRECTION - Traitement spécial des dates pour gérer les chaînes vides
-if (updateData.startDate !== undefined) {
-  if (updateData.startDate === '' || updateData.startDate === null) {
-    dataToUpdate.startDate = null; // Effacer la date
-  } else {
-    dataToUpdate.startDate = new Date(updateData.startDate);
-  }
-}
+    if (updateData.endDate !== undefined) {
+      if (updateData.endDate === '' || updateData.endDate === null) {
+        dataToUpdate.endDate = null;
+      } else {
+        dataToUpdate.endDate = new Date(updateData.endDate);
+      }
+    }
 
-if (updateData.endDate !== undefined) {
-  if (updateData.endDate === '' || updateData.endDate === null) {
-    dataToUpdate.endDate = null; // Effacer la date
-  } else {
-    dataToUpdate.endDate = new Date(updateData.endDate);
-  }
-}
-
-// Vérifier la cohérence des nouvelles dates
-if (dataToUpdate.startDate && dataToUpdate.endDate) {
-  if (dataToUpdate.startDate > dataToUpdate.endDate) {
-    throw new ValidationError('La date de fin doit être postérieure à la date de début');
-  }
-}
-
-// Vérifier la cohérence avec les dates du projet (nouveau ou existant)
-const projectToCheck = newProject || activity.project;
-if (dataToUpdate.startDate && projectToCheck.startDate) {
-  if (dataToUpdate.startDate < projectToCheck.startDate) {
-    throw new ValidationError('La date de début de l\'activité ne peut pas être antérieure au début du projet');
-  }
-}
-if (dataToUpdate.endDate && projectToCheck.endDate) {
-  if (dataToUpdate.endDate > projectToCheck.endDate) {
-    throw new ValidationError('La date de fin de l\'activité ne peut pas dépasser la fin du projet');
-  }
-}
-
-console.log('📝 Données à mettre à jour:', dataToUpdate);
+    // Validation des dates
+    if (dataToUpdate.startDate && dataToUpdate.endDate) {
+      if (dataToUpdate.startDate > dataToUpdate.endDate) {
+        throw new ValidationError('La date de fin doit être postérieure à la date de début');
+      }
+    }
 
     const updatedActivity = await prisma.activity.update({
       where: { id: activityId },
       data: dataToUpdate,
       include: {
+        theme: true,
+        responsible: { 
+          select: { 
+            id: true, 
+            firstName: true, 
+            lastName: true, 
+            email: true 
+          } 
+        },
+        station: true,
+        convention: true,
         project: {
           include: {
-            creator: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-              }
+            creator: { 
+              select: { 
+                id: true, 
+                firstName: true, 
+                lastName: true 
+              } 
             }
           }
         },
-        tasks: {
-          include: {
-            assignee: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-              }
-            }
-          }
+        parentActivity: { 
+          select: { 
+            id: true, 
+            title: true, 
+            code: true 
+          } 
         },
-        documents: {
-          include: {
-            owner: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-              }
-            }
-          }
-        },
-        forms: {
-          include: {
-            creator: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-              }
-            },
-            _count: {
-              select: {
-                responses: true,
-              }
-            }
-          }
+        childActivities: { 
+          select: { 
+            id: true, 
+            title: true, 
+            code: true, 
+            createdAt: true 
+          } 
         },
         _count: {
-          select: {
-            tasks: true,
-            documents: true,
-            forms: true,
-            comments: true,
+          select: { 
+            tasks: true, 
+            documents: true, 
+            forms: true, 
+            comments: true, 
+            participants: true 
           }
         }
       }
@@ -558,232 +550,16 @@ console.log('📝 Données à mettre à jour:', dataToUpdate);
     return this.formatActivityResponse(updatedActivity);
   }
 
-  // ✅ NOUVELLE MÉTHODE - Obtenir les statistiques des activités
-  async getActivityStats(userId: string, userRole: string) {
-    try {
-      // Construire la condition WHERE selon les permissions
-      const whereCondition: any = {};
-      if (userRole !== 'ADMINISTRATEUR') {
-        whereCondition.project = {
-          OR: [
-            { creatorId: userId },
-            {
-              participants: {
-                some: {
-                  userId: userId,
-                  isActive: true,
-                }
-              }
-            }
-          ]
-        };
-      }
-
-      // Statistiques de base
-      const [
-        total,
-        withResultsCount,
-        recentActivities,
-        activitiesByProject
-      ] = await Promise.all([
-        // Total des activités
-        prisma.activity.count({ where: whereCondition }),
-
-        // Activités avec résultats
-        prisma.activity.count({
-          where: {
-            ...whereCondition,
-            OR: [
-              { results: { not: null } },
-              { conclusions: { not: null } }
-            ]
-          }
-        }),
-
-        // Activités récentes (dernières 10)
-        prisma.activity.findMany({
-          where: whereCondition,
-          take: 10,
-          orderBy: { updatedAt: 'desc' },
-          include: {
-            project: {
-              select: {
-                id: true,
-                title: true,
-                status: true
-              }
-            },
-            _count: {
-              select: {
-                tasks: true,
-                documents: true,
-                forms: true
-              }
-            }
-          }
-        }),
-
-        // Répartition par projet
-        prisma.activity.groupBy({
-          by: ['projectId'],
-          where: whereCondition,
-          _count: {
-            id: true
-          },
-          orderBy: {
-            _count: {
-              id: 'desc'
-            }
-          }
-        })
-      ]);
-
-      // Calculer les activités en cours et terminées
-      const activitiesWithDates = await prisma.activity.findMany({
-        where: {
-          ...whereCondition,
-          OR: [
-            { startDate: { not: null } },
-            { endDate: { not: null } }
-          ]
-        },
-        select: {
-          id: true,
-          startDate: true,
-          endDate: true,
-          results: true,
-          conclusions: true
-        }
-      });
-
-      const now = new Date();
-      let inProgress = 0;
-      let completed = 0;
-
-      activitiesWithDates.forEach(activity => {
-        if (activity.results || activity.conclusions) {
-          completed++;
-        } else if (activity.startDate && activity.startDate <= now) {
-          if (!activity.endDate || activity.endDate >= now) {
-            inProgress++;
-          } else {
-            completed++;
-          }
-        }
-      });
-
-      // Récupérer les noms des projets pour la répartition
-      const projectIds = activitiesByProject.map(item => item.projectId);
-      const projects = await prisma.project.findMany({
-        where: { id: { in: projectIds } },
-        select: { id: true, title: true }
-      });
-
-      const byProject = activitiesByProject.reduce((acc, item) => {
-        const project = projects.find(p => p.id === item.projectId);
-        acc[project?.title || 'Projet inconnu'] = item._count.id;
-        return acc;
-      }, {} as Record<string, number>);
-
-      return {
-        total,
-        inProgress,
-        completed,
-        withResults: withResultsCount,
-        byProject,
-        recent: recentActivities.map(activity => this.formatActivityResponse(activity))
-      };
-
-    } catch (error) {
-      console.error('Erreur lors de la récupération des statistiques:', error);
-      throw new ValidationError('Erreur lors de la récupération des statistiques des activités');
-    }
-  }
-
-  // ✅ NOUVELLE MÉTHODE - Dupliquer une activité
-  async duplicateActivity(activityId: string, userId: string, userRole: string, newTitle?: string): Promise<ActivityResponse> {
-    try {
-      // Récupérer l'activité originale
-      const originalActivity = await prisma.activity.findUnique({
-        where: { id: activityId },
-        include: {
-          project: {
-            include: {
-              participants: {
-                where: { userId: userId }
-              }
-            }
-          }
-        }
-      });
-
-      if (!originalActivity) {
-        throw new ValidationError('Activité non trouvée');
-      }
-
-      // Vérifier les permissions
-      const hasAccess = this.checkProjectAccess(originalActivity.project, userId, userRole);
-      if (!hasAccess) {
-        throw new AuthError('Permission insuffisante pour dupliquer cette activité');
-      }
-
-      // Créer la copie
-      const duplicatedActivity = await prisma.activity.create({
-        data: {
-          title: newTitle || `${originalActivity.title} (Copie)`,
-          description: originalActivity.description,
-          objectives: [...originalActivity.objectives],
-          methodology: originalActivity.methodology,
-          location: originalActivity.location,
-          startDate: null, // Reset des dates pour la nouvelle activité
-          endDate: null,
-          results: null, // Reset des résultats
-          conclusions: null,
-          projectId: originalActivity.projectId
-        },
-        include: {
-          project: {
-            include: {
-              creator: {
-                select: {
-                  id: true,
-                  firstName: true,
-                  lastName: true,
-                }
-              }
-            }
-          },
-          _count: {
-            select: {
-              tasks: true,
-              documents: true,
-              forms: true,
-              comments: true,
-            }
-          }
-        }
-      });
-
-      return this.formatActivityResponse(duplicatedActivity);
-
-    } catch (error) {
-      console.error('Erreur lors de la duplication:', error);
-      throw new ValidationError('Erreur lors de la duplication de l\'activité');
-    }
-  }
-
-  // Supprimer une activité (gardé identique)
+  // ✅ Supprimer une activité
   async deleteActivity(activityId: string, userId: string, userRole: string): Promise<void> {
     const activity = await prisma.activity.findUnique({
       where: { id: activityId },
       include: {
+        responsible: true,
         project: {
-          include: {
-            participants: {
-              where: { userId: userId }
-            }
-          }
-        }
+          include: { participants: { where: { userId: userId } } }
+        },
+        childActivities: true
       }
     });
 
@@ -797,30 +573,419 @@ console.log('📝 Données à mettre à jour:', dataToUpdate);
       throw new AuthError('Permissions insuffisantes pour supprimer cette activité');
     }
 
-    // Vérifier que le projet n'est pas archivé
-    if (activity.project.status === 'ARCHIVE') {
-      throw new ValidationError('Impossible de supprimer une activité dans un projet archivé');
+    // Empêcher la suppression si l'activité a des reconductions
+    if (activity.childActivities && activity.childActivities.length > 0) {
+      throw new ValidationError('Impossible de supprimer une activité qui a été reconduite');
     }
 
-    // Supprimer l'activité (cascade dans Prisma supprimera les entités liées)
+    // Vérifier que l'activité n'est pas clôturée avec des résultats
+    if (activity.lifecycleStatus === 'CLOTUREE' && (activity.results || activity.conclusions)) {
+      throw new ValidationError('Impossible de supprimer une activité clôturée avec des résultats');
+    }
+
     await prisma.activity.delete({
       where: { id: activityId }
     });
   }
 
-  // Lier un formulaire à une activité (gardé identique)
-  async linkForm(activityId: string, formId: string, userId: string, userRole: string) {
-    // Vérifier que l'activité existe et que l'utilisateur a accès
-    const activity = await prisma.activity.findUnique({
+  // ✅ Créer une reconduction d'activité
+  async createActivityRecurrence(
+    activityId: string, 
+    userId: string, 
+    userRole: string, 
+    recurrenceData: ActivityRecurrenceRequest
+  ): Promise<ActivityResponse> {
+    const sourceActivity = await prisma.activity.findUnique({
       where: { id: activityId },
       include: {
-        project: {
-          include: {
-            participants: {
-              where: { userId: userId }
+        theme: true,
+        responsible: true,
+        station: true,
+        convention: true,
+        project: true,
+        participants: {
+          include: { user: true }
+        }
+      }
+    });
+
+    if (!sourceActivity) {
+      throw new ValidationError('Activité source non trouvée');
+    }
+
+    // Vérifier les droits
+    const hasAccess = this.checkActivityAccess(sourceActivity, userId, userRole);
+    if (!hasAccess) {
+      throw new AuthError('Accès refusé à cette activité');
+    }
+
+    // Vérifier que l'activité peut être reconduite
+    if (sourceActivity.lifecycleStatus === 'CLOTUREE') {
+      throw new ValidationError('Une activité clôturée ne peut pas être reconduite');
+    }
+
+    // Créer la nouvelle activité
+    const newActivityData = {
+      code: await this.generateActivityCode(sourceActivity.themeId),
+      title: recurrenceData.newTitle || `${sourceActivity.title} (Reconduite)`,
+      description: sourceActivity.description,
+      type: sourceActivity.type,
+      objectives: [...sourceActivity.objectives],
+      methodology: sourceActivity.methodology,
+      location: sourceActivity.location,
+      startDate: recurrenceData.newStartDate ? new Date(recurrenceData.newStartDate) : null,
+      endDate: recurrenceData.newEndDate ? new Date(recurrenceData.newEndDate) : null,
+      lifecycleStatus: ActivityLifecycleStatus.RECONDUITE,
+      interventionRegion: sourceActivity.interventionRegion,
+      strategicPlan: sourceActivity.strategicPlan,
+      strategicAxis: sourceActivity.strategicAxis,
+      subAxis: sourceActivity.subAxis,
+      isRecurrent: true,
+      parentActivityId: sourceActivity.id,
+      themeId: sourceActivity.themeId,
+      responsibleId: sourceActivity.responsibleId,
+      stationId: sourceActivity.stationId,
+      conventionId: sourceActivity.conventionId,
+      projectId: sourceActivity.projectId,
+    };
+
+    const newActivity = await prisma.$transaction(async (tx) => {
+      // Créer la nouvelle activité
+      const created = await tx.activity.create({
+        data: newActivityData,
+        include: {
+          theme: true,
+          responsible: { 
+            select: { 
+              id: true, 
+              firstName: true, 
+              lastName: true, 
+              email: true 
+            } 
+          },
+          station: true,
+          convention: true,
+          project: {
+            include: {
+              creator: { 
+                select: { 
+                  id: true, 
+                  firstName: true, 
+                  lastName: true 
+                } 
+              }
             }
           }
         }
+      });
+
+      // Créer l'enregistrement de reconduction
+      await tx.activityRecurrence.create({
+        data: {
+          sourceActivityId: sourceActivity.id,
+          newActivityId: created.id,
+          recurrenceType: 'ANNUAL',
+          reason: recurrenceData.reason,
+          modifications: recurrenceData.modifications || [],
+          budgetChanges: recurrenceData.budgetChanges,
+          teamChanges: recurrenceData.teamChanges,
+          scopeChanges: recurrenceData.scopeChanges,
+          approvedBy: userId
+        }
+      });
+
+      // Mettre à jour l'activité source
+      await tx.activity.update({
+        where: { id: sourceActivity.id },
+        data: {
+          isRecurrent: true,
+          recurrenceCount: sourceActivity.recurrenceCount + 1
+        }
+      });
+
+      // Copier les participants actifs
+      const activeParticipants = sourceActivity.participants?.filter(p => p.isActive) || [];
+      if (activeParticipants.length > 0) {
+        await tx.activityParticipant.createMany({
+          data: activeParticipants.map(p => ({
+            activityId: created.id,
+            userId: p.userId,
+            role: p.role,
+            timeAllocation: p.timeAllocation,
+            responsibilities: p.responsibilities,
+            expertise: p.expertise
+          }))
+        });
+      }
+
+      return created;
+    });
+
+    return this.formatActivityResponse(newActivity);
+  }
+
+  // ✅ Dupliquer une activité
+  async duplicateActivity(activityId: string, userId: string, userRole: string, newTitle?: string): Promise<ActivityResponse> {
+    const originalActivity = await prisma.activity.findUnique({
+      where: { id: activityId },
+      include: {
+        theme: true,
+        responsible: true,
+        project: {
+          include: { participants: { where: { userId: userId } } }
+        }
+      }
+    });
+
+    if (!originalActivity) {
+      throw new ValidationError('Activité non trouvée');
+    }
+
+    const hasAccess = this.checkActivityAccess(originalActivity, userId, userRole);
+    if (!hasAccess) {
+      throw new AuthError('Permission insuffisante pour dupliquer cette activité');
+    }
+
+    const duplicatedActivity = await prisma.activity.create({
+      data: {
+        code: await this.generateActivityCode(originalActivity.themeId),
+        title: newTitle || `${originalActivity.title} (Copie)`,
+        description: originalActivity.description,
+        type: originalActivity.type,
+        objectives: [...originalActivity.objectives],
+        methodology: originalActivity.methodology,
+        location: originalActivity.location,
+        lifecycleStatus: 'NOUVELLE',
+        interventionRegion: originalActivity.interventionRegion,
+        strategicPlan: originalActivity.strategicPlan,
+        strategicAxis: originalActivity.strategicAxis,
+        subAxis: originalActivity.subAxis,
+        themeId: originalActivity.themeId,
+        responsibleId: originalActivity.responsibleId,
+        stationId: originalActivity.stationId,
+        conventionId: originalActivity.conventionId,
+        projectId: originalActivity.projectId,
+      },
+      include: {
+        theme: true,
+        responsible: { 
+          select: { 
+            id: true, 
+            firstName: true, 
+            lastName: true, 
+            email: true 
+          } 
+        },
+        station: true,
+        convention: true,
+        project: {
+          include: {
+            creator: { 
+              select: { 
+                id: true, 
+                firstName: true, 
+                lastName: true 
+              } 
+            }
+          }
+        },
+        _count: {
+          select: { 
+            tasks: true, 
+            documents: true, 
+            forms: true, 
+            comments: true, 
+            participants: true 
+          }
+        }
+      }
+    });
+
+    return this.formatActivityResponse(duplicatedActivity);
+  }
+
+  // ✅ Obtenir les statistiques CRA
+  async getActivityStats(userId: string, userRole: string): Promise<CRAActivityStats> {
+    const whereCondition: any = {};
+    
+    if (userRole !== 'ADMINISTRATEUR') {
+      whereCondition.OR = [
+        { responsibleId: userId },
+        { participants: { some: { userId: userId, isActive: true } } },
+        { 
+          project: {
+            OR: [
+              { creatorId: userId },
+              { participants: { some: { userId: userId, isActive: true } } }
+            ]
+          }
+        }
+      ];
+    }
+
+    const [
+      total,
+      activitiesByType,
+      activitiesByLifecycleStatus,
+      activitiesByTheme,
+      activitiesByStation,
+      activitiesByResponsible,
+      activitiesByRegion,
+      withoutProject,
+      withResults,
+      recurrent,
+      recentActivities
+    ] = await Promise.all([
+      prisma.activity.count({ where: whereCondition }),
+      
+      prisma.activity.groupBy({
+        by: ['type'],
+        where: whereCondition,
+        _count: { id: true }
+      }),
+      
+      prisma.activity.groupBy({
+        by: ['lifecycleStatus'],
+        where: whereCondition,
+        _count: { id: true }
+      }),
+      
+      prisma.activity.groupBy({
+        by: ['themeId'],
+        where: whereCondition,
+        _count: { id: true }
+      }),
+      
+      prisma.activity.groupBy({
+        by: ['stationId'],
+        where: { ...whereCondition, stationId: { not: null } },
+        _count: { id: true }
+      }),
+      
+      prisma.activity.groupBy({
+        by: ['responsibleId'],
+        where: whereCondition,
+        _count: { id: true }
+      }),
+      
+      prisma.activity.groupBy({
+        by: ['interventionRegion'],
+        where: { ...whereCondition, interventionRegion: { not: null } },
+        _count: { id: true }
+      }),
+      
+      prisma.activity.count({
+        where: { ...whereCondition, projectId: null }
+      }),
+      
+      prisma.activity.count({
+        where: {
+          ...whereCondition,
+          OR: [
+            { results: { not: null } },
+            { conclusions: { not: null } }
+          ]
+        }
+      }),
+      
+      prisma.activity.count({
+        where: { ...whereCondition, isRecurrent: true }
+      }),
+      
+      prisma.activity.findMany({
+        where: whereCondition,
+        take: 10,
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          theme: true,
+          responsible: { 
+            select: { 
+              id: true, 
+              firstName: true, 
+              lastName: true, 
+              email: true 
+            } 
+          },
+          project: { 
+            select: { 
+              id: true, 
+              title: true, 
+              status: true 
+            } 
+          },
+          _count: { 
+            select: { 
+              tasks: true, 
+              documents: true, 
+              forms: true 
+            } 
+          }
+        }
+      })
+    ]);
+
+    // Construire les répartitions avec noms
+    const [themes, stations, responsibles] = await Promise.all([
+      prisma.researchTheme.findMany({
+        where: { id: { in: activitiesByTheme.map(a => a.themeId) } },
+        select: { id: true, name: true }
+      }),
+      prisma.researchStation.findMany({
+        where: { id: { in: activitiesByStation.map(a => a.stationId!).filter(Boolean) } },
+        select: { id: true, name: true }
+      }),
+      prisma.user.findMany({
+        where: { id: { in: activitiesByResponsible.map(a => a.responsibleId) } },
+        select: { id: true, firstName: true, lastName: true }
+      })
+    ]);
+
+    return {
+      total,
+      byType: activitiesByType.reduce((acc, item) => {
+        acc[item.type] = item._count.id;
+        return acc;
+      }, {} as Record<string, number>),
+      byLifecycleStatus: activitiesByLifecycleStatus.reduce((acc, item) => {
+        acc[item.lifecycleStatus] = item._count.id;
+        return acc;
+      }, {} as Record<string, number>),
+      byTheme: activitiesByTheme.reduce((acc, item) => {
+        const theme = themes.find(t => t.id === item.themeId);
+        acc[theme?.name || 'Inconnu'] = item._count.id;
+        return acc;
+      }, {} as Record<string, number>),
+      byStation: activitiesByStation.reduce((acc, item) => {
+        const station = stations.find(s => s.id === item.stationId);
+        acc[station?.name || 'Inconnu'] = item._count.id;
+        return acc;
+      }, {} as Record<string, number>),
+      byResponsible: activitiesByResponsible.reduce((acc, item) => {
+        const responsible = responsibles.find(r => r.id === item.responsibleId);
+        acc[responsible ? `${responsible.firstName} ${responsible.lastName}` : 'Inconnu'] = {
+          count: item._count.id,
+          name: responsible ? `${responsible.firstName} ${responsible.lastName}` : 'Inconnu'
+        };
+        return acc;
+      }, {} as Record<string, { count: number; name: string }>),
+      byInterventionRegion: activitiesByRegion.reduce((acc, item) => {
+        acc[item.interventionRegion || 'Non spécifiée'] = item._count.id;
+        return acc;
+      }, {} as Record<string, number>),
+      withoutProject,
+      withResults,
+      recurrent,
+      recent: recentActivities.map(activity => this.formatActivityResponse(activity))
+    };
+  }
+
+  // ✅ Lier/délier des formulaires et documents
+  async linkForm(activityId: string, formId: string, userId: string, userRole: string) {
+    const activity = await prisma.activity.findUnique({
+      where: { id: activityId },
+      include: {
+        responsible: true,
+        project: { include: { participants: { where: { userId: userId } } } }
       }
     });
 
@@ -828,26 +993,20 @@ console.log('📝 Données à mettre à jour:', dataToUpdate);
       throw new ValidationError('Activité non trouvée');
     }
 
-    const hasAccess = this.checkProjectAccess(activity.project, userId, userRole);
+    const hasAccess = this.checkActivityAccess(activity, userId, userRole);
     if (!hasAccess) {
       throw new AuthError('Accès refusé à cette activité');
     }
 
-    // Vérifier que le formulaire existe
-    const form = await prisma.form.findUnique({
-      where: { id: formId }
-    });
-
+    const form = await prisma.form.findUnique({ where: { id: formId } });
     if (!form) {
       throw new ValidationError('Formulaire non trouvé');
     }
 
-    // Vérifier que le formulaire n'est pas déjà lié à une activité
     if (form.activityId) {
       throw new ValidationError('Ce formulaire est déjà lié à une activité');
     }
 
-    // Lier le formulaire à l'activité
     await prisma.form.update({
       where: { id: formId },
       data: { activityId: activityId }
@@ -856,19 +1015,12 @@ console.log('📝 Données à mettre à jour:', dataToUpdate);
     return { message: 'Formulaire lié à l\'activité avec succès' };
   }
 
-  // Délier un formulaire d'une activité (gardé identique)
   async unlinkForm(activityId: string, formId: string, userId: string, userRole: string) {
-    // Vérifier que l'activité existe et que l'utilisateur a accès
     const activity = await prisma.activity.findUnique({
       where: { id: activityId },
       include: {
-        project: {
-          include: {
-            participants: {
-              where: { userId: userId }
-            }
-          }
-        }
+        responsible: true,
+        project: { include: { participants: { where: { userId: userId } } } }
       }
     });
 
@@ -876,25 +1028,16 @@ console.log('📝 Données à mettre à jour:', dataToUpdate);
       throw new ValidationError('Activité non trouvée');
     }
 
-    const hasAccess = this.checkProjectAccess(activity.project, userId, userRole);
+    const hasAccess = this.checkActivityAccess(activity, userId, userRole);
     if (!hasAccess) {
       throw new AuthError('Accès refusé à cette activité');
     }
 
-    // Vérifier que le formulaire existe et est lié à cette activité
-    const form = await prisma.form.findUnique({
-      where: { id: formId }
-    });
-
-    if (!form) {
-      throw new ValidationError('Formulaire non trouvé');
-    }
-
-    if (form.activityId !== activityId) {
+    const form = await prisma.form.findUnique({ where: { id: formId } });
+    if (!form || form.activityId !== activityId) {
       throw new ValidationError('Ce formulaire n\'est pas lié à cette activité');
     }
 
-    // Délier le formulaire
     await prisma.form.update({
       where: { id: formId },
       data: { activityId: null }
@@ -903,19 +1046,12 @@ console.log('📝 Données à mettre à jour:', dataToUpdate);
     return { message: 'Formulaire délié de l\'activité avec succès' };
   }
 
-  // Lier un document à une activité (gardé identique)
   async linkDocument(activityId: string, documentId: string, userId: string, userRole: string) {
-    // Vérifier que l'activité existe et que l'utilisateur a accès
     const activity = await prisma.activity.findUnique({
       where: { id: activityId },
       include: {
-        project: {
-          include: {
-            participants: {
-              where: { userId: userId }
-            }
-          }
-        }
+        responsible: true,
+        project: { include: { participants: { where: { userId: userId } } } }
       }
     });
 
@@ -923,26 +1059,20 @@ console.log('📝 Données à mettre à jour:', dataToUpdate);
       throw new ValidationError('Activité non trouvée');
     }
 
-    const hasAccess = this.checkProjectAccess(activity.project, userId, userRole);
+    const hasAccess = this.checkActivityAccess(activity, userId, userRole);
     if (!hasAccess) {
       throw new AuthError('Accès refusé à cette activité');
     }
 
-    // Vérifier que le document existe et que l'utilisateur a accès
     const document = await prisma.document.findUnique({
       where: { id: documentId },
-      include: {
-        shares: {
-          where: { sharedWithId: userId }
-        }
-      }
+      include: { shares: { where: { sharedWithId: userId } } }
     });
 
     if (!document) {
       throw new ValidationError('Document non trouvé');
     }
 
-    // Vérifier l'accès au document
     const hasDocumentAccess = document.ownerId === userId || 
                              document.isPublic || 
                              document.shares.length > 0 ||
@@ -952,12 +1082,10 @@ console.log('📝 Données à mettre à jour:', dataToUpdate);
       throw new AuthError('Accès refusé à ce document');
     }
 
-    // Vérifier que le document n'est pas déjà lié à une activité
     if (document.activityId) {
       throw new ValidationError('Ce document est déjà lié à une activité');
     }
 
-    // Lier le document à l'activité
     await prisma.document.update({
       where: { id: documentId },
       data: { activityId: activityId }
@@ -966,43 +1094,163 @@ console.log('📝 Données à mettre à jour:', dataToUpdate);
     return { message: 'Document lié à l\'activité avec succès' };
   }
 
-  // Vérifier l'accès à un projet (gardé identique)
-  private checkProjectAccess(project: any, userId: string, userRole: string): boolean {
+  // ================================
+  // MÉTHODES PRIVÉES ET UTILITAIRES
+  // ================================
+
+  // Validation spécifique CRA
+  private async validateCRAActivity(data: CreateActivityRequest, userId: string, userRole: string) {
+    // Vérifier le thème
+    const theme = await prisma.researchTheme.findUnique({
+      where: { id: data.themeId }
+    });
+    if (!theme || !theme.isActive) {
+      throw new ValidationError('Thème de recherche non trouvé ou inactif');
+    }
+
+    // Vérifier le responsable
+    const responsible = await prisma.user.findUnique({
+      where: { id: data.responsibleId }
+    });
+    if (!responsible) {
+      throw new ValidationError('Responsable non trouvé');
+    }
+    if (!['CHERCHEUR', 'COORDONATEUR_PROJET'].includes(responsible.role)) {
+      throw new ValidationError('Le responsable doit être un chercheur ou coordinateur');
+    }
+
+    // Vérifier la station si spécifiée
+    if (data.stationId) {
+      const station = await prisma.researchStation.findUnique({
+        where: { id: data.stationId }
+      });
+      if (!station || !station.isActive) {
+        throw new ValidationError('Station de recherche non trouvée ou inactive');
+      }
+    }
+
+    // Vérifier la convention si spécifiée
+    if (data.conventionId) {
+      const convention = await prisma.convention.findUnique({
+        where: { id: data.conventionId }
+      });
+      if (!convention) {
+        throw new ValidationError('Convention non trouvée');
+      }
+      if (!['SIGNEE', 'EN_COURS'].includes(convention.status)) {
+        throw new ValidationError('La convention doit être signée ou en cours');
+      }
+    }
+
+    // Vérifier l'unicité du code si fourni
+    if (data.code) {
+      const existingActivity = await prisma.activity.findUnique({
+        where: { code: data.code }
+      });
+      if (existingActivity) {
+        throw new ValidationError('Ce code d\'activité existe déjà');
+      }
+    }
+  }
+
+  // Génération automatique du code
+  private async generateActivityCode(themeId: string): Promise<string> {
+    const theme = await prisma.researchTheme.findUnique({
+      where: { id: themeId },
+      select: { code: true }
+    });
+    
+    const year = new Date().getFullYear();
+    const themeCode = theme?.code || 'ACT';
+    
+    const count = await prisma.activity.count({
+      where: {
+        themeId,
+        createdAt: {
+          gte: new Date(`${year}-01-01`),
+          lt: new Date(`${year + 1}-01-01`)
+        }
+      }
+    });
+    
+    return `${themeCode}-${year}-${String(count + 1).padStart(2, '0')}`;
+  }
+
+  // Validation cohérence projet-thème
+  private async validateProjectThemeConsistency(projectId: string, themeId: string) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { themeId: true }
+    });
+    
+    if (project && project.themeId !== themeId) {
+      throw new ValidationError('Le thème de l\'activité doit correspondre au thème du projet');
+    }
+  }
+
+  // Vérification des droits d'accès à une activité CRA
+  private checkActivityAccess(activity: any, userId: string, userRole: string): boolean {
     // Admin a accès à tout
     if (userRole === 'ADMINISTRATEUR') return true;
     
-    // Créateur a accès
-    if (project.creatorId === userId) return true;
+    // Responsable de l'activité a accès
+    if (activity.responsibleId === userId) return true;
     
-    // Participant actif a accès
-    if (project.participants?.some((p: any) => p.userId === userId && p.isActive)) return true;
+    // Participant à l'activité a accès
+    if (activity.participants?.some((p: any) => p.userId === userId && p.isActive)) return true;
     
-    return false;
-  }
-
-  // Vérifier les droits de suppression d'activité (gardé identique)
-  private checkActivityDeleteRights(activity: any, userId: string, userRole: string): boolean {
-    // Admin peut tout supprimer
-    if (userRole === 'ADMINISTRATEUR') return true;
-    
-    // Créateur du projet peut supprimer
-    if (activity.project.creatorId === userId) return true;
-    
-    // Participant avec rôle "Chef de projet" peut supprimer
-    const participantRole = activity.project.participants?.find((p: any) => p.userId === userId)?.role;
-    if (participantRole && ['Chef de projet', 'Chef de projet adjoint'].includes(participantRole)) {
-      return true;
+    // Si l'activité est liée à un projet, vérifier l'accès au projet
+    if (activity.project) {
+      return this.checkProjectAccess(activity.project, userId, userRole);
     }
     
     return false;
   }
 
-  // Formater la réponse activité (gardé identique)
-  private formatActivityResponse(activity: ActivityWithRelations): ActivityResponse {
+  // Vérification des droits d'accès à un projet
+  private checkProjectAccess(project: any, userId: string, userRole: string): boolean {
+    if (userRole === 'ADMINISTRATEUR') return true;
+    if (project.creatorId === userId) return true;
+    if (project.participants?.some((p: any) => p.userId === userId && p.isActive)) return true;
+    return false;
+  }
+
+  // Vérification des droits de modification
+  private checkActivityModifyRights(activity: any, userId: string, userRole: string): boolean {
+    if (userRole === 'ADMINISTRATEUR') return true;
+    if (activity.responsibleId === userId) return true;
+    
+    if (activity.project) {
+      if (activity.project.creatorId === userId) return true;
+      const participantRole = activity.project.participants?.find((p: any) => p.userId === userId)?.role;
+      if (participantRole && ['Chef de projet', 'Chef de projet adjoint'].includes(participantRole)) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  // Vérification des droits de suppression
+  private checkActivityDeleteRights(activity: any, userId: string, userRole: string): boolean {
+    if (userRole === 'ADMINISTRATEUR') return true;
+    if (activity.responsibleId === userId) return true;
+    
+    if (activity.project) {
+      if (activity.project.creatorId === userId) return true;
+    }
+    
+    return false;
+  }
+
+  // Formatage de la réponse activité CRA
+  private formatActivityResponse(activity: any): ActivityResponse {
     return {
       id: activity.id,
+      code: activity.code,
       title: activity.title,
       description: activity.description || undefined,
+      type: activity.type,
       objectives: activity.objectives,
       methodology: activity.methodology || undefined,
       location: activity.location || undefined,
@@ -1010,19 +1258,37 @@ console.log('📝 Données à mettre à jour:', dataToUpdate);
       endDate: activity.endDate || undefined,
       results: activity.results || undefined,
       conclusions: activity.conclusions || undefined,
+      lifecycleStatus: activity.lifecycleStatus,
+      interventionRegion: activity.interventionRegion || undefined,
+      strategicPlan: activity.strategicPlan || undefined,
+      strategicAxis: activity.strategicAxis || undefined,
+      subAxis: activity.subAxis || undefined,
+      isRecurrent: activity.isRecurrent,
+      recurrenceCount: activity.recurrenceCount,
       createdAt: activity.createdAt,
       updatedAt: activity.updatedAt,
-      project: activity.project,
-      tasks: activity.tasks?.map(task => ({
+      
+      // Relations CRA
+      theme: activity.theme,
+      responsible: activity.responsible,
+      station: activity.station || undefined,
+      convention: activity.convention || undefined,
+      project: activity.project || undefined,
+      
+      // Relations optionnelles
+      parentActivity: activity.parentActivity || undefined,
+      childActivities: activity.childActivities || undefined,
+      participants: activity.participants || undefined,
+      tasks: activity.tasks?.map((task: any) => ({
         id: task.id,
         title: task.title,
         status: task.status,
         priority: task.priority,
         dueDate: task.dueDate || undefined,
         assignee: task.assignee || undefined,
-      })),
-      documents: activity.documents,
-      forms: activity.forms?.map(form => ({
+      })) || undefined,
+      documents: activity.documents || undefined,
+      forms: activity.forms?.map((form: any) => ({
         id: form.id,
         title: form.title,
         description: form.description || undefined,
@@ -1030,8 +1296,1404 @@ console.log('📝 Données à mettre à jour:', dataToUpdate);
         createdAt: form.createdAt,
         creator: form.creator,
         _count: form._count,
-      })),
+      })) || undefined,
       _count: activity._count,
     };
   }
+  // Ajouter un participant à une activité
+async addParticipant(
+  activityId: string, 
+  participantData: AddParticipantInput, 
+  userId: string, 
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      participants: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  // Vérifier les droits de modification
+  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+  if (!canModify) {
+    throw new AuthError('Permissions insuffisantes pour modifier les participants');
+  }
+
+  // Vérifier que l'utilisateur existe
+  const user = await prisma.user.findUnique({
+    where: { id: participantData.userId }
+  });
+
+  if (!user) {
+    throw new ValidationError('Utilisateur non trouvé');
+  }
+
+  // Vérifier qu'il n'est pas déjà participant
+  const existingParticipant = activity.participants?.find(
+    p => p.userId === participantData.userId
+  );
+
+  if (existingParticipant) {
+    throw new ValidationError('Cet utilisateur est déjà participant à cette activité');
+  }
+
+  // Empêcher d'ajouter le responsable comme participant
+  if (participantData.userId === activity.responsibleId) {
+    throw new ValidationError('Le responsable ne peut pas être ajouté comme participant');
+  }
+
+  const participant = await prisma.activityParticipant.create({
+    data: {
+      activityId,
+      userId: participantData.userId,
+      role: participantData.role,
+      timeAllocation: participantData.timeAllocation,
+      responsibilities: participantData.responsibilities,
+      expertise: participantData.expertise
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true
+        }
+      }
+    }
+  });
+
+  return participant;
+}
+
+// Mettre à jour un participant
+async updateParticipant(
+  activityId: string,
+  participantUserId: string,
+  updateData: UpdateParticipantInput,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      participants: { where: { userId: participantUserId } },
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+  if (!canModify) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  const existingParticipant = activity.participants?.[0];
+  if (!existingParticipant) {
+    throw new ValidationError('Participant non trouvé dans cette activité');
+  }
+
+  const updatedParticipant = await prisma.activityParticipant.update({
+    where: { 
+      id: existingParticipant.id 
+    },
+    data: {
+      ...updateData
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true
+        }
+      }
+    }
+  });
+
+  return updatedParticipant;
+}
+
+// Retirer un participant
+async removeParticipant(
+  activityId: string,
+  participantUserId: string,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      participants: { where: { userId: participantUserId } },
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+  if (!canModify) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  const existingParticipant = activity.participants?.[0];
+  if (!existingParticipant) {
+    throw new ValidationError('Participant non trouvé');
+  }
+
+  await prisma.activityParticipant.delete({
+    where: { id: existingParticipant.id }
+  });
+}
+
+// Lister les participants d'une activité
+async listParticipants(activityId: string, userId: string, userRole: string) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const hasAccess = this.checkActivityAccess(activity, userId, userRole);
+  if (!hasAccess) {
+    throw new AuthError('Accès refusé');
+  }
+
+  const participants = await prisma.activityParticipant.findMany({
+    where: { activityId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          role: true
+        }
+      }
+    },
+    orderBy: { role: 'asc' }
+  });
+
+  return participants;
+}
+// ========================================
+// GESTION DES FINANCEMENTS
+// ========================================
+
+async addFunding(
+  activityId: string,
+  fundingData: AddFundingInput,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+  if (!canModify) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  // Vérifier la convention si spécifiée
+  if (fundingData.conventionId) {
+    const convention = await prisma.convention.findUnique({
+      where: { id: fundingData.conventionId }
+    });
+    if (!convention) {
+      throw new ValidationError('Convention non trouvée');
+    }
+  }
+
+  const funding = await prisma.activityFunding.create({
+    data: {
+      activityId,
+      fundingSource: fundingData.fundingSource,
+      fundingType: fundingData.fundingType,
+      requestedAmount: fundingData.requestedAmount,
+      currency: fundingData.currency,
+      applicationDate: fundingData.applicationDate ? new Date(fundingData.applicationDate) : null,
+      startDate: fundingData.startDate ? new Date(fundingData.startDate) : null,
+      endDate: fundingData.endDate ? new Date(fundingData.endDate) : null,
+      conditions: fundingData.conditions,
+      contractNumber: fundingData.contractNumber,
+      conventionId: fundingData.conventionId,
+    }
+  });
+
+  return funding;
+}
+
+async updateFunding(
+  activityId: string,
+  fundingId: string,
+  updateData: UpdateFundingInput,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      fundings: { where: { id: fundingId } },
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const funding = activity.fundings?.[0];
+  if (!funding) {
+    throw new ValidationError('Financement non trouvé');
+  }
+
+  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+  if (!canModify) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  const dataToUpdate: any = {};
+  if (updateData.fundingSource !== undefined) dataToUpdate.fundingSource = updateData.fundingSource;
+  if (updateData.fundingType !== undefined) dataToUpdate.fundingType = updateData.fundingType;
+  if (updateData.status !== undefined) dataToUpdate.status = updateData.status;
+  if (updateData.requestedAmount !== undefined) dataToUpdate.requestedAmount = updateData.requestedAmount;
+  if (updateData.approvedAmount !== undefined) dataToUpdate.approvedAmount = updateData.approvedAmount;
+  if (updateData.receivedAmount !== undefined) dataToUpdate.receivedAmount = updateData.receivedAmount;
+  if (updateData.conditions !== undefined) dataToUpdate.conditions = updateData.conditions;
+  if (updateData.contractNumber !== undefined) dataToUpdate.contractNumber = updateData.contractNumber;
+  if (updateData.conventionId !== undefined) dataToUpdate.conventionId = updateData.conventionId;
+
+  if (updateData.applicationDate !== undefined) {
+    dataToUpdate.applicationDate = updateData.applicationDate ? new Date(updateData.applicationDate) : null;
+  }
+  if (updateData.approvalDate !== undefined) {
+    dataToUpdate.approvalDate = updateData.approvalDate ? new Date(updateData.approvalDate) : null;
+  }
+  if (updateData.startDate !== undefined) {
+    dataToUpdate.startDate = updateData.startDate ? new Date(updateData.startDate) : null;
+  }
+  if (updateData.endDate !== undefined) {
+    dataToUpdate.endDate = updateData.endDate ? new Date(updateData.endDate) : null;
+  }
+
+  const updatedFunding = await prisma.activityFunding.update({
+    where: { id: fundingId },
+    data: dataToUpdate
+  });
+
+  return updatedFunding;
+}
+
+async removeFunding(
+  activityId: string,
+  fundingId: string,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      fundings: { where: { id: fundingId } },
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  if (!activity.fundings?.[0]) {
+    throw new ValidationError('Financement non trouvé');
+  }
+
+  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+  if (!canModify) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  await prisma.activityFunding.delete({
+    where: { id: fundingId }
+  });
+}
+
+async listFundings(activityId: string, userId: string, userRole: string) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const hasAccess = this.checkActivityAccess(activity, userId, userRole);
+  if (!hasAccess) {
+    throw new AuthError('Accès refusé');
+  }
+
+  const fundings = await prisma.activityFunding.findMany({
+    where: { activityId },
+    include: {
+      convention: {
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          status: true
+        }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return fundings;
+}
+
+// ========================================
+// GESTION DES PARTENARIATS
+// ========================================
+
+async addPartner(
+  activityId: string,
+  partnerData: AddActivityPartnerInput,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      partnerships: { where: { partnerId: partnerData.partnerId } },
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+  if (!canModify) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  // Vérifier que le partenaire existe
+  const partner = await prisma.partner.findUnique({
+    where: { id: partnerData.partnerId }
+  });
+
+  if (!partner) {
+    throw new ValidationError('Partenaire non trouvé');
+  }
+
+  // Vérifier qu'il n'est pas déjà partenaire
+  if (activity.partnerships?.length > 0) {
+    throw new ValidationError('Ce partenaire est déjà associé à cette activité');
+  }
+
+  const partnership = await prisma.activityPartner.create({
+    data: {
+      activityId,
+      partnerId: partnerData.partnerId,
+      partnerType: partnerData.partnerType,
+      contribution: partnerData.contribution,
+      benefits: partnerData.benefits,
+      startDate: partnerData.startDate ? new Date(partnerData.startDate) : new Date(),
+      endDate: partnerData.endDate ? new Date(partnerData.endDate) : null,
+    },
+    include: {
+      partner: true
+    }
+  });
+
+  return partnership;
+}
+
+async updatePartner(
+  activityId: string,
+  partnerId: string,
+  updateData: UpdateActivityPartnerInput,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      partnerships: { where: { partnerId } },
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const partnership = activity.partnerships?.[0];
+  if (!partnership) {
+    throw new ValidationError('Partenariat non trouvé');
+  }
+
+  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+  if (!canModify) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  const dataToUpdate: any = {};
+  if (updateData.partnerType !== undefined) dataToUpdate.partnerType = updateData.partnerType;
+  if (updateData.contribution !== undefined) dataToUpdate.contribution = updateData.contribution;
+  if (updateData.benefits !== undefined) dataToUpdate.benefits = updateData.benefits;
+  if (updateData.isActive !== undefined) dataToUpdate.isActive = updateData.isActive;
+  
+  if (updateData.startDate !== undefined) {
+    dataToUpdate.startDate = updateData.startDate ? new Date(updateData.startDate) : null;
+  }
+  if (updateData.endDate !== undefined) {
+    dataToUpdate.endDate = updateData.endDate ? new Date(updateData.endDate) : null;
+  }
+
+  const updatedPartnership = await prisma.activityPartner.update({
+    where: { id: partnership.id },
+    data: dataToUpdate,
+    include: {
+      partner: true
+    }
+  });
+
+  return updatedPartnership;
+}
+
+async removePartner(
+  activityId: string,
+  partnerId: string,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      partnerships: { where: { partnerId } },
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const partnership = activity.partnerships?.[0];
+  if (!partnership) {
+    throw new ValidationError('Partenariat non trouvé');
+  }
+
+  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+  if (!canModify) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  await prisma.activityPartner.delete({
+    where: { id: partnership.id }
+  });
+}
+
+async listPartners(activityId: string, userId: string, userRole: string) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const hasAccess = this.checkActivityAccess(activity, userId, userRole);
+  if (!hasAccess) {
+    throw new AuthError('Accès refusé');
+  }
+
+  const partnerships = await prisma.activityPartner.findMany({
+    where: { activityId },
+    include: {
+      partner: true
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return partnerships;
+}
+// ========================================
+// GESTION DES TÂCHES
+// ========================================
+
+async createTask(
+  activityId: string,
+  taskData: CreateTaskInput,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+  if (!canModify) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  // Vérifier que l'assignee existe si spécifié
+  if (taskData.assigneeId) {
+    const assignee = await prisma.user.findUnique({
+      where: { id: taskData.assigneeId }
+    });
+    if (!assignee) {
+      throw new ValidationError('Utilisateur assigné non trouvé');
+    }
+  }
+
+  const task = await prisma.task.create({
+    data: {
+      title: taskData.title,
+      description: taskData.description,
+      status: taskData.status || 'A_FAIRE',
+      priority: taskData.priority || 'NORMALE',
+      dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
+      assigneeId: taskData.assigneeId,
+      activityId,
+      creatorId: userId,
+    },
+    include: {
+      assignee: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true
+        }
+      },
+      creator: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true
+        }
+      }
+    }
+  });
+
+  return task;
+}
+
+async updateTask(
+  activityId: string,
+  taskId: string,
+  updateData: UpdateTaskInput,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      tasks: { where: { id: taskId } },
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const task = activity.tasks?.[0];
+  if (!task) {
+    throw new ValidationError('Tâche non trouvée dans cette activité');
+  }
+
+  // Vérifier les droits : 
+  // - Créateur (superviseur) peut tout modifier
+  // - Assigné peut modifier le statut et la progression uniquement
+  // - Admins peuvent tout modifier
+  const isCreator = task.creatorId === userId;
+  const isAssignee = task.assigneeId === userId;
+  const isAdmin = userRole === 'ADMINISTRATEUR';
+  const canModifyActivity = this.checkActivityModifyRights(activity, userId, userRole);
+
+  if (!isCreator && !isAssignee && !isAdmin && !canModifyActivity) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  // Restrictions pour l'assigné (ne peut modifier que statut et progression)
+  if (isAssignee && !isCreator && !isAdmin && !canModifyActivity) {
+    if (updateData.title || updateData.description || updateData.priority || 
+        updateData.dueDate || updateData.assigneeId) {
+      throw new AuthError('Vous ne pouvez modifier que le statut et la progression');
+    }
+  }
+
+  // Vérifier le nouvel assignee si changé (seul le créateur/superviseur peut réassigner)
+  if (updateData.assigneeId && updateData.assigneeId !== task.assigneeId) {
+    if (!isCreator && !isAdmin && !canModifyActivity) {
+      throw new AuthError('Seul le créateur peut réassigner une tâche');
+    }
+
+    const newAssignee = await prisma.user.findUnique({
+      where: { id: updateData.assigneeId }
+    });
+    if (!newAssignee) {
+      throw new ValidationError('Nouvel utilisateur assigné non trouvé');
+    }
+  }
+
+  const dataToUpdate: any = {};
+  if (updateData.title !== undefined) dataToUpdate.title = updateData.title;
+  if (updateData.description !== undefined) dataToUpdate.description = updateData.description;
+  if (updateData.status !== undefined) {
+    dataToUpdate.status = updateData.status;
+    // Si marquée comme terminée, définir completedAt
+    if (updateData.status === 'TERMINEE' && !task.completedAt) {
+      dataToUpdate.completedAt = new Date();
+      dataToUpdate.progress = 100;
+    }
+  }
+  if (updateData.priority !== undefined) dataToUpdate.priority = updateData.priority;
+  if (updateData.assigneeId !== undefined) dataToUpdate.assigneeId = updateData.assigneeId;
+  if (updateData.progress !== undefined) dataToUpdate.progress = updateData.progress;
+  if (updateData.dueDate !== undefined) {
+    dataToUpdate.dueDate = updateData.dueDate ? new Date(updateData.dueDate) : null;
+  }
+
+  const updatedTask = await prisma.task.update({
+    where: { id: taskId },
+    data: dataToUpdate,
+    include: {
+      assignee: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true
+        }
+      },
+      creator: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true
+        }
+      }
+    }
+  });
+
+  return updatedTask;
+}                                                                                       
+
+async deleteTask(
+  activityId: string,
+  taskId: string,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      tasks: { where: { id: taskId } },
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const task = activity.tasks?.[0];
+  if (!task) {
+    throw new ValidationError('Tâche non trouvée');
+  }
+
+  // Seuls le créateur de la tâche ou un responsable de l'activité peuvent supprimer
+  const canDelete = 
+    task.creatorId === userId ||
+    this.checkActivityModifyRights(activity, userId, userRole);
+
+  if (!canDelete) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  await prisma.task.delete({
+    where: { id: taskId }
+  });
+}
+
+async listTasks(activityId: string, userId: string, userRole: string) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const hasAccess = this.checkActivityAccess(activity, userId, userRole);
+  if (!hasAccess) {
+    throw new AuthError('Accès refusé');
+  }
+
+  const tasks = await prisma.task.findMany({
+    where: { activityId },
+    include: {
+      assignee: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true
+        }
+      },
+      creator: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true
+        }
+      },
+      _count: {
+        select: {
+          documents: true,
+          comments: true
+        }
+      }
+    },
+    orderBy: [
+      { status: 'asc' },
+      { priority: 'desc' },
+      { dueDate: 'asc' }
+    ]
+  });
+
+  return tasks;
+}
+
+async getTaskById(
+  activityId: string,
+  taskId: string,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const hasAccess = this.checkActivityAccess(activity, userId, userRole);
+  if (!hasAccess) {
+    throw new AuthError('Accès refusé');
+  }
+
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    include: {
+      assignee: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true
+        }
+      },
+      creator: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true
+        }
+      },
+      documents: {
+        include: {
+          owner: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true
+            }
+          }
+        }
+      },
+      comments: {
+        include: {
+          author: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      }
+    }
+  });
+
+  if (!task || task.activityId !== activityId) {
+    throw new ValidationError('Tâche non trouvée dans cette activité');
+  }
+
+  return task;
+}
+// ========================================
+// NOUVELLES MÉTHODES POUR SUPERVISEUR/ASSIGNÉ
+// ========================================
+
+async reassignTask(
+  activityId: string,
+  taskId: string,
+  reassignData: ReassignTaskInput,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      tasks: { where: { id: taskId } },
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const task = activity.tasks?.[0];
+  if (!task) {
+    throw new ValidationError('Tâche non trouvée');
+  }
+
+  // Seul le créateur peut réassigner
+  const isCreator = task.creatorId === userId;
+  const canModifyActivity = this.checkActivityModifyRights(activity, userId, userRole);
+
+  if (!isCreator && !canModifyActivity && userRole !== 'ADMINISTRATEUR') {
+    throw new AuthError('Seul le créateur peut réassigner cette tâche');
+  }
+
+  // Vérifier que le nouvel assigné existe
+  const newAssignee = await prisma.user.findUnique({
+    where: { id: reassignData.newAssigneeId }
+  });
+
+  if (!newAssignee) {
+    throw new ValidationError('Nouvel utilisateur non trouvé');
+  }
+
+  const updatedTask = await prisma.task.update({
+    where: { id: taskId },
+    data: {
+      assigneeId: reassignData.newAssigneeId
+    },
+    include: {
+      assignee: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true
+        }
+      },
+      creator: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true
+        }
+      },
+      activity: {
+        select: {
+          id: true,
+          title: true,
+          code: true
+        }
+      }
+    }
+  });
+
+  return updatedTask;
+}
+
+async listCreatedTasks(
+  activityId: string,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const hasAccess = this.checkActivityAccess(activity, userId, userRole);
+  if (!hasAccess) {
+    throw new AuthError('Accès refusé');
+  }
+
+  const tasks = await prisma.task.findMany({
+    where: { 
+      activityId,
+      creatorId: userId // Tâches créées par cet utilisateur (superviseur)
+    },
+    include: {
+      assignee: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true
+        }
+      },
+      creator: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true
+        }
+      },
+      _count: {
+        select: {
+          documents: true,
+          comments: true
+        }
+      }
+    },
+    orderBy: [
+      { status: 'asc' },
+      { priority: 'desc' },
+      { dueDate: 'asc' }
+    ]
+  });
+
+  return tasks;
+}
+
+async listAssignedTasks(
+  activityId: string,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const hasAccess = this.checkActivityAccess(activity, userId, userRole);
+  if (!hasAccess) {
+    throw new AuthError('Accès refusé');
+  }
+
+  const tasks = await prisma.task.findMany({
+    where: { 
+      activityId,
+      assigneeId: userId // Tâches assignées à cet utilisateur
+    },
+    include: {
+      assignee: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true
+        }
+      },
+      creator: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true
+        }
+      },
+      _count: {
+        select: {
+          documents: true,
+          comments: true
+        }
+      }
+    },
+    orderBy: [
+      { status: 'asc' },
+      { priority: 'desc' },
+      { dueDate: 'asc' }
+    ]
+  });
+
+  return tasks;
+}
+// ========================================
+// GESTION DES COMMENTAIRES
+// ========================================
+
+async createComment(
+  activityId: string,
+  commentData: CreateCommentInput,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const hasAccess = this.checkActivityAccess(activity, userId, userRole);
+  if (!hasAccess) {
+    throw new AuthError('Accès refusé à cette activité');
+  }
+
+  const comment = await prisma.comment.create({
+    data: {
+      content: commentData.content,
+      activityId,
+      authorId: userId,
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true
+        }
+      }
+    }
+  });
+
+  return comment;
+}
+
+async updateComment(
+  activityId: string,
+  commentId: string,
+  updateData: UpdateCommentInput,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId }
+  });
+
+  if (!comment || comment.activityId !== activityId) {
+    throw new ValidationError('Commentaire non trouvé dans cette activité');
+  }
+
+  // Seul l'auteur ou un admin peut modifier
+  if (comment.authorId !== userId && userRole !== 'ADMINISTRATEUR') {
+    throw new AuthError('Seul l\'auteur peut modifier ce commentaire');
+  }
+
+  const updatedComment = await prisma.comment.update({
+    where: { id: commentId },
+    data: {
+      content: updateData.content,
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true
+        }
+      }
+    }
+  });
+
+  return updatedComment;
+}
+
+async deleteComment(
+  activityId: string,
+  commentId: string,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId }
+  });
+
+  if (!comment || comment.activityId !== activityId) {
+    throw new ValidationError('Commentaire non trouvé');
+  }
+
+  // Seul l'auteur, le responsable de l'activité ou un admin peut supprimer
+  const canDelete = 
+    comment.authorId === userId ||
+    activity.responsibleId === userId ||
+    userRole === 'ADMINISTRATEUR';
+
+  if (!canDelete) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  await prisma.comment.delete({
+    where: { id: commentId }
+  });
+}
+
+async listComments(activityId: string, userId: string, userRole: string) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const hasAccess = this.checkActivityAccess(activity, userId, userRole);
+  if (!hasAccess) {
+    throw new AuthError('Accès refusé');
+  }
+
+  const comments = await prisma.comment.findMany({
+    where: { activityId },
+    include: {
+      author: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          profileImage: true
+        }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return comments;
+}
+// ========================================
+// GESTION DES TRANSFERTS D'ACQUIS (Liaison uniquement)
+// ========================================
+
+async linkKnowledgeTransfer(
+  activityId: string,
+  transferId: string,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+  if (!canModify) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  const transfer = await prisma.knowledgeTransfer.findUnique({
+    where: { id: transferId }
+  });
+
+  if (!transfer) {
+    throw new ValidationError('Transfert d\'acquis non trouvé');
+  }
+
+  if (transfer.activityId) {
+    throw new ValidationError('Ce transfert est déjà lié à une activité');
+  }
+
+  await prisma.knowledgeTransfer.update({
+    where: { id: transferId },
+    data: { activityId }
+  });
+
+  return { message: 'Transfert d\'acquis lié à l\'activité avec succès' };
+}
+
+async unlinkKnowledgeTransfer(
+  activityId: string,
+  transferId: string,
+  userId: string,
+  userRole: string
+) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+  if (!canModify) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
+  const transfer = await prisma.knowledgeTransfer.findUnique({
+    where: { id: transferId }
+  });
+
+  if (!transfer || transfer.activityId !== activityId) {
+    throw new ValidationError('Ce transfert n\'est pas lié à cette activité');
+  }
+
+  await prisma.knowledgeTransfer.update({
+    where: { id: transferId },
+    data: { activityId: null }
+  });
+
+  return { message: 'Transfert d\'acquis délié de l\'activité avec succès' };
+}
+
+async listKnowledgeTransfers(activityId: string, userId: string, userRole: string) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    include: { 
+      responsible: true,
+      project: { include: { participants: { where: { userId } } } }
+    }
+  });
+
+  if (!activity) {
+    throw new ValidationError('Activité non trouvée');
+  }
+
+  const hasAccess = this.checkActivityAccess(activity, userId, userRole);
+  if (!hasAccess) {
+    throw new AuthError('Accès refusé');
+  }
+
+  const transfers = await prisma.knowledgeTransfer.findMany({
+    where: { activityId },
+    include: {
+      organizer: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true
+        }
+      },
+      _count: {
+        select: {
+          documents: true
+        }
+      }
+    },
+    orderBy: { date: 'desc' }
+  });
+
+  return transfers;
+}
 }

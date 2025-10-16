@@ -13,7 +13,7 @@ export const registerSchema = z.object({
     .max(50, 'Le prénom ne peut pas dépasser 50 caractères'),
   lastName: z.string().min(2, 'Le nom doit contenir au moins 2 caractères')
     .max(50, 'Le nom ne peut pas dépasser 50 caractères'),
-  role: z.enum(['CHERCHEUR', 'ASSISTANT_CHERCHEUR', 'TECHNICIEN_SUPERIEUR', 'ADMINISTRATEUR']),
+  role: z.enum(['CHERCHEUR', 'COORDONATEUR_PROJET', 'ADMINISTRATEUR']),
   phoneNumber: z.string().regex(/^[+]?[\d\s\-()]+$/, 'Format de téléphone invalide').optional().or(z.literal('')),
   specialization: z.string().max(100, 'La spécialisation ne peut pas dépasser 100 caractères').optional(),
   department: z.string().max(100, 'Le département ne peut pas dépasser 100 caractères').optional(),
