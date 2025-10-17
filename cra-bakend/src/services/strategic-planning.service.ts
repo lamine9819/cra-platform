@@ -656,8 +656,8 @@ export class StrategicPlanningService {
         orderBy: { [sortBy]: sortOrder },
         include: {
           strategicAxis: {
-            select: { 
-              id: true, 
+            select: {
+              id: true,
               name: true,
               strategicPlan: { select: { id: true, name: true } }
             }
@@ -686,6 +686,130 @@ export class StrategicPlanningService {
         pages: Math.ceil(total / limit)
       }
     };
+  }
+
+  async getStrategicSubAxisById(id: string) {
+    const subAxis = await prisma.strategicSubAxis.findUnique({
+      where: { id },
+      include: {
+        strategicAxis: {
+          select: {
+            id: true,
+            name: true,
+            strategicPlan: { select: { id: true, name: true } }
+          }
+        },
+        programs: {
+          include: {
+            coordinator: {
+              select: { id: true, firstName: true, lastName: true, email: true }
+            },
+            themes: {
+              orderBy: { order: 'asc' }
+            },
+            _count: {
+              select: { projects: true }
+            }
+          }
+        }
+      }
+    });
+
+    if (!subAxis) {
+      throw new NotFoundError('Sous-axe stratégique non trouvé');
+    }
+
+    return subAxis;
+  }
+
+  async updateStrategicSubAxis(id: string, data: UpdateStrategicSubAxisRequest, userId: string) {
+    const existingSubAxis = await prisma.strategicSubAxis.findUnique({
+      where: { id },
+      include: { strategicAxis: true }
+    });
+
+    if (!existingSubAxis) {
+      throw new NotFoundError('Sous-axe stratégique non trouvé');
+    }
+
+    // Vérifier l'unicité du nom si il change
+    if (data.name && data.name !== existingSubAxis.name) {
+      const conflictingSubAxis = await prisma.strategicSubAxis.findFirst({
+        where: {
+          id: { not: id },
+          strategicAxisId: existingSubAxis.strategicAxisId,
+          name: data.name
+        }
+      });
+
+      if (conflictingSubAxis) {
+        throw new ConflictError('Un sous-axe avec ce nom existe déjà dans cet axe');
+      }
+    }
+
+    const updatedSubAxis = await prisma.strategicSubAxis.update({
+      where: { id },
+      data,
+      include: {
+        strategicAxis: {
+          select: {
+            id: true,
+            name: true,
+            strategicPlan: { select: { id: true, name: true } }
+          }
+        },
+        programs: {
+          include: {
+            coordinator: {
+              select: { id: true, firstName: true, lastName: true, email: true }
+            }
+          }
+        }
+      }
+    });
+
+    await this.createAuditLog('UPDATE', 'strategic_sub_axis', id, userId, {
+      action: 'Modification d\'un sous-axe stratégique',
+      subAxisName: updatedSubAxis.name,
+      changes: data
+    });
+
+    return updatedSubAxis;
+  }
+
+  async deleteStrategicSubAxis(id: string, userId: string) {
+    const subAxis = await prisma.strategicSubAxis.findUnique({
+      where: { id },
+      include: {
+        programs: {
+          include: {
+            projects: true
+          }
+        }
+      }
+    });
+
+    if (!subAxis) {
+      throw new NotFoundError('Sous-axe stratégique non trouvé');
+    }
+
+    // Vérifier s'il y a des projets associés
+    const hasProjects = subAxis.programs.some(program => program.projects.length > 0);
+
+    if (hasProjects) {
+      throw new ConflictError(
+        'Impossible de supprimer ce sous-axe car il contient des programmes avec des projets associés'
+      );
+    }
+
+    await prisma.strategicSubAxis.delete({ where: { id } });
+
+    await this.createAuditLog('DELETE', 'strategic_sub_axis', id, userId, {
+      action: 'Suppression d\'un sous-axe stratégique',
+      subAxisName: subAxis.name
+    });
+
+    return { message: 'Sous-axe stratégique supprimé avec succès' };
   }
 
   // ========================================
@@ -844,6 +968,150 @@ export class StrategicPlanningService {
     };
   }
 
+  async getResearchProgramById(id: string) {
+    const program = await prisma.researchProgram.findUnique({
+      where: { id },
+      include: {
+        strategicSubAxis: {
+          select: {
+            id: true,
+            name: true,
+            strategicAxis: {
+              select: {
+                id: true,
+                name: true,
+                strategicPlan: { select: { id: true, name: true } }
+              }
+            }
+          }
+        },
+        coordinator: {
+          select: { id: true, firstName: true, lastName: true, email: true }
+        },
+        themes: {
+          orderBy: { order: 'asc' },
+          include: {
+            _count: {
+              select: { projects: true, activities: true }
+            }
+          }
+        },
+        _count: {
+          select: { projects: true }
+        }
+      }
+    });
+
+    if (!program) {
+      throw new NotFoundError('Programme de recherche non trouvé');
+    }
+
+    return program;
+  }
+
+  async updateResearchProgram(id: string, data: UpdateResearchProgramRequest, userId: string) {
+    const existingProgram = await prisma.researchProgram.findUnique({
+      where: { id },
+      include: { coordinator: true }
+    });
+
+    if (!existingProgram) {
+      throw new NotFoundError('Programme de recherche non trouvé');
+    }
+
+    // Si le coordinateur change, vérifier qu'il existe et a le bon rôle
+    if (data.coordinatorId && data.coordinatorId !== existingProgram.coordinatorId) {
+      const newCoordinator = await prisma.user.findUnique({
+        where: { id: data.coordinatorId }
+      });
+
+      if (!newCoordinator) {
+        throw new NotFoundError('Coordinateur non trouvé');
+      }
+
+      if (newCoordinator.role !== 'COORDONATEUR_PROJET' && newCoordinator.role !== 'ADMINISTRATEUR') {
+        throw new ValidationError('L\'utilisateur doit avoir le rôle COORDONATEUR_PROJET ou ADMINISTRATEUR');
+      }
+    }
+
+    // Vérifier l'unicité du code si il change
+    if (data.code && data.code !== existingProgram.code) {
+      const conflictingProgram = await prisma.researchProgram.findFirst({
+        where: {
+          id: { not: id },
+          code: data.code
+        }
+      });
+
+      if (conflictingProgram) {
+        throw new ConflictError('Un programme avec ce code existe déjà');
+      }
+    }
+
+    const updatedProgram = await prisma.researchProgram.update({
+      where: { id },
+      data,
+      include: {
+        strategicSubAxis: {
+          select: {
+            id: true,
+            name: true,
+            strategicAxis: {
+              select: {
+                id: true,
+                name: true,
+                strategicPlan: { select: { id: true, name: true } }
+              }
+            }
+          }
+        },
+        coordinator: {
+          select: { id: true, firstName: true, lastName: true, email: true }
+        },
+        themes: {
+          orderBy: { order: 'asc' }
+        }
+      }
+    });
+
+    await this.createAuditLog('UPDATE', 'research_program', id, userId, {
+      action: 'Modification d\'un programme de recherche',
+      programName: updatedProgram.name,
+      changes: data
+    });
+
+    return updatedProgram;
+  }
+
+  async deleteResearchProgram(id: string, userId: string) {
+    const program = await prisma.researchProgram.findUnique({
+      where: { id },
+      include: {
+        projects: true
+      }
+    });
+
+    if (!program) {
+      throw new NotFoundError('Programme de recherche non trouvé');
+    }
+
+    // Vérifier s'il y a des projets associés
+    if (program.projects.length > 0) {
+      throw new ConflictError(
+        'Impossible de supprimer ce programme car il contient des projets associés'
+      );
+    }
+
+    await prisma.researchProgram.delete({ where: { id } });
+
+    await this.createAuditLog('DELETE', 'research_program', id, userId, {
+      action: 'Suppression d\'un programme de recherche',
+      programName: program.name
+    });
+
+    return { message: 'Programme de recherche supprimé avec succès' };
+  }
+
   // ========================================
   // GESTION DES THÈMES DE RECHERCHE
   // ========================================
@@ -999,6 +1267,56 @@ export class StrategicPlanningService {
         pages: Math.ceil(total / limit)
       }
     };
+  }
+
+  async getResearchThemeById(id: string) {
+    const theme = await prisma.researchTheme.findUnique({
+      where: { id },
+      include: {
+        program: {
+          select: {
+            id: true,
+            name: true,
+            strategicSubAxis: {
+              select: {
+                id: true,
+                name: true,
+                strategicAxis: {
+                  select: {
+                    id: true,
+                    name: true,
+                    strategicPlan: { select: { id: true, name: true } }
+                  }
+                }
+              }
+            }
+          }
+        },
+        projects: {
+          select: {
+            id: true,
+            title: true,
+            status: true
+          }
+        },
+        activities: {
+          select: {
+            id: true,
+            title: true,
+            status: true
+          }
+        },
+        _count: {
+          select: { projects: true, activities: true }
+        }
+      }
+    });
+
+    if (!theme) {
+      throw new NotFoundError('Thème de recherche non trouvé');
+    }
+
+    return theme;
   }
 
   async updateResearchTheme(id: string, data: UpdateResearchThemeRequest, userId: string) {

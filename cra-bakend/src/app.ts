@@ -365,7 +365,7 @@ app.get('/api', (_req, res) => {
       publications: '/api/publications',
       conventions: '/api/conventions',
       knowledgeTransfers: '/api/knowledge-transfers',
-      plannings: '/api/plannings',
+      strategicPlanning: '/api/strategic-planning',
       events: '/api/events',
       tasks: '/api/tasks',
       documents: '/api/documents',
@@ -396,7 +396,7 @@ app.use('/api/formes', formeRoutes);
 app.use('/api/publications', publicationRoutes);
 app.use('/api/conventions', conventionRoutes);
 app.use('/api/knowledge-transfers', KnowledgeTransferRoutes);
-app.use('/api/plannings', planningRoutes);
+app.use('/api/strategic-planning', planningRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/forms', formRoutes);

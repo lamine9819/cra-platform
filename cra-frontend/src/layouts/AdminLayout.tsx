@@ -7,19 +7,20 @@ import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { Sidebar, SidebarItem } from '../components/layout/Sidebar';
-import { 
-  BarChart3, 
-  Users, 
-  Settings, 
-  Shield, 
-  FileText, 
-  Database
-
+import {
+  BarChart3,
+  Users,
+  Settings,
+  Shield,
+  FileText,
+  Database,
+  Target
 } from 'lucide-react';
 
 // Import des pages admin
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import UsersManagement from '../pages/admin/UsersManagement';
+import StrategicPlanningManagement from '../pages/admin/StrategicPlanningManagement';
 import ProjectsManagement from '../pages/admin/ProjectsManagement';
 import DocumentsManagement from '../pages/admin/DocumentsManagement';
 import SystemConfig from '../pages/admin/SystemConfig';
@@ -38,6 +39,11 @@ const AdminLayout: React.FC = () => {
       name: 'Gestion des utilisateurs',
       href: '/admin/users',
       icon: Users,
+    },
+    {
+      name: 'Planification stratégique',
+      href: '/admin/strategic-planning',
+      icon: Target,
     },
     {
       name: 'Projets & Activités',
@@ -81,6 +87,7 @@ const AdminLayout: React.FC = () => {
             <Routes>
               <Route index element={<AdminDashboard />} />
               <Route path="users" element={<UsersManagement />} />
+              <Route path="strategic-planning" element={<StrategicPlanningManagement />} />
               <Route path="projects" element={<ProjectsManagement />} />
               <Route path="documents" element={<DocumentsManagement />} />
               <Route path="system" element={<SystemConfig />} />

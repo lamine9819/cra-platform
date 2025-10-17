@@ -255,6 +255,61 @@ export class StrategicPlanningController {
     }
   };
 
+  getStrategicSubAxisById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const result = await strategicPlanningService.getStrategicSubAxisById(id);
+
+      res.status(200).json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateStrategicSubAxis = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+      const validatedData = updateStrategicSubAxisSchema.parse(req.body);
+
+      const result = await strategicPlanningService.updateStrategicSubAxis(
+        id,
+        validatedData,
+        authenticatedReq.user.userId
+      );
+
+      res.status(200).json({
+        success: true,
+        data: result,
+        message: 'Sous-axe stratégique modifié avec succès'
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteStrategicSubAxis = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+
+      const result = await strategicPlanningService.deleteStrategicSubAxis(
+        id,
+        authenticatedReq.user.userId
+      );
+
+      res.status(200).json({
+        success: true,
+        message: result.message
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   // ========================================
   // CONTRÔLEURS POUR LES PROGRAMMES DE RECHERCHE
   // ========================================
@@ -294,6 +349,61 @@ export class StrategicPlanningController {
     }
   };
 
+  getResearchProgramById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const result = await strategicPlanningService.getResearchProgramById(id);
+
+      res.status(200).json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateResearchProgram = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+      const validatedData = updateResearchProgramSchema.parse(req.body);
+
+      const result = await strategicPlanningService.updateResearchProgram(
+        id,
+        validatedData,
+        authenticatedReq.user.userId
+      );
+
+      res.status(200).json({
+        success: true,
+        data: result,
+        message: 'Programme de recherche modifié avec succès'
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteResearchProgram = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+
+      const result = await strategicPlanningService.deleteResearchProgram(
+        id,
+        authenticatedReq.user.userId
+      );
+
+      res.status(200).json({
+        success: true,
+        message: result.message
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   // ========================================
   // CONTRÔLEURS POUR LES THÈMES DE RECHERCHE
   // ========================================
@@ -327,6 +437,20 @@ export class StrategicPlanningController {
         success: true,
         data: result.data,
         pagination: result.pagination
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getResearchThemeById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const result = await strategicPlanningService.getResearchThemeById(id);
+
+      res.status(200).json({
+        success: true,
+        data: result
       });
     } catch (error) {
       next(error);

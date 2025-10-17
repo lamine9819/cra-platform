@@ -73,10 +73,25 @@ router.delete('/axes/:id',
 // GET /api/strategic-planning/sub-axes - Lister tous les sous-axes stratégiques
 router.get('/sub-axes', strategicPlanningController.getStrategicSubAxes);
 
+// GET /api/strategic-planning/sub-axes/:id - Obtenir un sous-axe stratégique par ID
+router.get('/sub-axes/:id', strategicPlanningController.getStrategicSubAxisById);
+
 // POST /api/strategic-planning/sub-axes - Créer un nouveau sous-axe stratégique
-router.post('/sub-axes', 
-  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+router.post('/sub-axes',
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']),
   strategicPlanningController.createStrategicSubAxis
+);
+
+// PUT /api/strategic-planning/sub-axes/:id - Modifier un sous-axe stratégique
+router.put('/sub-axes/:id',
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']),
+  strategicPlanningController.updateStrategicSubAxis
+);
+
+// DELETE /api/strategic-planning/sub-axes/:id - Supprimer un sous-axe stratégique
+router.delete('/sub-axes/:id',
+  authorize(['ADMINISTRATEUR']),
+  strategicPlanningController.deleteStrategicSubAxis
 );
 
 // ========================================
@@ -86,10 +101,25 @@ router.post('/sub-axes',
 // GET /api/strategic-planning/programs - Lister tous les programmes de recherche
 router.get('/programs', strategicPlanningController.getResearchPrograms);
 
+// GET /api/strategic-planning/programs/:id - Obtenir un programme de recherche par ID
+router.get('/programs/:id', strategicPlanningController.getResearchProgramById);
+
 // POST /api/strategic-planning/programs - Créer un nouveau programme de recherche
-router.post('/programs', 
-  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+router.post('/programs',
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']),
   strategicPlanningController.createResearchProgram
+);
+
+// PUT /api/strategic-planning/programs/:id - Modifier un programme de recherche
+router.put('/programs/:id',
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']),
+  strategicPlanningController.updateResearchProgram
+);
+
+// DELETE /api/strategic-planning/programs/:id - Supprimer un programme de recherche
+router.delete('/programs/:id',
+  authorize(['ADMINISTRATEUR']),
+  strategicPlanningController.deleteResearchProgram
 );
 
 // ========================================
@@ -99,21 +129,24 @@ router.post('/programs',
 // GET /api/strategic-planning/themes - Lister tous les thèmes de recherche
 router.get('/themes', strategicPlanningController.getResearchThemes);
 
+// GET /api/strategic-planning/themes/:id - Obtenir un thème de recherche par ID
+router.get('/themes/:id', strategicPlanningController.getResearchThemeById);
+
 // POST /api/strategic-planning/themes - Créer un nouveau thème de recherche
-router.post('/themes', 
-  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+router.post('/themes',
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']),
   strategicPlanningController.createResearchTheme
 );
 
 // PUT /api/strategic-planning/themes/:id - Modifier un thème de recherche
-router.put('/themes/:id', 
-  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
+router.put('/themes/:id',
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']),
   strategicPlanningController.updateResearchTheme
 );
 
 // DELETE /api/strategic-planning/themes/:id - Supprimer un thème de recherche
-router.delete('/themes/:id', 
-  authorize(['ADMINISTRATEUR']), 
+router.delete('/themes/:id',
+  authorize(['ADMINISTRATEUR']),
   strategicPlanningController.deleteResearchTheme
 );
 
