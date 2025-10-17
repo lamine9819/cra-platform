@@ -137,17 +137,24 @@ const ResearchStationsTab: React.FC<ResearchStationsTabProps> = ({ onUpdate }) =
               className="border border-gray-200 rounded-lg bg-white p-4 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-3">
-                <div className="flex items-start flex-1">
+                <div className="flex items-start flex-1 min-w-0">
                   <MapPin className="h-5 w-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-gray-900 truncate">{station.name}</h4>
+                    <h4
+                      className="font-semibold text-gray-900 truncate"
+                      title={station.name}
+                    >
+                      {station.name}
+                    </h4>
                     <p className="text-sm text-gray-600 flex items-center mt-1">
-                      <span className="truncate">{station.location}</span>
+                      <span className="truncate" title={station.location}>
+                        {station.location}
+                      </span>
                     </p>
                   </div>
                 </div>
                 <span
-                  className={`ml-2 px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 ${
+                  className={`ml-2 px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 whitespace-nowrap ${
                     station.isActive
                       ? 'bg-green-100 text-green-800'
                       : 'bg-gray-100 text-gray-800'
