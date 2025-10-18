@@ -3,7 +3,7 @@ import React from 'react';
 
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger';
+  variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'destructive' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
@@ -22,7 +22,9 @@ const Badge: React.FC<BadgeProps> = ({
     secondary: 'bg-gray-100 text-gray-800',
     success: 'bg-green-100 text-green-800',
     warning: 'bg-yellow-100 text-yellow-800',
-    danger: 'bg-red-100 text-red-800'
+    danger: 'bg-red-100 text-red-800',
+    destructive: 'bg-red-100 text-red-800',
+    outline: 'bg-white border border-gray-300 text-gray-700'
   };
   
   const sizeClasses = {
@@ -39,3 +41,4 @@ const Badge: React.FC<BadgeProps> = ({
 };
 
 export default Badge;
+export { Badge };

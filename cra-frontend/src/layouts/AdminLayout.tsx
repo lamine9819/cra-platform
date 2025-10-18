@@ -14,17 +14,22 @@ import {
   Shield,
   FileText,
   Database,
-  Target
+  Target,
+  Building2,
+  ScrollText
 } from 'lucide-react';
 
 // Import des pages admin
 import AdminDashboard from '../pages/admin/AdminDashboard';
+import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import UsersManagement from '../pages/admin/UsersManagement';
 import StrategicPlanningManagement from '../pages/admin/StrategicPlanningManagement';
 import ProjectsManagement from '../pages/admin/ProjectsManagement';
 import DocumentsManagement from '../pages/admin/DocumentsManagement';
 import SystemConfig from '../pages/admin/SystemConfig';
 import SecurityManagement from '../pages/admin/SecurityManagement';
+import PartnersManagement from '../pages/admin/PartnersManagement';
+import ConventionsManagement from '../pages/admin/ConventionsManagement';
 
 const AdminLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -49,6 +54,16 @@ const AdminLayout: React.FC = () => {
       name: 'Projets & Activités',
       href: '/admin/projects',
       icon: FileText,
+    },
+    {
+      name: 'Partenaires',
+      href: '/admin/partners',
+      icon: Building2,
+    },
+    {
+      name: 'Conventions',
+      href: '/admin/conventions',
+      icon: ScrollText,
     },
     {
       name: 'Documents',
@@ -85,10 +100,13 @@ const AdminLayout: React.FC = () => {
         <main className="flex-1 overflow-auto">
           <div className="p-6">
             <Routes>
-              <Route index element={<AdminDashboard />} />
+              <Route index element={<AdminDashboardPage />} />
+              <Route path="dashboard" element={<AdminDashboardPage />} />
               <Route path="users" element={<UsersManagement />} />
               <Route path="strategic-planning" element={<StrategicPlanningManagement />} />
               <Route path="projects" element={<ProjectsManagement />} />
+              <Route path="partners" element={<PartnersManagement />} />
+              <Route path="conventions" element={<ConventionsManagement />} />
               <Route path="documents" element={<DocumentsManagement />} />
               <Route path="system" element={<SystemConfig />} />
               <Route path="security" element={<SecurityManagement />} />

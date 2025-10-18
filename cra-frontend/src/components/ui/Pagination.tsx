@@ -47,7 +47,7 @@ const Pagination: React.FC<PaginationProps> = ({
           className={cn(
             "inline-flex items-center px-2 py-2 rounded-md text-sm font-medium",
             "border border-gray-300 bg-white text-gray-500",
-            "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500",
+            "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500",
             "disabled:opacity-50 disabled:cursor-not-allowed"
           )}
         >
@@ -75,7 +75,7 @@ const Pagination: React.FC<PaginationProps> = ({
             className={cn(
               "inline-flex items-center px-3 py-2 rounded-md text-sm font-medium border",
               page === currentPage
-                ? "border-blue-500 bg-blue-600 text-white"
+                ? "border-green-500 bg-green-600 text-white"
                 : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
             )}
           >
@@ -103,7 +103,7 @@ const Pagination: React.FC<PaginationProps> = ({
           className={cn(
             "inline-flex items-center px-2 py-2 rounded-md text-sm font-medium",
             "border border-gray-300 bg-white text-gray-500",
-            "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500",
+            "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500",
             "disabled:opacity-50 disabled:cursor-not-allowed"
           )}
         >

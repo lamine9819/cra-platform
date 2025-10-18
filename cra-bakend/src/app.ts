@@ -26,6 +26,8 @@ import notificationRoutes from './routes/notification.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import auditRoutes from './routes/audit.routes';
 import reportRoutes from './routes/report.routes';
+import adminDashboardRoutes from './routes/admin/dashboard.admin.routes';
+import partnerRoutes from './routes/partner.routes';
 
 // Import des middlewares
 import { errorHandler } from './middlewares/errorHandler';
@@ -361,6 +363,7 @@ app.get('/api', (_req, res) => {
       users: '/api/users',
       projects: '/api/projects',
       activities: '/api/activities',
+      partners: '/api/partners',
       formes: '/api/formes',
       publications: '/api/publications',
       conventions: '/api/conventions',
@@ -374,6 +377,7 @@ app.get('/api', (_req, res) => {
       comments: '/api/comments',
       notifications: '/api/notifications',
       dashboard: '/api/dashboard',
+      adminDashboard: '/api/admin/dashboard',
       audit: '/api/audit',
       reports: '/api/reports'
     },
@@ -403,8 +407,10 @@ app.use('/api/forms', formRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/partners', partnerRoutes);
 
 // =============================================
 // GESTION DES ERREURS ET 404

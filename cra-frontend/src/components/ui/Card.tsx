@@ -4,36 +4,66 @@ import React from 'react';
 interface CardProps {
   children: React.ReactNode;
   className?: string;
-  padding?: 'none' | 'sm' | 'md' | 'lg';
-  shadow?: 'none' | 'sm' | 'md' | 'lg';
 }
 
 const Card: React.FC<CardProps> = ({
   children,
-  className = '',
-  padding = 'md',
-  shadow = 'md'
+  className = ''
 }) => {
-  const paddingClasses = {
-    none: '',
-    sm: 'p-4',
-    md: 'p-6',
-    lg: 'p-8'
-  };
-
-  const shadowClasses = {
-    none: '',
-    sm: 'shadow-sm',
-    md: 'shadow',
-    lg: 'shadow-lg'
-  };
-
   return (
-    <div className={`bg-white rounded-lg ${paddingClasses[padding]} ${shadowClasses[shadow]} ${className}`}>
+    <div className={`bg-white rounded-lg border border-gray-200 shadow-sm ${className}`}>
       {children}
     </div>
   );
 };
 
-export default Card;
+interface CardHeaderProps {
+  children: React.ReactNode;
+  className?: string;
+}
 
+const CardHeader: React.FC<CardHeaderProps> = ({
+  children,
+  className = ''
+}) => {
+  return (
+    <div className={`flex flex-col space-y-1.5 p-6 ${className}`}>
+      {children}
+    </div>
+  );
+};
+
+interface CardTitleProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+const CardTitle: React.FC<CardTitleProps> = ({
+  children,
+  className = ''
+}) => {
+  return (
+    <h3 className={`text-lg font-semibold leading-none tracking-tight ${className}`}>
+      {children}
+    </h3>
+  );
+};
+
+interface CardContentProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+const CardContent: React.FC<CardContentProps> = ({
+  children,
+  className = ''
+}) => {
+  return (
+    <div className={`p-6 pt-0 ${className}`}>
+      {children}
+    </div>
+  );
+};
+
+export { Card, CardHeader, CardTitle, CardContent };
+export default Card;
