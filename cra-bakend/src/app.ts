@@ -28,10 +28,12 @@ import auditRoutes from './routes/audit.routes';
 import reportRoutes from './routes/report.routes';
 import adminDashboardRoutes from './routes/admin/dashboard.admin.routes';
 import partnerRoutes from './routes/partner.routes';
+import auditLogRoutes from './routes/auditLog.routes';
 
 // Import des middlewares
 import { errorHandler } from './middlewares/errorHandler';
 import { auditSystemError } from './middlewares/auditMiddleware';
+import { auditLogMiddleware, auditErrorMiddleware } from './middleware/auditLog.middleware';
 // Sérialisation de BinInt
 import { setupBigIntSerialization } from './utils/bigint';
 import { appendFile } from 'fs';
@@ -176,6 +178,13 @@ if (NODE_ENV === 'development') {
     skip: (req, res) => res.statusCode < 400 // Log seulement les erreurs en production
   }));
 }
+
+// =============================================
+// AUDIT LOG MIDDLEWARE (capture automatique)
+// =============================================
+
+// Middleware d'audit log automatique - capturer toutes les actions
+app.use(auditLogMiddleware);
 
 // =============================================
 // CONFIGURATION POUR LES FICHIERS STATIQUES
@@ -411,6 +420,7 @@ app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/partners', partnerRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 // =============================================
 // GESTION DES ERREURS ET 404
@@ -455,6 +465,9 @@ app.use('*', (req, res) => {
 
 // Audit des erreurs système (DOIT être avant le gestionnaire d'erreurs global)
 app.use(auditSystemError);
+
+// Middleware d'audit pour les erreurs
+app.use(auditErrorMiddleware);
 
 // Gestionnaire d'erreurs global (DOIT être en dernier)
 app.use(errorHandler);

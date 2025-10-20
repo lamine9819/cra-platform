@@ -39,7 +39,7 @@ export const createUserSchema = z.object({
   firstName: z.string().min(2, 'Le prénom doit contenir au moins 2 caractères'),
   lastName: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
   role: z.enum(['CHERCHEUR', 'COORDONATEUR_PROJET', 'ADMINISTRATEUR']),
-  
+
   // Informations personnelles et professionnelles
   phoneNumber: z.string().optional(),
   dateOfBirth: z.string().transform(str => str ? new Date(str) : undefined).optional(),
@@ -49,24 +49,15 @@ export const createUserSchema = z.object({
   discipline: z.string().optional(),
   department: z.string().optional(),
   supervisorId: z.string().cuid().optional(),
-  
+
   // IDs réseaux académiques
   orcidId: z.string().regex(/^0000-000[1-9]-[0-9]{4}-[0-9]{4}$/).optional().or(z.literal('')),
   researchGateId: z.string().optional(),
   googleScholarId: z.string().optional(),
   linkedinId: z.string().optional(),
-  
-  // Profil individuel (obligatoire pour les chercheurs)
+
+  // Profil individuel (optionnel - peut être créé plus tard)
   individualProfile: individualProfileSchema.optional(),
-}).refine((data) => {
-  // Si c'est un chercheur, le profil individuel est obligatoire
-  if (data.role === 'CHERCHEUR' && !data.individualProfile) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Le profil individuel est obligatoire pour les chercheurs",
-  path: ['individualProfile']
 });
 
 // =============================================

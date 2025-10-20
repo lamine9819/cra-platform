@@ -16,7 +16,9 @@ import {
   Database,
   Target,
   Building2,
-  ScrollText
+  ScrollText,
+  ClipboardList,
+  Activity
 } from 'lucide-react';
 
 // Import des pages admin
@@ -25,11 +27,13 @@ import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import UsersManagement from '../pages/admin/UsersManagement';
 import StrategicPlanningManagement from '../pages/admin/StrategicPlanningManagement';
 import ProjectsManagement from '../pages/admin/ProjectsManagement';
+import ActivitiesManagement from '../pages/admin/ActivitiesManagement';
 import DocumentsManagement from '../pages/admin/DocumentsManagement';
 import SystemConfig from '../pages/admin/SystemConfig';
 import SecurityManagement from '../pages/admin/SecurityManagement';
 import PartnersManagement from '../pages/admin/PartnersManagement';
 import ConventionsManagement from '../pages/admin/ConventionsManagement';
+import AuditLogsManagement from '../pages/admin/AuditLogsManagement';
 
 const AdminLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -51,9 +55,14 @@ const AdminLayout: React.FC = () => {
       icon: Target,
     },
     {
-      name: 'Projets & Activités',
+      name: 'Projets',
       href: '/admin/projects',
       icon: FileText,
+    },
+    {
+      name: 'Activités',
+      href: '/admin/activities',
+      icon: Activity,
     },
     {
       name: 'Partenaires',
@@ -69,6 +78,11 @@ const AdminLayout: React.FC = () => {
       name: 'Documents',
       href: '/admin/documents',
       icon: Database,
+    },
+    {
+      name: 'Logs d\'Audit',
+      href: '/admin/audit-logs',
+      icon: ClipboardList,
     },
     {
       name: 'Système',
@@ -105,9 +119,11 @@ const AdminLayout: React.FC = () => {
               <Route path="users" element={<UsersManagement />} />
               <Route path="strategic-planning" element={<StrategicPlanningManagement />} />
               <Route path="projects" element={<ProjectsManagement />} />
+              <Route path="activities" element={<ActivitiesManagement />} />
               <Route path="partners" element={<PartnersManagement />} />
               <Route path="conventions" element={<ConventionsManagement />} />
               <Route path="documents" element={<DocumentsManagement />} />
+              <Route path="audit-logs" element={<AuditLogsManagement />} />
               <Route path="system" element={<SystemConfig />} />
               <Route path="security" element={<SecurityManagement />} />
             </Routes>

@@ -1767,7 +1767,7 @@ model Notification {
 
 model AuditLog {
   id         String     @id @default(cuid())
-  action     String     // 'CREATE', 'UPDATE', 'DELETE', 'LOGIN', etc.
+  action     String     // 'CREATE', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT', 'VIEW', etc.
   level      AuditLevel @default(INFO) // Niveau de log
   userId     String?    // ID de l'utilisateur (optionnel pour les actions système)
   entityType String?    // Type d'entité affectée (project, task, user, etc.)
@@ -1776,9 +1776,18 @@ model AuditLog {
   metadata   Json?      // Métadonnées (IP, User-Agent, source, etc.)
   changes    Json?      // Changements (before/after/fields)
   createdAt  DateTime   @default(now())
-  
+
   // Relations
   user       User?      @relation(fields: [userId], references: [id])
+
+  // Index pour améliorer les performances des requêtes
+  @@index([userId])
+  @@index([entityType])
+  @@index([action])
+  @@index([level])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
 
   @@map("audit_logs")
 }
