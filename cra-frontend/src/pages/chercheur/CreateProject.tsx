@@ -1,367 +1,413 @@
 // src/pages/chercheur/CreateProject.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, X, Save, Calendar, DollarSign, Target, Tag } from 'lucide-react';
-import projectsApi, { CreateProjectRequest } from '../../services/projectsApi';
-
-interface FormData {
-  title: string;
-  description: string;
-  objectives: string[];
-  status: 'PLANIFIE' | 'EN_COURS' | 'SUSPENDU' | 'TERMINE' | 'ARCHIVE';
-  startDate: string;
-  endDate: string;
-  budget: string;
-  keywords: string[];
-}
+import { ArrowLeft, Plus, X, Save, Target, Tag } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import { projectsApi } from '../../services/projectsApi';
+import { Button } from '../../components/ui/Button';
+import toast from 'react-hot-toast';
+import {
+  ProjectStatus,
+  ResearchType,
+  ResearchTypeLabels,
+  type CreateProjectRequest,
+} from '../../types/project.types';
 
 const CreateProject: React.FC = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<CreateProjectRequest>({
     title: '',
     description: '',
     objectives: [''],
-    status: 'PLANIFIE',
     startDate: '',
     endDate: '',
-    budget: '',
-    keywords: []
+    budget: undefined,
+    keywords: [],
+    code: '',
+    themeId: '',
+    researchProgramId: '',
+    conventionId: '',
+    strategicPlan: '',
+    strategicAxis: '',
+    subAxis: '',
+    program: '',
+    researchType: undefined,
+    interventionRegion: '',
   });
 
-  // États pour les champs dynamiques
   const [newKeyword, setNewKeyword] = useState('');
 
-  // Mise à jour des champs simples
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const createMutation = useMutation({
+    mutationFn: (data: CreateProjectRequest) => projectsApi.createProject(data),
+    onSuccess: (project) => {
+      toast.success('Projet créé avec succès');
+      navigate(`/chercheur/projects/${project.id}`);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Erreur lors de la création du projet');
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validation
+    if (!formData.title.trim()) {
+      toast.error('Le titre est obligatoire');
+      return;
+    }
+
+    if (!formData.themeId) {
+      toast.error('Le thème est obligatoire');
+      return;
+    }
+
+    if (formData.objectives.filter(obj => obj.trim()).length === 0) {
+      toast.error('Au moins un objectif est requis');
+      return;
+    }
+
+    // Nettoyer les données
+    const cleanData: CreateProjectRequest = {
+      ...formData,
+      objectives: formData.objectives.filter(obj => obj.trim()),
+      budget: formData.budget && formData.budget > 0 ? formData.budget : undefined,
+      startDate: formData.startDate || undefined,
+      endDate: formData.endDate || undefined,
+    };
+
+    createMutation.mutate(cleanData);
   };
 
-  // Gestion des objectifs
   const addObjective = () => {
-    setFormData(prev => ({
-      ...prev,
-      objectives: [...prev.objectives, '']
-    }));
-  };
-
-  const updateObjective = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      objectives: prev.objectives.map((obj, i) => i === index ? value : obj)
-    }));
+    setFormData({ ...formData, objectives: [...formData.objectives, ''] });
   };
 
   const removeObjective = (index: number) => {
-    if (formData.objectives.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        objectives: prev.objectives.filter((_, i) => i !== index)
-      }));
-    }
+    const newObjectives = formData.objectives.filter((_, i) => i !== index);
+    setFormData({ ...formData, objectives: newObjectives });
   };
 
-  // Gestion des mots-clés
+  const updateObjective = (index: number, value: string) => {
+    const newObjectives = [...formData.objectives];
+    newObjectives[index] = value;
+    setFormData({ ...formData, objectives: newObjectives });
+  };
+
   const addKeyword = () => {
     if (newKeyword.trim() && !formData.keywords.includes(newKeyword.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        keywords: [...prev.keywords, newKeyword.trim()]
-      }));
+      setFormData({ ...formData, keywords: [...formData.keywords, newKeyword.trim()] });
       setNewKeyword('');
     }
   };
 
   const removeKeyword = (keyword: string) => {
-    setFormData(prev => ({
-      ...prev,
-      keywords: prev.keywords.filter(k => k !== keyword)
-    }));
-  };
-
-  const handleKeywordKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addKeyword();
-    }
-  };
-
-  // Validation du formulaire
-  const validateForm = (): string | null => {
-    if (!formData.title.trim()) {
-      return 'Le titre est obligatoire';
-    }
-    
-    if (formData.objectives.some(obj => !obj.trim())) {
-      return 'Tous les objectifs doivent être renseignés';
-    }
-
-    if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
-      return 'La date de fin doit être postérieure à la date de début';
-    }
-
-    return null;
-  };
-
-  // Soumission du formulaire
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const projectData: CreateProjectRequest = {
-        title: formData.title.trim(),
-        description: formData.description.trim() || undefined,
-        objectives: formData.objectives.filter(obj => obj.trim()),
-        status: formData.status,
-        startDate: formData.startDate || undefined,
-        endDate: formData.endDate || undefined,
-        budget: formData.budget ? parseFloat(formData.budget) : undefined,
-        keywords: formData.keywords
-      };
-
-      const project = await projectsApi.createProject(projectData);
-      navigate(`/chercheur/projects/${project.id}`);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    setFormData({ ...formData, keywords: formData.keywords.filter(k => k !== keyword) });
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate('/chercheur/projects')}
-          className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Nouveau Projet</h1>
-          <p className="text-gray-600 mt-1">
-            Créez un nouveau projet de recherche
-          </p>
+      {/* En-tête */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/chercheur/projects')}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Créer un nouveau projet</h1>
+            <p className="text-sm text-gray-600 mt-1">Remplissez les informations du projet</p>
+          </div>
         </div>
       </div>
 
       {/* Formulaire */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Message d'erreur */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-            {error}
-          </div>
-        )}
-
         {/* Informations de base */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            Informations générales
+        <div className="bg-white rounded-lg shadow p-6 space-y-6">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <Target className="w-5 h-5 text-green-600" />
+            Informations de base
           </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Titre */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Titre du projet *
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: Amélioration des variétés de riz..."
-                required
-              />
-            </div>
 
-            {/* Description */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                rows={4}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Décrivez les objectifs et le contexte de votre projet..."
-              />
-            </div>
-
-            {/* Status */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Statut
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => handleInputChange('status', e.target.value as any)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="PLANIFIE">Planifié</option>
-                <option value="EN_COURS">En cours</option>
-                <option value="SUSPENDU">Suspendu</option>
-                <option value="TERMINE">Terminé</option>
-              </select>
-            </div>
-
-            {/* Budget */}
-            <div>
-              <label className="flex text-sm font-medium text-gray-700 mb-2  items-center gap-1">
-                <DollarSign className="h-4 w-4" />
-                Budget (FCFA)
-              </label>
-              <input
-                type="number"
-                value={formData.budget}
-                onChange={(e) => handleInputChange('budget', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="0"
-                min="0"
-                step="1000"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Titre du projet <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Ex: Amélioration de la production de riz..."
+            />
           </div>
-        </div>
 
-        {/* Dates */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Planification
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date de début
-              </label>
-              <input
-                type="date"
-                value={formData.startDate}
-                onChange={(e) => handleInputChange('startDate', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date de fin prévue
-              </label>
-              <input
-                type="date"
-                value={formData.endDate}
-                onChange={(e) => handleInputChange('endDate', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Code du projet</label>
+            <input
+              type="text"
+              value={formData.code}
+              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Ex: PRJ-2024-001"
+            />
           </div>
-        </div>
 
-        {/* Objectifs */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            Objectifs du projet
-          </h2>
-          
-          <div className="space-y-3">
-            {formData.objectives.map((objective, index) => (
-              <div key={index} className="flex gap-2">
-                <div className="flex-1">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Décrivez votre projet..."
+            />
+          </div>
+
+          {/* Objectifs */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Objectifs <span className="text-red-500">*</span>
+            </label>
+            <div className="space-y-3">
+              {formData.objectives.map((objective, index) => (
+                <div key={index} className="flex gap-2">
+                  <div className="flex-shrink-0 w-8 h-10 flex items-center justify-center">
+                    <span className="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-sm font-medium">
+                      {index + 1}
+                    </span>
+                  </div>
                   <input
                     type="text"
                     value={objective}
                     onChange={(e) => updateObjective(index, e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={`Objectif ${index + 1}`}
-                    required
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Décrivez l'objectif..."
                   />
+                  {formData.objectives.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeObjective(index)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-md"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  )}
                 </div>
-                {formData.objectives.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeObjective(index)}
-                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            ))}
-            
-            <button
+              ))}
+            </div>
+            <Button
               type="button"
               onClick={addObjective}
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+              variant="outline"
+              className="mt-3 border-green-600 text-green-600 hover:bg-green-50"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="w-4 h-4 mr-2" />
               Ajouter un objectif
-            </button>
+            </Button>
+          </div>
+        </div>
+
+        {/* Catégorisation */}
+        <div className="bg-white rounded-lg shadow p-6 space-y-6">
+          <h2 className="text-lg font-semibold text-gray-900">Catégorisation</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Thème <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.themeId}
+                onChange={(e) => setFormData({ ...formData, themeId: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="ID du thème"
+              />
+              <p className="mt-1 text-xs text-gray-500">Entrez l'ID du thème de recherche</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Type de recherche</label>
+              <select
+                value={formData.researchType || ''}
+                onChange={(e) =>
+                  setFormData({ ...formData, researchType: e.target.value as ResearchType || undefined })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="">Sélectionnez un type</option>
+                {Object.entries(ResearchTypeLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Programme de recherche</label>
+              <input
+                type="text"
+                value={formData.researchProgramId}
+                onChange={(e) => setFormData({ ...formData, researchProgramId: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="ID du programme (optionnel)"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Convention</label>
+              <input
+                type="text"
+                value={formData.conventionId}
+                onChange={(e) => setFormData({ ...formData, conventionId: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="ID de la convention (optionnel)"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Cadrage stratégique */}
+        <div className="bg-white rounded-lg shadow p-6 space-y-6">
+          <h2 className="text-lg font-semibold text-gray-900">Cadrage stratégique</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Plan stratégique</label>
+              <input
+                type="text"
+                value={formData.strategicPlan}
+                onChange={(e) => setFormData({ ...formData, strategicPlan: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Axe stratégique</label>
+              <input
+                type="text"
+                value={formData.strategicAxis}
+                onChange={(e) => setFormData({ ...formData, strategicAxis: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sous-axe</label>
+              <input
+                type="text"
+                value={formData.subAxis}
+                onChange={(e) => setFormData({ ...formData, subAxis: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Programme</label>
+              <input
+                type="text"
+                value={formData.program}
+                onChange={(e) => setFormData({ ...formData, program: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Région d'intervention</label>
+            <input
+              type="text"
+              value={formData.interventionRegion}
+              onChange={(e) => setFormData({ ...formData, interventionRegion: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Ex: Dakar, Thiès, etc."
+            />
+          </div>
+        </div>
+
+        {/* Informations temporelles et budgétaires */}
+        <div className="bg-white rounded-lg shadow p-6 space-y-6">
+          <h2 className="text-lg font-semibold text-gray-900">Planification et budget</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date de début</label>
+              <input
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date de fin</label>
+              <input
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Budget (XOF)</label>
+              <input
+                type="number"
+                value={formData.budget || ''}
+                onChange={(e) => setFormData({ ...formData, budget: Number(e.target.value) || undefined })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="0"
+              />
+            </div>
           </div>
         </div>
 
         {/* Mots-clés */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Tag className="h-5 w-5" />
+        <div className="bg-white rounded-lg shadow p-6 space-y-6">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <Tag className="w-5 h-5 text-green-600" />
             Mots-clés
           </h2>
-          
-          <div className="space-y-4">
-            {/* Champ d'ajout */}
-            <div className="flex gap-2">
+
+          <div>
+            <div className="flex gap-2 mb-3">
               <input
                 type="text"
                 value={newKeyword}
                 onChange={(e) => setNewKeyword(e.target.value)}
-                onKeyPress={handleKeywordKeyPress}
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyword())}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Ajouter un mot-clé..."
               />
-              <button
+              <Button
                 type="button"
                 onClick={addKeyword}
-                disabled={!newKeyword.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
-                Ajouter
-              </button>
+                <Plus className="w-4 h-4" />
+              </Button>
             </div>
-            
-            {/* Liste des mots-clés */}
+
             {formData.keywords.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {formData.keywords.map((keyword, index) => (
+                {formData.keywords.map((keyword) => (
                   <span
-                    key={index}
-                    className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                    key={keyword}
+                    className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
                   >
                     {keyword}
                     <button
                       type="button"
                       onClick={() => removeKeyword(keyword)}
-                      className="text-blue-600 hover:text-blue-800"
+                      className="hover:bg-green-200 rounded-full p-0.5"
                     >
-                      <X className="h-3 w-3" />
+                      <X className="w-3 h-3" />
                     </button>
                   </span>
                 ))}
@@ -371,26 +417,23 @@ const CreateProject: React.FC = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-4 pt-6">
-          <button
+        <div className="flex justify-end gap-3 bg-white rounded-lg shadow p-6">
+          <Button
             type="button"
+            variant="outline"
             onClick={() => navigate('/chercheur/projects')}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            disabled={createMutation.isPending}
           >
             Annuler
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            disabled={loading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+            disabled={createMutation.isPending}
+            className="bg-green-600 hover:bg-green-700 text-white"
           >
-            {loading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            {loading ? 'Création...' : 'Créer le projet'}
-          </button>
+            <Save className="w-4 h-4 mr-2" />
+            {createMutation.isPending ? 'Création...' : 'Créer le projet'}
+          </Button>
         </div>
       </form>
     </div>

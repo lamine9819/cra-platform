@@ -5,6 +5,7 @@
 // src/controllers/project.controller.ts
 import { Request, Response, NextFunction } from 'express';
 import { ProjectService } from '../services/project.service';
+import { ReportGeneratorService } from '../services/reportGenerator.service';
 import { AuthenticatedRequest } from '../types/auth.types';
 import {
   createProjectSchema,
@@ -17,6 +18,7 @@ import {
 } from '../utils/projectValidation';
 
 const projectService = new ProjectService();
+const reportGenerator = new ReportGeneratorService();
 
 export class ProjectController {
 
@@ -264,16 +266,37 @@ export class ProjectController {
       const { id } = req.params;
       const { format, sections } = req.query;
 
-      res.status(200).json({
-        success: true,
-        message: 'Rapport de projet généré avec succès',
-        data: {
-          projectId: id,
-          format: format || 'pdf',
-          sections: sections ? (sections as string).split(',') : ['overview', 'participants', 'activities', 'budget'],
-          downloadUrl: `/api/projects/${id}/reports/download?token=mock-token`
-        }
-      });
+      // Récupérer les données complètes du projet
+      const project = await projectService.getProjectById(id, authenticatedReq.user!.userId);
+
+      // Préparer les sections demandées
+      const requestedSections = sections ? (sections as string).split(',') : ['overview', 'participants', 'activities', 'budget'];
+
+      // Générer le rapport selon le format demandé
+      const reportFormat = (format as string) || 'pdf';
+      let buffer: Buffer;
+      let contentType: string;
+      let fileExtension: string;
+
+      if (reportFormat === 'word') {
+        buffer = await reportGenerator.generateWord(project, requestedSections);
+        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        fileExtension = 'docx';
+      } else {
+        // Par défaut, générer un PDF
+        buffer = await reportGenerator.generatePDF(project, requestedSections);
+        contentType = 'application/pdf';
+        fileExtension = 'pdf';
+      }
+
+      // Définir les en-têtes pour le téléchargement
+      const filename = `rapport_${project.code || id}_${Date.now()}.${fileExtension}`;
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', buffer.length);
+
+      // Envoyer le buffer
+      res.send(buffer);
     } catch (error) {
       next(error);
     }
