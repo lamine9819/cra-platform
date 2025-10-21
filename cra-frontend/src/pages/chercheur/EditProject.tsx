@@ -11,6 +11,27 @@ import {
   ResearchTypeLabels,
   type UpdateProjectRequest,
 } from '../../types/project.types';
+import api from '../../services/api';
+
+interface Theme {
+  id: string;
+  name: string;
+  code?: string;
+  programId: string;
+}
+
+interface Program {
+  id: string;
+  name: string;
+  code?: string;
+}
+
+interface Convention {
+  id: string;
+  title: string;
+  contractNumber?: string;
+  type: string;
+}
 
 const EditProject: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -46,6 +67,35 @@ const EditProject: React.FC = () => {
 
   const [newKeyword, setNewKeyword] = useState('');
   const [dataLoaded, setDataLoaded] = useState(false);
+
+  // Charger les programmes de recherche
+  const { data: programs = [] } = useQuery({
+    queryKey: ['research-programs'],
+    queryFn: async () => {
+      const response = await api.get('/strategic-planning/programs');
+      return response.data.data || [];
+    },
+  });
+
+  // Charger les thèmes (filtrés par programme si sélectionné)
+  const { data: themes = [] } = useQuery({
+    queryKey: ['research-themes', formData.researchProgramId],
+    queryFn: async () => {
+      const response = await api.get('/strategic-planning/themes', {
+        params: formData.researchProgramId ? { programId: formData.researchProgramId } : {},
+      });
+      return response.data.data || [];
+    },
+  });
+
+  // Charger les conventions
+  const { data: conventions = [] } = useQuery({
+    queryKey: ['conventions'],
+    queryFn: async () => {
+      const response = await api.get('/conventions');
+      return response.data.data || [];
+    },
+  });
 
   // Charger les données du projet dans le formulaire
   React.useEffect(() => {
@@ -110,6 +160,8 @@ const EditProject: React.FC = () => {
       budget: formData.budget && formData.budget > 0 ? formData.budget : undefined,
       startDate: formData.startDate || undefined,
       endDate: formData.endDate || undefined,
+      researchProgramId: formData.researchProgramId || undefined,
+      conventionId: formData.conventionId || undefined,
     };
 
     updateMutation.mutate(cleanData);
@@ -139,6 +191,15 @@ const EditProject: React.FC = () => {
 
   const removeKeyword = (keyword: string) => {
     setFormData({ ...formData, keywords: (formData.keywords || []).filter(k => k !== keyword) });
+  };
+
+  // Réinitialiser le thème si le programme change
+  const handleProgramChange = (programId: string) => {
+    setFormData({
+      ...formData,
+      researchProgramId: programId,
+      themeId: '', // Réinitialiser le thème
+    });
   };
 
   if (isLoading) {
@@ -183,8 +244,9 @@ const EditProject: React.FC = () => {
         </div>
       </div>
 
-      {/* Formulaire - identique à CreateProject mais pré-rempli */}
+      {/* Formulaire */}
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Informations de base */}
         <div className="bg-white rounded-lg shadow p-6 space-y-6">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Target className="w-5 h-5 text-green-600" />
@@ -265,19 +327,50 @@ const EditProject: React.FC = () => {
           </div>
         </div>
 
+        {/* Catégorisation */}
         <div className="bg-white rounded-lg shadow p-6 space-y-6">
           <h2 className="text-lg font-semibold text-gray-900">Catégorisation</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
+                Programme de recherche
+              </label>
+              <select
+                value={formData.researchProgramId}
+                onChange={(e) => handleProgramChange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="">Sélectionnez un programme</option>
+                {programs.map((program: Program) => (
+                  <option key={program.id} value={program.id}>
+                    {program.code ? `${program.code} - ` : ''}{program.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Thème <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
+              <select
                 value={formData.themeId}
                 onChange={(e) => setFormData({ ...formData, themeId: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
+                disabled={!formData.researchProgramId && themes.length === 0}
+              >
+                <option value="">Sélectionnez un thème</option>
+                {themes.map((theme: Theme) => (
+                  <option key={theme.id} value={theme.id}>
+                    {theme.code ? `${theme.code} - ` : ''}{theme.name}
+                  </option>
+                ))}
+              </select>
+              {!formData.researchProgramId && themes.length === 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Sélectionnez d'abord un programme de recherche
+                </p>
+              )}
             </div>
 
             <div>
@@ -297,27 +390,35 @@ const EditProject: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Programme de recherche</label>
-              <input
-                type="text"
-                value={formData.researchProgramId}
-                onChange={(e) => setFormData({ ...formData, researchProgramId: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Convention</label>
-              <input
-                type="text"
+              <select
                 value={formData.conventionId}
                 onChange={(e) => setFormData({ ...formData, conventionId: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="">Aucune convention</option>
+                {conventions.map((convention: Convention) => (
+                  <option key={convention.id} value={convention.id}>
+                    {convention.contractNumber ? `${convention.contractNumber} - ` : ''}{convention.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Région d'intervention</label>
+              <input
+                type="text"
+                value={formData.interventionRegion}
+                onChange={(e) => setFormData({ ...formData, interventionRegion: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Ex: Dakar, Thiès, Kaolack..."
               />
             </div>
           </div>
         </div>
 
+        {/* Planification et budget */}
         <div className="bg-white rounded-lg shadow p-6 space-y-6">
           <h2 className="text-lg font-semibold text-gray-900">Planification et budget</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -348,11 +449,14 @@ const EditProject: React.FC = () => {
                 value={formData.budget || ''}
                 onChange={(e) => setFormData({ ...formData, budget: Number(e.target.value) || undefined })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                min="0"
+                step="1000"
               />
             </div>
           </div>
         </div>
 
+        {/* Mots-clés */}
         <div className="bg-white rounded-lg shadow p-6 space-y-6">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Tag className="w-5 h-5 text-green-600" />
@@ -400,6 +504,7 @@ const EditProject: React.FC = () => {
           </div>
         </div>
 
+        {/* Boutons d'action */}
         <div className="flex justify-end gap-3 bg-white rounded-lg shadow p-6">
           <Button
             type="button"
