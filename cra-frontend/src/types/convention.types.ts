@@ -57,10 +57,50 @@ export interface Convention {
   };
   createdAt: string;
   updatedAt: string;
+
+  // Relations
+  activities?: Array<{
+    id: string;
+    title: string;
+    code?: string;
+    type: string;
+    lifecycleStatus: string;
+  }>;
+
+  projects?: Array<{
+    id: string;
+    title: string;
+    code?: string;
+    status: string;
+  }>;
+
+  activityFundings?: Array<{
+    id: string;
+    fundingSource: string;
+    requestedAmount: number;
+    status: string;
+    activity: {
+      id: string;
+      title: string;
+    };
+  }>;
+
+  projectFundings?: Array<{
+    id: string;
+    fundingSource: string;
+    requestedAmount: number;
+    status: string;
+    project: {
+      id: string;
+      title: string;
+    };
+  }>;
+
   _count?: {
     activities: number;
     projects: number;
-    fundings: number;
+    activityFundings: number;
+    projectFundings: number;
   };
 }
 

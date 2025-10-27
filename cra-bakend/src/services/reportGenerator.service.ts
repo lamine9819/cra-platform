@@ -2,42 +2,9 @@
 import PDFDocument from 'pdfkit';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle } from 'docx';
 import { Readable } from 'stream';
+import { ProjectResponse } from '../types/project.types';
 
-interface ProjectData {
-  title: string;
-  code?: string;
-  status: string;
-  description?: string;
-  objectives?: string[];
-  startDate?: Date | string;
-  endDate?: Date | string;
-  budget?: number;
-  interventionRegion?: string;
-  keywords?: string[];
-  strategicPlan?: string;
-  strategicAxis?: string;
-  subAxis?: string;
-  program?: string;
-  theme?: { name: string };
-  researchType?: string;
-  creator?: { firstName: string; lastName: string };
-  participants?: Array<{
-    user: { firstName: string; lastName: string; email: string };
-    role?: string;
-    isActive: boolean;
-  }>;
-  partnerships?: Array<{
-    id: string;
-    partnerName: string;
-    partnerType: string;
-    description?: string;
-  }>;
-  fundings?: Array<{
-    sourceType: string;
-    amount: number;
-    description?: string;
-  }>;
-}
+type ProjectData = ProjectResponse;
 
 export class ReportGeneratorService {
   /**
@@ -134,10 +101,20 @@ export class ReportGeneratorService {
               doc.fontSize(10).font('Helvetica-Bold').text(`Sources de financement (${projectData.fundings.length}):`);
               doc.font('Helvetica');
               projectData.fundings.forEach((funding, idx) => {
-                doc.text(`${idx + 1}. ${funding.sourceType}`);
-                doc.text(`   Montant: ${funding.amount.toLocaleString('fr-FR')} XOF`);
-                if (funding.description) {
-                  doc.text(`   Description: ${funding.description}`);
+                doc.text(`${idx + 1}. ${funding.fundingSource} (${funding.fundingType})`);
+                doc.text(`   Statut: ${funding.status}`);
+                doc.text(`   Montant demandé: ${funding.requestedAmount.toLocaleString('fr-FR')} ${funding.currency}`);
+                if (funding.approvedAmount) {
+                  doc.text(`   Montant approuvé: ${funding.approvedAmount.toLocaleString('fr-FR')} ${funding.currency}`);
+                }
+                if (funding.receivedAmount) {
+                  doc.text(`   Montant reçu: ${funding.receivedAmount.toLocaleString('fr-FR')} ${funding.currency}`);
+                }
+                if (funding.contractNumber) {
+                  doc.text(`   N° contrat: ${funding.contractNumber}`);
+                }
+                if (funding.conditions) {
+                  doc.text(`   Conditions: ${funding.conditions}`);
                 }
                 doc.moveDown(0.5);
               });
@@ -333,18 +310,50 @@ export class ReportGeneratorService {
         projectData.fundings.forEach((funding, idx) => {
           docSections.push(
             new Paragraph({
-              text: `${idx + 1}. ${funding.sourceType}`,
+              text: `${idx + 1}. ${funding.fundingSource} (${funding.fundingType})`,
               spacing: { after: 50 },
             }),
             new Paragraph({
-              text: `   Montant: ${funding.amount.toLocaleString('fr-FR')} XOF`,
+              text: `   Statut: ${funding.status}`,
+              spacing: { after: 50 },
+            }),
+            new Paragraph({
+              text: `   Montant demandé: ${funding.requestedAmount.toLocaleString('fr-FR')} ${funding.currency}`,
               spacing: { after: 50 },
             })
           );
-          if (funding.description) {
+
+          if (funding.approvedAmount) {
             docSections.push(
               new Paragraph({
-                text: `   Description: ${funding.description}`,
+                text: `   Montant approuvé: ${funding.approvedAmount.toLocaleString('fr-FR')} ${funding.currency}`,
+                spacing: { after: 50 },
+              })
+            );
+          }
+
+          if (funding.receivedAmount) {
+            docSections.push(
+              new Paragraph({
+                text: `   Montant reçu: ${funding.receivedAmount.toLocaleString('fr-FR')} ${funding.currency}`,
+                spacing: { after: 50 },
+              })
+            );
+          }
+
+          if (funding.contractNumber) {
+            docSections.push(
+              new Paragraph({
+                text: `   N° contrat: ${funding.contractNumber}`,
+                spacing: { after: 50 },
+              })
+            );
+          }
+
+          if (funding.conditions) {
+            docSections.push(
+              new Paragraph({
+                text: `   Conditions: ${funding.conditions}`,
                 spacing: { after: 100 },
               })
             );
@@ -363,10 +372,14 @@ export class ReportGeneratorService {
     // Pied de page
     docSections.push(
       new Paragraph({
-        text: `Généré le ${new Date().toLocaleString('fr-FR')}`,
+        children: [
+          new TextRun({
+            text: `Généré le ${new Date().toLocaleString('fr-FR')}`,
+            italics: true,
+          })
+        ],
         alignment: AlignmentType.CENTER,
         spacing: { before: 400 },
-        italics: true,
       })
     );
 

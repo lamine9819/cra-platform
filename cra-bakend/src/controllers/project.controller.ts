@@ -262,35 +262,11 @@ export class ProjectController {
       const userId = authenticatedReq.user.userId;
       const userRole = authenticatedReq.user.role;
 
-      // Pour l'instant, retourner des statistiques mock
-      const mockStats = {
-        participants: {
-          total: 0,
-          byRole: {},
-          activeCount: 0
-        },
-        activities: {
-          total: 0,
-          byType: {},
-          byStatus: {},
-          completion: 0
-        },
-        budget: {
-          allocated: 0,
-          spent: 0,
-          remaining: 0
-        },
-        timeline: {
-          startDate: null,
-          endDate: null,
-          duration: 0,
-          progress: 0
-        }
-      };
+      const statistics = await projectService.getProjectStatistics(id, userId, userRole);
 
       res.status(200).json({
         success: true,
-        data: mockStats,
+        data: statistics,
       });
     } catch (error) {
       next(error);
@@ -305,7 +281,7 @@ export class ProjectController {
       const { format, sections } = req.query;
 
       // Récupérer les données complètes du projet
-      const project = await projectService.getProjectById(id, authenticatedReq.user!.userId);
+      const project = await projectService.getProjectById(id, authenticatedReq.user!.userId, authenticatedReq.user!.role);
 
       // Préparer les sections demandées
       const requestedSections = sections ? (sections as string).split(',') : ['overview', 'participants', 'activities', 'budget'];

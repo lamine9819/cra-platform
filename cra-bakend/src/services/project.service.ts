@@ -1,17 +1,18 @@
 // src/services/project.service.ts - CORRECTION DES ERREURS ORDERBY
 import { PrismaClient, Prisma } from '@prisma/client';
 import { ValidationError, AuthError } from '../utils/errors';
-import { 
-  CreateProjectRequest, 
-  UpdateProjectRequest, 
-  ProjectListQuery, 
+import {
+  CreateProjectRequest,
+  UpdateProjectRequest,
+  ProjectListQuery,
   ProjectResponse,
   AddParticipantRequest,
   UpdateParticipantRequest,
   AddPartnershipRequest,
   UpdatePartnershipRequest,
   AddFundingRequest,
-  UpdateFundingRequest
+  UpdateFundingRequest,
+  ProjectStatistics
 } from '../types/project.types';
 
 const prisma = new PrismaClient();
@@ -131,20 +132,34 @@ export class ProjectService {
       createData.interventionRegion = projectData.interventionRegion;
     }
 
-    // Créer le projet
-    const project = await prisma.project.create({
-      data: createData,
-      include: this.getProjectIncludes()
+    // Créer le projet avec le créateur comme participant dans une transaction
+    const project = await prisma.$transaction(async (tx) => {
+      // Créer le projet
+      const newProject = await tx.project.create({
+        data: createData
+      });
+
+      // Ajouter automatiquement le créateur comme responsable du projet
+      await tx.projectParticipant.create({
+        data: {
+          projectId: newProject.id,
+          userId: creatorId,
+          role: 'Responsable',
+        }
+      });
+
+      // Récupérer le projet complet avec toutes les relations
+      const completeProject = await tx.project.findUnique({
+        where: { id: newProject.id },
+        include: this.getProjectIncludes()
+      });
+
+      return completeProject;
     });
 
-    // Ajouter automatiquement le créateur comme responsable principal
-    await prisma.projectParticipant.create({
-      data: {
-        projectId: project.id,
-        userId: creatorId,
-        role: 'Chef de projet',
-      }
-    });
+    if (!project) {
+      throw new Error('Erreur lors de la création du projet');
+    }
 
     return this.formatProjectResponse(project);
   }
@@ -704,6 +719,133 @@ export class ProjectService {
     };
   }
 
+  // Obtenir les statistiques d'un projet
+  async getProjectStatistics(projectId: string, userId: string, userRole: string): Promise<ProjectStatistics> {
+    // Récupérer le projet avec toutes ses relations
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        participants: {
+          include: {
+            user: true
+          }
+        },
+        activities: {
+          select: {
+            id: true,
+            type: true,
+            status: true,
+            startDate: true,
+            endDate: true
+          }
+        },
+        fundings: {
+          select: {
+            requestedAmount: true,
+            approvedAmount: true,
+            receivedAmount: true,
+            status: true
+          }
+        }
+      }
+    });
+
+    if (!project) {
+      throw new ValidationError('Projet non trouvé');
+    }
+
+    // Vérifier l'accès
+    const hasAccess = this.checkProjectAccess(project, userId, userRole);
+    if (!hasAccess) {
+      throw new AuthError('Accès refusé à ce projet');
+    }
+
+    // Calcul des statistiques des participants
+    const activeParticipants = project.participants.filter(p => p.isActive);
+    const participantsByRole: Record<string, number> = {};
+
+    project.participants.forEach(p => {
+      const role = p.role || 'Non spécifié';
+      participantsByRole[role] = (participantsByRole[role] || 0) + 1;
+    });
+
+    // Calcul des statistiques des activités
+    const activitiesByType: Record<string, number> = {};
+    const activitiesByStatus: Record<string, number> = {};
+    let completedActivities = 0;
+
+    project.activities.forEach(a => {
+      // Par type
+      const type = a.type || 'Non spécifié';
+      activitiesByType[type] = (activitiesByType[type] || 0) + 1;
+
+      // Par statut
+      const status = a.status || 'Non spécifié';
+      activitiesByStatus[status] = (activitiesByStatus[status] || 0) + 1;
+
+      // Comptage des activités terminées
+      if (status === 'CLOTUREE') {
+        completedActivities++;
+      }
+    });
+
+    const activityCompletion = project.activities.length > 0
+      ? Math.round((completedActivities / project.activities.length) * 100)
+      : 0;
+
+    // Calcul du budget
+    const allocatedBudget = project.budget || 0;
+    const totalApproved = project.fundings.reduce((sum, f) => sum + (f.approvedAmount || 0), 0);
+    const totalReceived = project.fundings.reduce((sum, f) => sum + (f.receivedAmount || 0), 0);
+    const budgetRemaining = allocatedBudget - totalReceived;
+
+    // Calcul de la timeline
+    let timelineProgress = 0;
+    let duration = 0;
+
+    if (project.startDate && project.endDate) {
+      const start = new Date(project.startDate).getTime();
+      const end = new Date(project.endDate).getTime();
+      const now = Date.now();
+
+      duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)); // en jours
+
+      if (now >= end) {
+        timelineProgress = 100;
+      } else if (now <= start) {
+        timelineProgress = 0;
+      } else {
+        timelineProgress = Math.round(((now - start) / (end - start)) * 100);
+      }
+    }
+
+    return {
+      participants: {
+        total: project.participants.length,
+        byRole: participantsByRole,
+        activeCount: activeParticipants.length
+      },
+      activities: {
+        total: project.activities.length,
+        byType: activitiesByType,
+        byStatus: activitiesByStatus,
+        completion: activityCompletion
+      },
+      budget: {
+        allocated: allocatedBudget,
+        approved: totalApproved,
+        received: totalReceived,
+        remaining: budgetRemaining
+      },
+      timeline: {
+        startDate: project.startDate,
+        endDate: project.endDate,
+        duration: duration,
+        progress: timelineProgress
+      }
+    };
+  }
+
   // Vérifier l'accès à un projet
   private checkProjectAccess(project: any, userId: string, userRole: string): boolean {
     if (userRole === 'ADMINISTRATEUR') return true;
@@ -1047,9 +1189,16 @@ export class ProjectService {
             }
           }
         },
-        orderBy: {
-          joinedAt: Prisma.SortOrder.asc
-        }
+        orderBy: [
+          {
+            // Les participants avec le rôle "Responsable" en premier
+            role: Prisma.SortOrder.desc
+          },
+          {
+            // Puis par date d'ajout
+            joinedAt: Prisma.SortOrder.asc
+          }
+        ]
       },
       // AJOUT DES PARTENARIATS
       partnerships: {
@@ -1161,22 +1310,30 @@ export class ProjectService {
         contractNumber: project.convention.contractNumber || undefined,
       } : undefined,
       
-      participants: project.participants ? project.participants.map((p: any) => ({
-        id: p.id,
-        role: p.role,
-        joinedAt: p.joinedAt,
-        isActive: p.isActive,
-        userId: p.userId,
-        user: {
-          id: p.user.id,
-          firstName: p.user.firstName,
-          lastName: p.user.lastName,
-          email: p.user.email,
-          role: p.user.role,
-          specialization: p.user.specialization || undefined,
-          discipline: p.user.discipline || undefined,
-        }
-      })) : [],
+      participants: project.participants ? project.participants
+        .map((p: any) => ({
+          id: p.id,
+          role: p.role,
+          joinedAt: p.joinedAt,
+          isActive: p.isActive,
+          userId: p.userId,
+          user: {
+            id: p.user.id,
+            firstName: p.user.firstName,
+            lastName: p.user.lastName,
+            email: p.user.email,
+            role: p.user.role,
+            specialization: p.user.specialization || undefined,
+            discipline: p.user.discipline || undefined,
+          }
+        }))
+        .sort((a: any, b: any) => {
+          // Le créateur du projet (userId === creatorId) en premier
+          if (a.userId === project.creatorId) return -1;
+          if (b.userId === project.creatorId) return 1;
+          // Sinon, trier par date d'ajout
+          return new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime();
+        }) : [],
       
       // AJOUT DES PARTENARIATS
       partnerships: project.partnerships ? project.partnerships.map((p: any) => ({

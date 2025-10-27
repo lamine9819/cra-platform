@@ -194,7 +194,10 @@ export interface ProjectResponse {
     status: string;
     requestedAmount: number;
     approvedAmount?: number;
+    receivedAmount?: number;
     currency: string;
+    contractNumber?: string;
+    conditions?: string;
   }[];
   
   _count?: {
@@ -247,5 +250,35 @@ export interface UpdateFundingRequest {
   approvalDate?: string;
   conditions?: string;
   notes?: string;
+}
+
+// =============================================
+// STATISTIQUES DE PROJET
+// =============================================
+
+export interface ProjectStatistics {
+  participants: {
+    total: number;
+    byRole: Record<string, number>;
+    activeCount: number;
+  };
+  activities: {
+    total: number;
+    byType: Record<string, number>;
+    byStatus: Record<string, number>;
+    completion: number;
+  };
+  budget: {
+    allocated: number;
+    approved: number;
+    received: number;
+    remaining: number;
+  };
+  timeline: {
+    startDate: Date | null;
+    endDate: Date | null;
+    duration: number;
+    progress: number;
+  };
 }
 

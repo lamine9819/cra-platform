@@ -208,7 +208,9 @@ const ConventionDetailsModal: React.FC<ConventionDetailsModalProps> = ({
                   <p className="text-xs text-gray-600 mt-1">Activités</p>
                 </div>
                 <div className="bg-purple-50 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold text-purple-600">{convention._count.fundings || 0}</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {(convention._count.activityFundings || 0) + (convention._count.projectFundings || 0)}
+                  </p>
                   <p className="text-xs text-gray-600 mt-1">Financements</p>
                 </div>
               </div>

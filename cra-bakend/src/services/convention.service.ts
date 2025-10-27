@@ -61,7 +61,8 @@ export class ConventionService {
           select: {
             activities: true,
             projects: true,
-            fundings: true
+            activityFundings: true,
+            projectFundings: true
           }
         }
       }
@@ -120,7 +121,8 @@ export class ConventionService {
             select: {
               activities: true,
               projects: true,
-              fundings: true
+              activityFundings: true,
+              projectFundings: true
             }
           }
         },
@@ -175,12 +177,34 @@ export class ConventionService {
           take: 10,
           orderBy: { updatedAt: 'desc' }
         },
-        fundings: {
+        activityFundings: {
           select: {
             id: true,
             fundingSource: true,
             requestedAmount: true,
-            status: true
+            status: true,
+            activity: {
+              select: {
+                id: true,
+                title: true
+              }
+            }
+          },
+          take: 10,
+          orderBy: { createdAt: 'desc' }
+        },
+        projectFundings: {
+          select: {
+            id: true,
+            fundingSource: true,
+            requestedAmount: true,
+            status: true,
+            project: {
+              select: {
+                id: true,
+                title: true
+              }
+            }
           },
           take: 10,
           orderBy: { createdAt: 'desc' }
@@ -189,7 +213,8 @@ export class ConventionService {
           select: {
             activities: true,
             projects: true,
-            fundings: true
+            activityFundings: true,
+            projectFundings: true
           }
         }
       }
@@ -270,7 +295,8 @@ export class ConventionService {
           select: {
             activities: true,
             projects: true,
-            fundings: true
+            activityFundings: true,
+            projectFundings: true
           }
         }
       }
@@ -287,7 +313,8 @@ export class ConventionService {
           select: {
             activities: true,
             projects: true,
-            fundings: true
+            activityFundings: true,
+            projectFundings: true
           }
         }
       }
@@ -303,7 +330,8 @@ export class ConventionService {
     }
 
     // Empêcher la suppression si la convention a des relations
-    if (convention._count.activities > 0 || convention._count.projects > 0 || convention._count.fundings > 0) {
+    const totalFundings = convention._count.activityFundings + convention._count.projectFundings;
+    if (convention._count.activities > 0 || convention._count.projects > 0 || totalFundings > 0) {
       throw new ValidationError('Impossible de supprimer une convention liée à des activités, projets ou financements');
     }
 
@@ -329,6 +357,10 @@ export class ConventionService {
       mainPartner: convention.mainPartner,
       otherPartners: convention.otherPartners,
       responsibleUser: convention.responsibleUser,
+      activities: convention.activities || undefined,
+      projects: convention.projects || undefined,
+      activityFundings: convention.activityFundings || undefined,
+      projectFundings: convention.projectFundings || undefined,
       createdAt: convention.createdAt,
       updatedAt: convention.updatedAt,
       _count: convention._count,

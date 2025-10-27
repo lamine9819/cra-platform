@@ -374,7 +374,8 @@ export interface ProjectStatistics {
   };
   budget: {
     allocated: number;
-    spent: number;
+    approved: number;
+    received: number;
     remaining: number;
   };
   timeline: {
