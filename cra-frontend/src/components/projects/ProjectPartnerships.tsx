@@ -1,14 +1,15 @@
 // src/components/projects/ProjectPartnerships.tsx
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Users, Trash2, X, Calendar, Search } from 'lucide-react';
+import { Plus, Users, Trash2, X, Calendar, Search, Eye, Edit } from 'lucide-react';
 import { projectsApi } from '../../services/projectsApi';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import type { ProjectPartnership, AddPartnershipRequest } from '../../types/project.types';
+import type { ProjectPartnership, AddPartnershipRequest, UpdatePartnershipRequest } from '../../types/project.types';
 import api from '../../services/api';
+import PartnerDetailsModal from '../partners/PartnerDetailsModal';
 
 interface Partner {
   id: string;
@@ -28,6 +29,9 @@ interface ProjectPartnershipsProps {
 const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, partnerships }) => {
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
+  const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [newPartnership, setNewPartnership] = useState<AddPartnershipRequest>({
     partnerId: '',
@@ -35,6 +39,13 @@ const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, pa
     contribution: '',
     benefits: '',
     startDate: '',
+    endDate: '',
+  });
+  const [editingPartnership, setEditingPartnership] = useState<UpdatePartnershipRequest>({
+    partnershipId: '',
+    partnerType: '',
+    contribution: '',
+    benefits: '',
     endDate: '',
   });
 
@@ -68,6 +79,19 @@ const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, pa
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: (data: UpdatePartnershipRequest) => projectsApi.updatePartnership(projectId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+      toast.success('Partenariat modifié avec succès');
+      setShowEditModal(false);
+      resetEditForm();
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Erreur lors de la modification');
+    },
+  });
+
   const removeMutation = useMutation({
     mutationFn: (partnershipId: string) => projectsApi.removePartnership(projectId, partnershipId),
     onSuccess: () => {
@@ -91,12 +115,46 @@ const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, pa
     setSearchTerm('');
   };
 
+  const resetEditForm = () => {
+    setEditingPartnership({
+      partnershipId: '',
+      partnerType: '',
+      contribution: '',
+      benefits: '',
+      endDate: '',
+    });
+  };
+
   const handleAdd = () => {
     if (!newPartnership.partnerId || !newPartnership.partnerType) {
       toast.error('Veuillez sélectionner un partenaire et spécifier le type');
       return;
     }
     addMutation.mutate(newPartnership);
+  };
+
+  const handleEdit = (partnership: ProjectPartnership) => {
+    setEditingPartnership({
+      partnershipId: partnership.id,
+      partnerType: partnership.partnerType,
+      contribution: partnership.contribution || '',
+      benefits: partnership.benefits || '',
+      endDate: partnership.endDate ? partnership.endDate.split('T')[0] : '',
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = () => {
+    if (!editingPartnership.partnershipId || !editingPartnership.partnerType) {
+      toast.error('Le type de partenariat est obligatoire');
+      return;
+    }
+    updateMutation.mutate(editingPartnership);
+  };
+
+  const handleViewPartner = (partnerId: string) => {
+    setSelectedPartnerId(partnerId);
+    setIsPartnerModalOpen(true);
   };
 
   const handleRemove = (partnershipId: string, partnerName: string) => {
@@ -134,12 +192,29 @@ const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, pa
                     {partnership.partnerType}
                   </span>
                 </div>
-                <button
-                  onClick={() => handleRemove(partnership.id, partnership.partner.name)}
-                  className="p-1 text-gray-600 hover:text-red-600"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleViewPartner(partnership.partner.id)}
+                    className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                    title="Voir les détails du partenaire"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleEdit(partnership)}
+                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                    title="Modifier le partenariat"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleRemove(partnership.id, partnership.partner.name)}
+                    className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    title="Retirer le partenariat"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               {partnership.contribution && (
@@ -338,6 +413,99 @@ const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, pa
           </div>
         </div>
       )}
+
+      {/* Modal de modification */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Modifier le partenariat</h3>
+              <button onClick={() => { setShowEditModal(false); resetEditForm(); }} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Type de partenariat */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Type de partenariat <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={editingPartnership.partnerType}
+                  onChange={(e) => setEditingPartnership({ ...editingPartnership, partnerType: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Sélectionnez un type</option>
+                  <option value="Technique">Technique</option>
+                  <option value="Financier">Financier</option>
+                  <option value="Académique">Académique</option>
+                  <option value="Logistique">Logistique</option>
+                  <option value="Scientifique">Scientifique</option>
+                  <option value="Institutionnel">Institutionnel</option>
+                  <option value="Autre">Autre</option>
+                </select>
+              </div>
+
+              {/* Contribution */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Contribution</label>
+                <textarea
+                  value={editingPartnership.contribution}
+                  onChange={(e) => setEditingPartnership({ ...editingPartnership, contribution: e.target.value })}
+                  rows={3}
+                  placeholder="Décrivez la contribution du partenaire au projet..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Bénéfices */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bénéfices</label>
+                <textarea
+                  value={editingPartnership.benefits}
+                  onChange={(e) => setEditingPartnership({ ...editingPartnership, benefits: e.target.value })}
+                  rows={3}
+                  placeholder="Décrivez les bénéfices attendus de ce partenariat..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Date de fin */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date de fin</label>
+                <input
+                  type="date"
+                  value={editingPartnership.endDate}
+                  onChange={(e) => setEditingPartnership({ ...editingPartnership, endDate: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+            </div>
+
+            <div className="sticky bottom-0 bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t">
+              <Button variant="outline" onClick={() => { setShowEditModal(false); resetEditForm(); }}>Annuler</Button>
+              <Button
+                onClick={handleUpdate}
+                disabled={updateMutation.isPending || !editingPartnership.partnerType}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {updateMutation.isPending ? 'Modification...' : 'Modifier'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal des détails du partenaire */}
+      <PartnerDetailsModal
+        partnerId={selectedPartnerId}
+        isOpen={isPartnerModalOpen}
+        onClose={() => {
+          setIsPartnerModalOpen(false);
+          setSelectedPartnerId(null);
+        }}
+      />
     </div>
   );
 };

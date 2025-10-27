@@ -78,11 +78,17 @@ router.delete('/:id/partnerships/:partnershipId', projectController.removePartne
 router.get('/:id/partners/search', projectController.searchPotentialPartners);
 
 // =============================================
-// ROUTES DE GESTION DU FINANCEMENT (Placeholder)
+// ROUTES DE GESTION DU FINANCEMENT
 // =============================================
 
 // Ajouter un financement au projet
 router.post('/:id/funding', projectController.addFunding);
+
+// Mettre à jour un financement
+router.patch('/:id/funding', projectController.updateFunding);
+
+// Retirer un financement du projet
+router.delete('/:id/funding/:fundingId', projectController.removeFunding);
 
 // =============================================
 // ROUTES D'ANALYSE ET DE RAPPORTS

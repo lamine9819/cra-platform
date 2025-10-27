@@ -27,11 +27,23 @@ const partnershipTypeEnum = z.enum([
   'DISSEMINATION'
 ]);
 
-// Validation des emails
-const emailValidation = z.string().email('Format d\'email invalide').optional();
+// Validation des emails - accepte chaîne vide ou email valide
+const emailValidation = z.string()
+  .transform(val => val === '' ? undefined : val)
+  .pipe(z.string().email('Format d\'email invalide').optional())
+  .optional();
 
-// Validation des URLs
-const urlValidation = z.string().url('Format d\'URL invalide').optional();
+// Validation des URLs - accepte chaîne vide ou URL valide
+const urlValidation = z.string()
+  .transform(val => val === '' ? undefined : val)
+  .pipe(z.string().url('Format d\'URL invalide').optional())
+  .optional();
+
+// Validation des téléphones - accepte chaîne vide ou numéro valide
+const phoneValidation = z.string()
+  .transform(val => val === '' ? undefined : val)
+  .pipe(z.string().regex(/^[\+]?[0-9\s\-\(\)]{8,}$/, 'Format de téléphone invalide').optional())
+  .optional();
 
 // Validation pour créer un partenaire
 export const createPartnerSchema = z.object({
@@ -53,11 +65,9 @@ export const createPartnerSchema = z.object({
   address: z.string()
     .max(500, 'L\'adresse ne peut pas dépasser 500 caractères')
     .optional(),
-  
-  phone: z.string()
-    .regex(/^[\+]?[0-9\s\-\(\)]{8,}$/, 'Format de téléphone invalide')
-    .optional(),
-  
+
+  phone: phoneValidation,
+
   email: emailValidation,
   website: urlValidation,
   
@@ -71,10 +81,8 @@ export const createPartnerSchema = z.object({
     .optional(),
   
   contactEmail: emailValidation,
-  
-  contactPhone: z.string()
-    .regex(/^[\+]?[0-9\s\-\(\)]{8,}$/, 'Format de téléphone invalide')
-    .optional(),
+
+  contactPhone: phoneValidation,
   
   // Domaines de compétence
   expertise: z.array(z.string().min(1, 'L\'expertise ne peut pas être vide'))
@@ -110,19 +118,15 @@ export const updatePartnerSchema = z.object({
   address: z.string()
     .max(500, 'L\'adresse ne peut pas dépasser 500 caractères')
     .optional(),
-  
-  phone: z.string()
-    .regex(/^[\+]?[0-9\s\-\(\)]{8,}$/, 'Format de téléphone invalide')
-    .optional(),
-  
+
+  phone: phoneValidation,
+
   email: emailValidation,
   website: urlValidation,
   contactPerson: z.string().max(100).optional(),
   contactTitle: z.string().max(100).optional(),
   contactEmail: emailValidation,
-  contactPhone: z.string()
-    .regex(/^[\+]?[0-9\s\-\(\)]{8,}$/, 'Format de téléphone invalide')
-    .optional(),
+  contactPhone: phoneValidation,
   
   expertise: z.array(z.string().min(1))
     .refine(arr => arr.length <= 20, {
@@ -161,12 +165,19 @@ export const partnerListQuerySchema = z.object({
 });
 
 // Validation des dates pour les partenariats
-const dateValidation = z.string().refine((val) => {
-  const date = new Date(val);
-  return !isNaN(date.getTime());
-}, {
-  message: "Date invalide"
-});
+const dateValidation = z.string()
+  .transform(val => val === '' ? undefined : val)
+  .pipe(
+    z.string()
+      .refine((val) => {
+        const date = new Date(val);
+        return !isNaN(date.getTime());
+      }, {
+        message: "Date invalide"
+      })
+      .optional()
+  )
+  .optional();
 
 // Validation pour ajouter un partenariat au projet (dans projectValidation.ts)
 export const addPartnershipSchema = z.object({
@@ -185,7 +196,8 @@ export const addPartnershipSchema = z.object({
   startDate: dateValidation.optional(),
   endDate: dateValidation.optional()
 }).refine(data => {
-  if (data.startDate && data.endDate) {
+  // Vérifier que les dates ne sont pas vides et sont valides
+  if (data.startDate && data.startDate !== '' && data.endDate && data.endDate !== '') {
     return new Date(data.startDate) < new Date(data.endDate);
   }
   return true;

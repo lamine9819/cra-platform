@@ -2,12 +2,19 @@
 import { z } from 'zod';
 
 // Validation personnalisée pour les dates
-const dateValidation = z.string().refine((val) => {
-  const date = new Date(val);
-  return !isNaN(date.getTime());
-}, {
-  message: "Date invalide"
-});
+const dateValidation = z.string()
+  .transform(val => val === '' ? undefined : val)
+  .pipe(
+    z.string()
+      .refine((val) => {
+        const date = new Date(val);
+        return !isNaN(date.getTime());
+      }, {
+        message: "Date invalide"
+      })
+      .optional()
+  )
+  .optional();
 
 // ENUM pour les types de recherche
 const researchTypeEnum = z.enum([
@@ -53,27 +60,29 @@ export const createProjectSchema = z.object({
   title: z.string().min(3, 'Le titre doit contenir au moins 3 caractères').max(200),
   description: z.string().max(2000).optional(),
   objectives: z.array(z.string().min(1)).min(1, 'Au moins un objectif est requis'),
+  status: z.enum(['PLANIFIE', 'EN_COURS', 'SUSPENDU', 'TERMINE', 'ARCHIVE']).optional(),
   startDate: dateValidation.optional(),
   endDate: dateValidation.optional(),
   budget: z.number().positive().optional(),
   keywords: z.array(z.string().min(1)).default([]),
-  
+
   // NOUVEAUX CHAMPS CRA
   code: z.string().min(1).max(50).optional(),
   themeId: z.string().cuid('ID thème invalide'),
   researchProgramId: z.string().cuid('ID programme invalide').optional(),
   conventionId: z.string().cuid('ID convention invalide').optional(),
-  
+
   // Cadrage stratégique
   strategicPlan: z.string().max(100).optional(),
   strategicAxis: z.string().max(100).optional(),
   subAxis: z.string().max(100).optional(),
   program: z.string().max(100).optional(),
-  
+
   researchType: researchTypeEnum.optional(),
   interventionRegion: z.string().max(100).optional(),
 }).refine(data => {
-  if (data.startDate && data.endDate) {
+  // Vérifier que les dates ne sont pas vides et sont valides
+  if (data.startDate && data.startDate !== '' && data.endDate && data.endDate !== '') {
     return new Date(data.startDate) < new Date(data.endDate);
   }
   return true;
@@ -103,7 +112,8 @@ export const updateProjectSchema = z.object({
   researchType: researchTypeEnum.optional(),
   interventionRegion: z.string().max(100).optional(),
 }).refine(data => {
-  if (data.startDate && data.endDate) {
+  // Vérifier que les dates ne sont pas vides et sont valides
+  if (data.startDate && data.startDate !== '' && data.endDate && data.endDate !== '') {
     return new Date(data.startDate) < new Date(data.endDate);
   }
   return true;
@@ -157,7 +167,8 @@ export const addPartnershipSchema = z.object({
   startDate: dateValidation.optional(),
   endDate: dateValidation.optional(),
 }).refine(data => {
-  if (data.startDate && data.endDate) {
+  // Vérifier que les dates ne sont pas vides et sont valides
+  if (data.startDate && data.startDate !== '' && data.endDate && data.endDate !== '') {
     return new Date(data.startDate) < new Date(data.endDate);
   }
   return true;
@@ -188,7 +199,8 @@ export const addFundingSchema = z.object({
   contractNumber: z.string().max(100).optional(),
   conventionId: z.string().cuid('ID convention invalide').optional(),
 }).refine(data => {
-  if (data.startDate && data.endDate) {
+  // Vérifier que les dates ne sont pas vides et sont valides
+  if (data.startDate && data.startDate !== '' && data.endDate && data.endDate !== '') {
     return new Date(data.startDate) < new Date(data.endDate);
   }
   return true;

@@ -413,8 +413,9 @@ model Convention {
   // Relations
   activities      Activity[]
   projects        Project[]
-  fundings        ActivityFunding[]
-  
+  activityFundings ActivityFunding[]
+  projectFundings  ProjectFunding[]
+
   @@map("conventions")
 }
 
@@ -923,6 +924,7 @@ model Project {
   
   participants ProjectParticipant[]
   partnerships ProjectPartner[]
+  fundings     ProjectFunding[]
   activities   Activity[]
   tasks        Task[]
   documents    Document[]
@@ -975,6 +977,42 @@ model ProjectPartner {
   
   @@unique([projectId, partnerId])
   @@map("project_partners")
+}
+
+model ProjectFunding {
+  id              String        @id @default(cuid())
+  fundingSource   String        // Nom du bailleur/source de financement
+  fundingType     FundingType
+  status          FundingStatus @default(DEMANDE)
+
+  // Montants financiers
+  requestedAmount Float         // Montant demandé
+  approvedAmount  Float?        // Montant approuvé
+  receivedAmount  Float?        // Montant effectivement reçu
+  currency        String        @default("XOF") // Devise
+
+  // Dates
+  applicationDate DateTime?     // Date de demande
+  approvalDate    DateTime?     // Date d'approbation
+  startDate       DateTime?     // Date de début du financement
+  endDate         DateTime?     // Date de fin du financement
+
+  // Informations complémentaires
+  conditions      String?       // Conditions spécifiques du financement
+  contractNumber  String?       // Numéro de contrat/convention
+  notes           String?       // Notes diverses
+
+  // Relations
+  project         Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId       String
+
+  convention      Convention?   @relation(fields: [conventionId], references: [id])
+  conventionId    String?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("project_fundings")
 }
 
 // =============================================

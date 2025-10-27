@@ -84,6 +84,7 @@ export class ProjectService {
       title: projectData.title,
       description: projectData.description,
       objectives: projectData.objectives,
+      status: projectData.status || 'PLANIFIE',
       startDate: projectData.startDate ? new Date(projectData.startDate) : null,
       endDate: projectData.endDate ? new Date(projectData.endDate) : null,
       budget: projectData.budget,
@@ -120,6 +121,14 @@ export class ProjectService {
 
     if (projectData.program) {
       createData.program = projectData.program;
+    }
+
+    if (projectData.researchType) {
+      createData.researchType = projectData.researchType;
+    }
+
+    if (projectData.interventionRegion) {
+      createData.interventionRegion = projectData.interventionRegion;
     }
 
     // Créer le projet
@@ -496,16 +505,205 @@ export class ProjectService {
 
   // Méthodes placeholder pour les partenariats
   async addPartnership(projectId: string, partnershipData: AddPartnershipRequest, requesterId: string, requesterRole: string) {
-    return { 
-      message: 'Les partenariats seront disponibles après la migration de la base de données' 
+    // Vérifier que le projet existe et que l'utilisateur a les droits
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        participants: {
+          where: { userId: requesterId }
+        }
+      }
+    });
+
+    if (!project) {
+      throw new ValidationError('Projet non trouvé');
+    }
+
+    // Vérifier les droits d'édition
+    const canEdit = this.checkProjectEditRights(project, requesterId, requesterRole);
+    if (!canEdit) {
+      throw new AuthError('Permissions insuffisantes pour ajouter un partenariat');
+    }
+
+    // Vérifier que le partenaire existe
+    const partner = await prisma.partner.findUnique({
+      where: { id: partnershipData.partnerId }
+    });
+
+    if (!partner) {
+      throw new ValidationError('Partenaire non trouvé');
+    }
+
+    // Vérifier qu'il n'existe pas déjà un partenariat actif avec ce partenaire
+    const existingPartnership = await prisma.projectPartner.findFirst({
+      where: {
+        projectId: projectId,
+        partnerId: partnershipData.partnerId,
+        isActive: true
+      }
+    });
+
+    if (existingPartnership) {
+      throw new ValidationError('Ce partenaire est déjà associé à ce projet');
+    }
+
+    // Créer le partenariat
+    const dataToCreate: any = {
+      project: {
+        connect: { id: projectId }
+      },
+      partner: {
+        connect: { id: partnershipData.partnerId }
+      },
+      partnerType: partnershipData.partnerType,
+      contribution: partnershipData.contribution || null,
+      benefits: partnershipData.benefits || null,
+      isActive: true
+    };
+
+    // Ajouter startDate seulement si fourni, sinon utiliser la valeur par défaut
+    if (partnershipData.startDate) {
+      dataToCreate.startDate = new Date(partnershipData.startDate);
+    }
+
+    // Ajouter endDate seulement si fourni
+    if (partnershipData.endDate) {
+      dataToCreate.endDate = new Date(partnershipData.endDate);
+    }
+
+    const partnership = await prisma.projectPartner.create({
+      data: dataToCreate,
+      include: {
+        partner: true
+      }
+    });
+
+    return {
+      message: 'Partenariat ajouté avec succès',
+      partnership: partnership
     };
   }
 
   async addFunding(projectId: string, fundingData: AddFundingRequest, requesterId: string, requesterRole: string) {
-    return { 
-      message: 'Le financement doit être géré au niveau des activités.' 
+    // Vérifier que le projet existe
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: { participants: true }
+    });
+
+    if (!project) {
+      throw new ValidationError('Projet non trouvé');
+    }
+
+    // Vérifier les droits d'édition
+    const canEdit = this.checkProjectEditRights(project, requesterId, requesterRole);
+    if (!canEdit) {
+      throw new AuthError('Vous n\'avez pas les droits pour ajouter un financement à ce projet');
+    }
+
+    // Créer le financement
+    await prisma.projectFunding.create({
+      data: {
+        projectId,
+        fundingSource: fundingData.fundingSource,
+        fundingType: fundingData.fundingType,
+        status: 'DEMANDE', // Statut initial
+        requestedAmount: fundingData.requestedAmount,
+        currency: fundingData.currency || 'XOF',
+        applicationDate: fundingData.applicationDate ? new Date(fundingData.applicationDate) : null,
+        startDate: fundingData.startDate ? new Date(fundingData.startDate) : null,
+        endDate: fundingData.endDate ? new Date(fundingData.endDate) : null,
+        conditions: fundingData.conditions,
+        contractNumber: fundingData.contractNumber,
+        conventionId: fundingData.conventionId || null,
+      }
+    });
+
+    return {
+      message: 'Financement ajouté avec succès'
     };
   }
+
+  async updateFunding(projectId: string, fundingData: UpdateFundingRequest, requesterId: string, requesterRole: string) {
+    // Vérifier que le projet existe
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: { participants: true }
+    });
+
+    if (!project) {
+      throw new ValidationError('Projet non trouvé');
+    }
+
+    // Vérifier les droits d'édition
+    const canEdit = this.checkProjectEditRights(project, requesterId, requesterRole);
+    if (!canEdit) {
+      throw new AuthError('Vous n\'avez pas les droits pour modifier un financement de ce projet');
+    }
+
+    // Vérifier que le financement existe
+    const funding = await prisma.projectFunding.findUnique({
+      where: { id: fundingData.fundingId }
+    });
+
+    if (!funding || funding.projectId !== projectId) {
+      throw new ValidationError('Financement non trouvé');
+    }
+
+    // Mettre à jour le financement
+    await prisma.projectFunding.update({
+      where: { id: fundingData.fundingId },
+      data: {
+        status: fundingData.status,
+        approvedAmount: fundingData.approvedAmount,
+        receivedAmount: fundingData.receivedAmount,
+        approvalDate: fundingData.approvalDate ? new Date(fundingData.approvalDate) : undefined,
+        conditions: fundingData.conditions,
+        notes: fundingData.notes,
+      }
+    });
+
+    return {
+      message: 'Financement modifié avec succès'
+    };
+  }
+
+  async removeFunding(projectId: string, fundingId: string, requesterId: string, requesterRole: string) {
+    // Vérifier que le projet existe
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: { participants: true }
+    });
+
+    if (!project) {
+      throw new ValidationError('Projet non trouvé');
+    }
+
+    // Vérifier les droits d'édition
+    const canEdit = this.checkProjectEditRights(project, requesterId, requesterRole);
+    if (!canEdit) {
+      throw new AuthError('Vous n\'avez pas les droits pour retirer un financement de ce projet');
+    }
+
+    // Vérifier que le financement existe
+    const funding = await prisma.projectFunding.findUnique({
+      where: { id: fundingId }
+    });
+
+    if (!funding || funding.projectId !== projectId) {
+      throw new ValidationError('Financement non trouvé');
+    }
+
+    // Supprimer le financement
+    await prisma.projectFunding.delete({
+      where: { id: fundingId }
+    });
+
+    return {
+      message: 'Financement retiré avec succès'
+    };
+  }
+
   // Vérifier l'accès à un projet
   private checkProjectAccess(project: any, userId: string, userRole: string): boolean {
     if (userRole === 'ADMINISTRATEUR') return true;
@@ -875,6 +1073,12 @@ export class ProjectService {
           createdAt: Prisma.SortOrder.desc
         }
       },
+      // AJOUT DES FINANCEMENTS
+      fundings: {
+        orderBy: {
+          createdAt: Prisma.SortOrder.desc
+        }
+      },
       activities: {
         select: {
           id: true,
@@ -897,7 +1101,8 @@ export class ProjectService {
           activities: true,
           tasks: true,
           documents: true,
-          partnerships: true // AJOUT DU COMPTEUR
+          partnerships: true,
+          fundings: true
         }
       }
     };
@@ -994,7 +1199,28 @@ export class ProjectService {
           services: p.partner.services || []
         }
       })) : [],
-      
+
+      // AJOUT DES FINANCEMENTS
+      fundings: project.fundings ? project.fundings.map((f: any) => ({
+        id: f.id,
+        fundingSource: f.fundingSource,
+        fundingType: f.fundingType,
+        status: f.status,
+        requestedAmount: f.requestedAmount,
+        approvedAmount: f.approvedAmount || undefined,
+        receivedAmount: f.receivedAmount || undefined,
+        currency: f.currency,
+        applicationDate: f.applicationDate || undefined,
+        approvalDate: f.approvalDate || undefined,
+        startDate: f.startDate || undefined,
+        endDate: f.endDate || undefined,
+        conditions: f.conditions || undefined,
+        contractNumber: f.contractNumber || undefined,
+        notes: f.notes || undefined,
+        createdAt: f.createdAt,
+        updatedAt: f.updatedAt
+      })) : [],
+
       activities: project.activities ? project.activities.map((a: any) => ({
         id: a.id,
         code: a.code || undefined,
@@ -1012,7 +1238,8 @@ export class ProjectService {
         activities: 0,
         tasks: 0,
         documents: 0,
-        partnerships: 0, // AJOUT DU COMPTEUR
+        partnerships: 0,
+        fundings: 0
       },
     };
   }

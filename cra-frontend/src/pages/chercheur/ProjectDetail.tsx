@@ -27,6 +27,7 @@ import ProjectParticipants from '../../components/projects/ProjectParticipants';
 import ProjectPartnerships from '../../components/projects/ProjectPartnerships';
 import ProjectFunding from '../../components/projects/ProjectFunding';
 import ProjectAnalytics from '../../components/projects/ProjectAnalytics';
+import ConventionDetailsModal from '../../components/conventions/ConventionDetailsModal';
 
 type TabType = 'overview' | 'participants' | 'partnerships' | 'funding' | 'analytics';
 
@@ -34,6 +35,8 @@ const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [selectedConventionId, setSelectedConventionId] = useState<string | null>(null);
+  const [isConventionModalOpen, setIsConventionModalOpen] = useState(false);
 
   const { data: project, isLoading, isError, error } = useQuery({
     queryKey: ['project', id],
@@ -227,6 +230,77 @@ const ProjectDetail: React.FC = () => {
                 </div>
               </div>
 
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Catégorisation</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {project.status && (
+                    <div className="flex items-start gap-3">
+                      <Target className="w-5 h-5 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">État du projet</p>
+                        <p className="text-sm text-gray-600">
+                          <span className={`px-2 py-1 rounded-full ${ProjectStatusColors[project.status]}`}>
+                            {ProjectStatusLabels[project.status]}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {project.researchType && (
+                    <div className="flex items-start gap-3">
+                      <Target className="w-5 h-5 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Type de recherche</p>
+                        <p className="text-sm text-gray-600">{ResearchTypeLabels[project.researchType]}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {project.theme && (
+                    <div className="flex items-start gap-3">
+                      <Target className="w-5 h-5 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Thème de recherche</p>
+                        <p className="text-sm text-gray-600">
+                          {project.theme.code ? `${project.theme.code} - ` : ''}{project.theme.name}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {project.researchProgram && (
+                    <div className="flex items-start gap-3">
+                      <Target className="w-5 h-5 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Programme de recherche</p>
+                        <p className="text-sm text-gray-600">
+                          {project.researchProgram.code ? `${project.researchProgram.code} - ` : ''}{project.researchProgram.name}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {project.convention && (
+                    <div className="flex items-start gap-3">
+                      <Target className="w-5 h-5 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Convention</p>
+                        <button
+                          onClick={() => {
+                            setSelectedConventionId(project.convention!.id);
+                            setIsConventionModalOpen(true);
+                          }}
+                          className="text-sm text-green-600 hover:text-green-700 hover:underline text-left transition-colors"
+                        >
+                          {project.convention.contractNumber ? `${project.convention.contractNumber} - ` : ''}{project.convention.title}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {(project.strategicPlan || project.strategicAxis || project.subAxis || project.program) && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Cadrage stratégique</h3>
@@ -303,6 +377,16 @@ const ProjectDetail: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Modal des détails de la convention */}
+      <ConventionDetailsModal
+        conventionId={selectedConventionId}
+        isOpen={isConventionModalOpen}
+        onClose={() => {
+          setIsConventionModalOpen(false);
+          setSelectedConventionId(null);
+        }}
+      />
     </div>
   );
 };

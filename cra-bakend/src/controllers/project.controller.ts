@@ -214,6 +214,44 @@ export class ProjectController {
     }
   };
 
+  // Mettre à jour un financement
+  updateFunding = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+      const requesterId = authenticatedReq.user.userId;
+      const requesterRole = authenticatedReq.user.role;
+
+      const result = await projectService.updateFunding(id, req.body, requesterId, requesterRole);
+
+      res.status(200).json({
+        success: true,
+        message: result.message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Retirer un financement du projet
+  removeFunding = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id, fundingId } = req.params;
+      const requesterId = authenticatedReq.user.userId;
+      const requesterRole = authenticatedReq.user.role;
+
+      const result = await projectService.removeFunding(id, fundingId, requesterId, requesterRole);
+
+      res.status(200).json({
+        success: true,
+        message: result.message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   // MÉTHODES D'ANALYSE ET DE RAPPORTS
 
   // Obtenir les statistiques d'un projet

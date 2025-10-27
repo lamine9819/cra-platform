@@ -9,6 +9,8 @@ import toast from 'react-hot-toast';
 import {
   ResearchType,
   ResearchTypeLabels,
+  ProjectStatus,
+  ProjectStatusLabels,
   type CreateProjectRequest,
 } from '../../types/project.types';
 import api from '../../services/api';
@@ -54,6 +56,7 @@ const CreateProject: React.FC = () => {
     program: '',
     researchType: undefined,
     interventionRegion: '',
+    status: ProjectStatus.PLANIFIE,
   });
 
   const [newKeyword, setNewKeyword] = useState('');
@@ -326,6 +329,23 @@ const CreateProject: React.FC = () => {
               >
                 <option value="">Sélectionnez un type</option>
                 {Object.entries(ResearchTypeLabels).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                État du projet <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.status || ProjectStatus.PLANIFIE}
+                onChange={(e) =>
+                  setFormData({ ...formData, status: e.target.value as ProjectStatus })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                {Object.entries(ProjectStatusLabels).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
               </select>

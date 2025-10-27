@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(cat convention.routes.ts)",
-      "Bash(cat strategic-planning.routes.ts)"
+      "Bash(cat strategic-planning.routes.ts)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx tsc:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

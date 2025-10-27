@@ -240,6 +240,17 @@ class ProjectsApiService {
     }
   }
 
+  /**
+   * Retirer un financement du projet
+   */
+  async removeFunding(projectId: string, fundingId: string): Promise<void> {
+    try {
+      await api.delete(`${this.baseUrl}/${projectId}/funding/${fundingId}`);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors du retrait du financement');
+    }
+  }
+
   // =============================================
   // ANALYSE ET RAPPORTS
   // =============================================

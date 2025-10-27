@@ -8,23 +8,24 @@ export interface CreateProjectRequest {
   title: string;
   description?: string;
   objectives: string[];
+  status?: 'PLANIFIE' | 'EN_COURS' | 'SUSPENDU' | 'TERMINE' | 'ARCHIVE';
   startDate?: string;
   endDate?: string;
   budget?: number;
   keywords: string[];
-  
+
   // NOUVEAUX CHAMPS SPÉCIFIQUES CRA
   code?: string; // Code unique du projet
   themeId: string; // OBLIGATOIRE - Lien avec thème de recherche
   researchProgramId?: string; // Lien avec programme de recherche
   conventionId?: string; // Lien avec convention si applicable
-  
+
   // Cadrage stratégique (optionnel mais recommandé)
   strategicPlan?: string;
   strategicAxis?: string;
   subAxis?: string;
   program?: string;
-  
+
   // Classification du projet
   researchType?: 'RECHERCHE_FONDAMENTALE' | 'RECHERCHE_APPLIQUEE' | 'RECHERCHE_DEVELOPPEMENT' | 'PRODUCTION_SEMENCES';
   interventionRegion?: string; // Région d'intervention

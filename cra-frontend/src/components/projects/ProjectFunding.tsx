@@ -1,7 +1,7 @@
 // src/components/projects/ProjectFunding.tsx
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, DollarSign, X, Info } from 'lucide-react';
+import { Plus, DollarSign, X, Info, Eye, Edit, Trash2 } from 'lucide-react';
 import { projectsApi } from '../../services/projectsApi';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
@@ -12,7 +12,8 @@ import {
   FundingStatusLabels,
   FundingStatusColors,
   type ProjectFunding as Funding,
-  type AddFundingRequest
+  type AddFundingRequest,
+  type UpdateFundingRequest
 } from '../../types/project.types';
 
 interface ProjectFundingProps {
@@ -40,6 +41,9 @@ const COMMON_FUNDING_SOURCES = [
 const ProjectFunding: React.FC<ProjectFundingProps> = ({ projectId, fundings = [] }) => {
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedFunding, setSelectedFunding] = useState<Funding | null>(null);
   const [customSource, setCustomSource] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [newFunding, setNewFunding] = useState<AddFundingRequest>({
@@ -53,6 +57,15 @@ const ProjectFunding: React.FC<ProjectFundingProps> = ({ projectId, fundings = [
     conditions: '',
     contractNumber: '',
   });
+  const [editingFunding, setEditingFunding] = useState<UpdateFundingRequest>({
+    fundingId: '',
+    status: undefined,
+    approvedAmount: undefined,
+    receivedAmount: undefined,
+    approvalDate: '',
+    conditions: '',
+    notes: '',
+  });
 
   const addMutation = useMutation({
     mutationFn: (data: AddFundingRequest) => projectsApi.addFunding(projectId, data),
@@ -64,6 +77,30 @@ const ProjectFunding: React.FC<ProjectFundingProps> = ({ projectId, fundings = [
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erreur lors de l\'ajout');
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: UpdateFundingRequest) => projectsApi.updateFunding(projectId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+      toast.success('Financement modifié avec succès');
+      setShowEditModal(false);
+      resetEditForm();
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Erreur lors de la modification');
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (fundingId: string) => projectsApi.removeFunding(projectId, fundingId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+      toast.success('Financement retiré avec succès');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Erreur lors du retrait');
     },
   });
 
@@ -81,6 +118,18 @@ const ProjectFunding: React.FC<ProjectFundingProps> = ({ projectId, fundings = [
     });
     setCustomSource('');
     setShowCustomInput(false);
+  };
+
+  const resetEditForm = () => {
+    setEditingFunding({
+      fundingId: '',
+      status: undefined,
+      approvedAmount: undefined,
+      receivedAmount: undefined,
+      approvalDate: '',
+      conditions: '',
+      notes: '',
+    });
   };
 
   const handleSourceChange = (value: string) => {
@@ -105,6 +154,38 @@ const ProjectFunding: React.FC<ProjectFundingProps> = ({ projectId, fundings = [
       ...newFunding,
       fundingSource: finalSource,
     });
+  };
+
+  const handleEdit = (funding: Funding) => {
+    setEditingFunding({
+      fundingId: funding.id,
+      status: funding.status,
+      approvedAmount: funding.approvedAmount || undefined,
+      receivedAmount: funding.receivedAmount || undefined,
+      approvalDate: funding.approvalDate ? funding.approvalDate.split('T')[0] : '',
+      conditions: funding.conditions || '',
+      notes: funding.notes || '',
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = () => {
+    if (!editingFunding.fundingId) {
+      toast.error('Erreur: financement non identifié');
+      return;
+    }
+    updateMutation.mutate(editingFunding);
+  };
+
+  const handleViewDetails = (funding: Funding) => {
+    setSelectedFunding(funding);
+    setShowDetailsModal(true);
+  };
+
+  const handleRemove = (fundingId: string, fundingSource: string) => {
+    if (window.confirm(`Êtes-vous sûr de vouloir retirer le financement "${fundingSource}" ?`)) {
+      removeMutation.mutate(fundingId);
+    }
   };
 
   const formatAmount = (amount: number, currency: string) => {
@@ -163,6 +244,29 @@ const ProjectFunding: React.FC<ProjectFundingProps> = ({ projectId, fundings = [
                       {FundingStatusLabels[funding.status]}
                     </span>
                   </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleViewDetails(funding)}
+                    className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                    title="Voir les détails"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleEdit(funding)}
+                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                    title="Modifier le financement"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleRemove(funding.id, funding.fundingSource)}
+                    className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    title="Retirer le financement"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
@@ -378,6 +482,180 @@ const ProjectFunding: React.FC<ProjectFundingProps> = ({ projectId, fundings = [
               >
                 {addMutation.isPending ? 'Ajout...' : 'Ajouter'}
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de modification */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Modifier le financement</h3>
+              <button onClick={() => { setShowEditModal(false); resetEditForm(); }} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+                <select
+                  value={editingFunding.status || ''}
+                  onChange={(e) => setEditingFunding({ ...editingFunding, status: e.target.value as FundingStatus })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                >
+                  {Object.entries(FundingStatusLabels).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Montant approuvé</label>
+                  <input
+                    type="number"
+                    value={editingFunding.approvedAmount || ''}
+                    onChange={(e) => setEditingFunding({ ...editingFunding, approvedAmount: Number(e.target.value) })}
+                    min="0"
+                    step="1000"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Montant reçu</label>
+                  <input
+                    type="number"
+                    value={editingFunding.receivedAmount || ''}
+                    onChange={(e) => setEditingFunding({ ...editingFunding, receivedAmount: Number(e.target.value) })}
+                    min="0"
+                    step="1000"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date d'approbation</label>
+                <input
+                  type="date"
+                  value={editingFunding.approvalDate}
+                  onChange={(e) => setEditingFunding({ ...editingFunding, approvalDate: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Conditions</label>
+                <textarea
+                  value={editingFunding.conditions}
+                  onChange={(e) => setEditingFunding({ ...editingFunding, conditions: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea
+                  value={editingFunding.notes}
+                  onChange={(e) => setEditingFunding({ ...editingFunding, notes: e.target.value })}
+                  rows={3}
+                  placeholder="Notes internes sur le financement..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+            </div>
+
+            <div className="sticky bottom-0 bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t">
+              <Button variant="outline" onClick={() => { setShowEditModal(false); resetEditForm(); }}>Annuler</Button>
+              <Button
+                onClick={handleUpdate}
+                disabled={updateMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {updateMutation.isPending ? 'Modification...' : 'Modifier'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal des détails */}
+      {showDetailsModal && selectedFunding && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Détails du financement</h3>
+              <button onClick={() => { setShowDetailsModal(false); setSelectedFunding(null); }} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">{selectedFunding.fundingSource}</h4>
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
+                    {FundingTypeLabels[selectedFunding.fundingType]}
+                  </span>
+                  <span className={`px-3 py-1 text-sm font-semibold rounded-full ${FundingStatusColors[selectedFunding.status]}`}>
+                    {FundingStatusLabels[selectedFunding.status]}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                <div>
+                  <p className="text-sm text-gray-600">Montant demandé</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {formatAmount(selectedFunding.requestedAmount, selectedFunding.currency)}
+                  </p>
+                </div>
+                {selectedFunding.approvedAmount && (
+                  <div>
+                    <p className="text-sm text-gray-600">Montant approuvé</p>
+                    <p className="text-lg font-semibold text-green-600">
+                      {formatAmount(selectedFunding.approvedAmount, selectedFunding.currency)}
+                    </p>
+                  </div>
+                )}
+                {selectedFunding.receivedAmount && (
+                  <div>
+                    <p className="text-sm text-gray-600">Montant reçu</p>
+                    <p className="text-lg font-semibold text-purple-600">
+                      {formatAmount(selectedFunding.receivedAmount, selectedFunding.currency)}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {selectedFunding.contractNumber && (
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Numéro de contrat</p>
+                  <p className="text-sm text-gray-900">{selectedFunding.contractNumber}</p>
+                </div>
+              )}
+
+              {selectedFunding.conditions && (
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-1">Conditions</p>
+                  <p className="text-sm text-gray-600 whitespace-pre-wrap">{selectedFunding.conditions}</p>
+                </div>
+              )}
+
+              {selectedFunding.notes && (
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-1">Notes</p>
+                  <p className="text-sm text-gray-600 whitespace-pre-wrap">{selectedFunding.notes}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="sticky bottom-0 bg-gray-50 px-6 py-4 flex justify-end border-t">
+              <Button variant="outline" onClick={() => { setShowDetailsModal(false); setSelectedFunding(null); }}>Fermer</Button>
             </div>
           </div>
         </div>

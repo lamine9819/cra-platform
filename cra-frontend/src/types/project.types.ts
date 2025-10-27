@@ -251,6 +251,7 @@ export interface CreateProjectRequest {
   title: string;
   description?: string;
   objectives: string[];
+  status?: ProjectStatus;
   startDate?: string;
   endDate?: string;
   budget?: number;
