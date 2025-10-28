@@ -1,280 +1,301 @@
-// src/pages/chercheur/ActivityDetail.tsx (avec commentaires)
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+// src/pages/chercheur/ActivityDetail.tsx
+import React, { useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft,
   Edit,
   Trash2,
-  Share2,
-  MoreVertical,
   Calendar,
   MapPin,
+  Users,
   Target,
   FileText,
-  Lightbulb,
-  CheckSquare,
-  Folder,
-  Plus,
-  AlertCircle,
-  Activity as ActivityIcon,
+  TrendingUp,
   Clock,
-  MessageSquare
+  Copy,
+  CheckCircle,
+  RefreshCw,
 } from 'lucide-react';
-import activitiesApi, { Activity } from '../../services/activitiesApi';
-import { CommentSection } from '../../components/comments/CommentSection';
+import { activitiesApi } from '../../services/activitiesApi';
+import { Button } from '../../components/ui/Button';
+import ActivityParticipants from '../../components/activities/ActivityParticipants';
+import ActivityPartnerships from '../../components/activities/ActivityPartnerships';
+import ActivityFunding from '../../components/activities/ActivityFunding';
+import ActivityTasks from '../../components/activities/ActivityTasks';
+import ReconductActivityModal from '../../components/activities/ReconductActivityModal';
+import toast from 'react-hot-toast';
+import {
+  ActivityTypeLabels,
+  ActivityTypeColors,
+  ActivityStatusLabels,
+  ActivityStatusColors,
+  ActivityLifecycleStatusLabels,
+} from '../../types/activity.types';
+
+type TabType = 'overview' | 'participants' | 'partnerships' | 'funding' | 'tasks';
 
 const ActivityDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
-  const [activity, setActivity] = useState<Activity | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [showReconductModal, setShowReconductModal] = useState(false);
 
-  // Charger l'activité
-  const loadActivity = async () => {
-    if (!id) return;
-    
-    try {
-      setLoading(true);
-      setError(null);
-      const activityData = await activitiesApi.getActivityById(id);
-      setActivity(activityData);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Empêcher le chargement si l'ID est "create" ou "edit" (routes réservées)
+  const isValidId = id && id !== 'create' && id !== 'edit' && !id.includes('/');
 
-  useEffect(() => {
-    loadActivity();
-  }, [id]);
-
-  // Actions de l'activité
-  const handleDeleteActivity = async () => {
-    if (!activity || !window.confirm('Êtes-vous sûr de vouloir supprimer cette activité ?')) {
+  // Rediriger si l'ID n'est pas valide
+  React.useEffect(() => {
+    if (id === 'create') {
+      console.log('ActivityDetail: ID invalide détecté (create), ne devrait pas être ici');
+      // Ne pas naviguer, juste ignorer
       return;
     }
+  }, [id]);
 
+  const { data: activity, isLoading, error, refetch } = useQuery({
+    queryKey: ['activity', id],
+    queryFn: () => activitiesApi.getActivityById(id!),
+    enabled: !!isValidId,
+  });
+
+  // Charger l'historique des reconductions
+  const { data: recurrenceHistory } = useQuery({
+    queryKey: ['activity-recurrence', id],
+    queryFn: () => activitiesApi.getRecurrenceHistory(id!),
+    enabled: !!isValidId && !!activity?.isRecurrent,
+  });
+
+  // Si l'ID n'est pas valide, ne rien afficher
+  if (!isValidId) {
+    return null;
+  }
+
+  const handleDelete = () => {
+    toast((t) => (
+      <div>
+        <p className="font-medium mb-2">
+          Voulez-vous vraiment supprimer cette activité ?
+        </p>
+        <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              try {
+                await activitiesApi.deleteActivity(id!);
+                toast.dismiss(t.id);
+                toast.success('Activité supprimée avec succès');
+                navigate('/chercheur/activities');
+              } catch (error: any) {
+                toast.dismiss(t.id);
+                toast.error(error.message || 'Erreur lors de la suppression');
+              }
+            }}
+            className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Confirmer
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="px-3 py-1 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+          >
+            Annuler
+          </button>
+        </div>
+      </div>
+    ), { duration: 5000 });
+  };
+
+  const handleDuplicate = async () => {
     try {
-      await activitiesApi.deleteActivity(activity.id);
-      navigate('/chercheur/activities');
-    } catch (err: any) {
-      alert(err.message);
+      toast.loading('Duplication en cours...');
+      const duplicated = await activitiesApi.duplicateActivity(id!, {
+        title: `${activity?.title} (Copie)`,
+        copyParticipants: true,
+        copyTasks: false,
+        copyPartnerships: true,
+        copyFundings: false,
+      });
+      toast.dismiss();
+      toast.success('Activité dupliquée avec succès');
+      navigate(`/chercheur/activities/${duplicated.id}`);
+    } catch (error: any) {
+      toast.dismiss();
+      toast.error(error.message || 'Erreur lors de la duplication');
     }
   };
 
-  // Formater les dates
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
       </div>
     );
   }
 
   if (error || !activity) {
     return (
-      <div className="text-center py-12">
-        <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-          <AlertCircle className="h-8 w-8 text-red-500" />
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <p className="text-red-600">Erreur lors du chargement de l'activité</p>
+          <Button onClick={() => refetch()} className="mt-4 bg-green-600 hover:bg-green-700">
+            Réessayer
+          </Button>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          Erreur de chargement
-        </h3>
-        <p className="text-gray-600 mb-4">
-          {error || 'Activité non trouvée'}
-        </p>
-        <button
-          onClick={() => navigate('/chercheur/activities')}
-          className="text-blue-600 hover:text-blue-700 font-medium"
-        >
-          Retour aux activités
-        </button>
       </div>
     );
   }
 
   const tabs = [
-    { id: 'overview', label: 'Vue d\'ensemble', icon: Target },
-    { id: 'tasks', label: 'Tâches', icon: CheckSquare, badge: activity._count?.tasks },
-    { id: 'documents', label: 'Documents', icon: FileText, badge: activity._count?.documents },
-    { id: 'forms', label: 'Formulaires', icon: Folder, badge: activity._count?.forms },
-    { id: 'discussions', label: 'Discussions', icon: MessageSquare }
+    { id: 'overview' as TabType, label: 'Vue d\'ensemble', icon: FileText },
+    { id: 'participants' as TabType, label: 'Participants', icon: Users, count: activity._count?.participants },
+    { id: 'partnerships' as TabType, label: 'Partenariats', icon: TrendingUp, count: activity._count?.partnerships },
+    { id: 'funding' as TabType, label: 'Financements', icon: Target, count: activity._count?.fundings },
+    { id: 'tasks' as TabType, label: 'Tâches', icon: CheckCircle, count: activity._count?.tasks },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate('/chercheur/activities')}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div>
+    <div className="container mx-auto px-4 py-8">
+      {/* Breadcrumb */}
+      <div className="mb-6">
+        <Link to="/chercheur/activities" className="text-green-600 hover:text-green-700 flex items-center">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour aux activités
+        </Link>
+      </div>
+
+      {/* En-tête */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-bold text-gray-900">{activity.title}</h1>
-            </div>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <span>Créé le {formatDate(activity.createdAt)}</span>
-              {activity.project && (
-                <Link
-                  to={`/chercheur/projects/${activity.project.id}`}
-                  className="text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  📁 {activity.project.title}
-                </Link>
+              {activity.code && (
+                <span className="text-sm text-gray-500 font-mono">{activity.code}</span>
+              )}
+              <span className={`px-3 py-1 text-sm font-medium rounded-full ${ActivityTypeColors[activity.type]}`}>
+                {ActivityTypeLabels[activity.type]}
+              </span>
+              <span className={`px-3 py-1 text-sm font-medium rounded-full ${ActivityStatusColors[activity.status]}`}>
+                {ActivityStatusLabels[activity.status]}
+              </span>
+              {activity.isRecurrent && (
+                <span className="px-3 py-1 text-sm font-medium rounded-full bg-purple-100 text-purple-800">
+                  Récurrente ({activity.recurrenceCount})
+                </span>
               )}
             </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{activity.title}</h1>
+            {activity.description && (
+              <p className="text-gray-600">{activity.description}</p>
+            )}
+          </div>
+          <div className="flex gap-2 ml-4">
+            <Button
+              onClick={() => setShowReconductModal(true)}
+              variant="outline"
+              className="border-purple-600 text-purple-600 hover:bg-purple-50"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Reconduire
+            </Button>
+            <Button
+              onClick={handleDuplicate}
+              variant="outline"
+              className="border-green-600 text-green-600 hover:bg-green-50"
+            >
+              <Copy className="w-4 h-4 mr-2" />
+              Dupliquer
+            </Button>
+            <Link to={`/chercheur/activities/${id}/edit`}>
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
+                <Edit className="w-4 h-4 mr-2" />
+                Modifier
+              </Button>
+            </Link>
+            <Button
+              onClick={handleDelete}
+              variant="outline"
+              className="border-red-600 text-red-600 hover:bg-red-50"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
           </div>
         </div>
 
-        {/* Actions menu */}
-        <div className="relative">
-          <button
-            onClick={() => setShowDropdown(!showDropdown)}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-          >
-            <MoreVertical className="h-5 w-5" />
-          </button>
-          
-          {showDropdown && (
-            <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border z-10">
-              <div className="py-1">
-                <Link
-                  to={`/chercheur/activities/${activity.id}/edit`}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                >
-                  <Edit className="h-4 w-4" />
-                  Modifier
-                </Link>
-                <button
-                  onClick={() => {
-                    // TODO: Implémenter le partage
-                    alert('Fonctionnalité de partage à venir');
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
-                >
-                  <Share2 className="h-4 w-4" />
-                  Partager
-                </button>
-                <button
-                  onClick={handleDeleteActivity}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Supprimer
-                </button>
+        {/* Informations clés */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
+          <div className="flex items-center text-gray-600">
+            <Target className="w-5 h-5 mr-2 text-green-600" />
+            <div>
+              <p className="text-xs text-gray-500">Thème</p>
+              <p className="font-medium">{activity.theme.name}</p>
+            </div>
+          </div>
+          <div className="flex items-center text-gray-600">
+            <Users className="w-5 h-5 mr-2 text-green-600" />
+            <div>
+              <p className="text-xs text-gray-500">Responsable</p>
+              <p className="font-medium">
+                {activity.responsible.firstName} {activity.responsible.lastName}
+              </p>
+            </div>
+          </div>
+          {(activity.startDate || activity.endDate) && (
+            <div className="flex items-center text-gray-600">
+              <Calendar className="w-5 h-5 mr-2 text-green-600" />
+              <div>
+                <p className="text-xs text-gray-500">Période</p>
+                <p className="font-medium">
+                  {activity.startDate ? new Date(activity.startDate).toLocaleDateString('fr-FR') : '?'} →{' '}
+                  {activity.endDate ? new Date(activity.endDate).toLocaleDateString('fr-FR') : '?'}
+                </p>
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Stats cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Tâches</p>
-              <p className="text-2xl font-bold text-gray-900">{activity._count?.tasks || 0}</p>
-            </div>
-            <CheckSquare className="h-8 w-8 text-orange-500" />
+      {/* Tabs */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div className="border-b border-gray-200">
+          <div className="flex overflow-x-auto">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center px-6 py-4 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'border-green-600 text-green-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 mr-2" />
+                  {tab.label}
+                  {tab.count !== undefined && tab.count > 0 && (
+                    <span className="ml-2 bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Documents</p>
-              <p className="text-2xl font-bold text-gray-900">{activity._count?.documents || 0}</p>
-            </div>
-            <FileText className="h-8 w-8 text-purple-500" />
-          </div>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Formulaires</p>
-              <p className="text-2xl font-bold text-gray-900">{activity._count?.forms || 0}</p>
-            </div>
-            <Folder className="h-8 w-8 text-green-500" />
-          </div>
-        </div>
-      </div>
 
-      {/* Navigation tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                {tab.label}
-                {tab.badge !== undefined && tab.badge > 0 && (
-                  <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
-                    {tab.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* Tab content */}
-      <div className="mt-6">
-        {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Informations principales */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Description */}
-              {activity.description && (
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
-                  <p className="text-gray-700 leading-relaxed">{activity.description}</p>
-                </div>
-              )}
-
+        <div className="p-6">
+          {activeTab === 'overview' && (
+            <div className="space-y-6">
               {/* Objectifs */}
-              {activity.objectives.length > 0 && (
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <Target className="h-5 w-5" />
-                    Objectifs
-                  </h3>
-                  <ul className="space-y-2">
-                    {activity.objectives.map((objective, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-sm font-medium min-w-[24px] text-center">
-                          {index + 1}
-                        </span>
-                        <span className="text-gray-700">{objective}</span>
-                      </li>
+              {activity.objectives && activity.objectives.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Objectifs</h3>
+                  <ul className="list-disc list-inside space-y-2">
+                    {activity.objectives.map((obj, idx) => (
+                      <li key={idx} className="text-gray-700">{obj}</li>
                     ))}
                   </ul>
                 </div>
@@ -282,191 +303,216 @@ const ActivityDetail: React.FC = () => {
 
               {/* Méthodologie */}
               {activity.methodology && (
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <Lightbulb className="h-5 w-5" />
-                    Méthodologie
-                  </h3>
-                  <p className="text-gray-700 leading-relaxed">{activity.methodology}</p>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Méthodologie</h3>
+                  <p className="text-gray-700">{activity.methodology}</p>
                 </div>
               )}
 
-              {/* Résultats et conclusions */}
-              {(activity.results || activity.conclusions) && (
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Résultats et conclusions
-                  </h3>
-                  <div className="space-y-4">
-                    {activity.results && (
-                      <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Résultats observés</h4>
-                        <p className="text-gray-700 leading-relaxed">{activity.results}</p>
-                      </div>
-                    )}
-                    {activity.conclusions && (
-                      <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Conclusions</h4>
-                        <p className="text-gray-700 leading-relaxed">{activity.conclusions}</p>
-                      </div>
-                    )}
-                  </div>
+              {/* Localisation */}
+              {activity.location && (
+                <div className="flex items-center text-gray-700">
+                  <MapPin className="w-5 h-5 mr-2 text-green-600" />
+                  <span><strong>Localisation:</strong> {activity.location}</span>
                 </div>
               )}
-            </div>
 
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Informations de l'activité */}
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Informations</h3>
-                <div className="space-y-4">
-                  {/* Lieu */}
-                  {activity.location && (
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-4 w-4 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-600">Lieu</p>
-                        <p className="text-sm font-medium text-gray-900">{activity.location}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Dates */}
-                  {(activity.startDate || activity.endDate) && (
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-600">Période</p>
-                        <p className="text-sm font-medium text-gray-900">
-                          {activity.startDate && formatDate(activity.startDate)}
-                          {activity.startDate && activity.endDate && ' - '}
-                          {activity.endDate && formatDate(activity.endDate)}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Dernière mise à jour */}
-                  <div className="flex items-center gap-3">
-                    <Clock className="h-4 w-4 text-gray-400" />
-                    <div>
-                      <p className="text-sm text-gray-600">Dernière mise à jour</p>
-                      <p className="text-sm font-medium text-gray-900">
-                        {formatDate(activity.updatedAt)}
-                      </p>
-                    </div>
-                  </div>
+              {/* Station */}
+              {activity.station && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Station</h3>
+                  <p className="text-gray-700">{activity.station.name}</p>
                 </div>
-              </div>
+              )}
 
-              {/* Actions rapides */}
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
-                <div className="space-y-2">
+              {/* Projet lié */}
+              {activity.project ? (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Projet lié</h3>
                   <Link
-                    to={`/chercheur/activities/${activity.id}/tasks/new`}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg"
+                    to={`/chercheur/projects/${activity.project.id}`}
+                    className="text-green-600 hover:text-green-700 hover:underline"
                   >
-                    <Plus className="h-4 w-4" />
-                    Nouvelle tâche
+                    {activity.project.title}
                   </Link>
-                  <button
-                    onClick={() => {
-                      // TODO: Implémenter l'ajout de document
-                      alert('Fonctionnalité à venir');
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Ajouter un document
-                  </button>
-                  <button
-                    onClick={() => {
-                      // TODO: Implémenter l'ajout de formulaire
-                      alert('Fonctionnalité à venir');
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Lier un formulaire
-                  </button>
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-yellow-800">
+                    <strong>Note:</strong> Cette activité n'est pas rattachée à un projet.
+                  </p>
+                </div>
+              )}
 
-        {/* Autres onglets */}
-        {activeTab === 'tasks' && (
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="text-center py-8">
-              <CheckSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Tâches de l'activité</h3>
-              <p className="text-gray-600 mb-4">Cette section sera développée prochainement</p>
-              <Link
-                to={`/chercheur/activities/${activity.id}/tasks/new`}
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4" />
-                Créer une tâche
-              </Link>
-            </div>
-          </div>
-        )}
+              {/* Convention */}
+              {activity.convention && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Convention</h3>
+                  <p className="text-gray-700">{activity.convention.title}</p>
+                </div>
+              )}
 
-        {activeTab === 'documents' && (
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="text-center py-8">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Documents de l'activité</h3>
-              <p className="text-gray-600 mb-4">Cette section sera développée prochainement</p>
-              <button
-                onClick={() => {
-                  // TODO: Implémenter l'upload de documents
-                  alert('Fonctionnalité à venir');
-                }}
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4" />
-                Ajouter un document
-              </button>
-            </div>
-          </div>
-        )}
+              {/* Résultats attendus */}
+              {activity.expectedResults && activity.expectedResults.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Résultats attendus</h3>
+                  <ul className="list-disc list-inside space-y-2">
+                    {activity.expectedResults.map((result, idx) => (
+                      <li key={idx} className="text-gray-700">{result}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-        {activeTab === 'forms' && (
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="text-center py-8">
-              <Folder className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Formulaires liés</h3>
-              <p className="text-gray-600 mb-4">Cette section sera développée prochainement</p>
-              <button
-                onClick={() => {
-                  // TODO: Implémenter la liaison de formulaires
-                  alert('Fonctionnalité à venir');
-                }}
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4" />
-                Lier un formulaire
-              </button>
-            </div>
-          </div>
-        )}
+              {/* Contraintes */}
+              {activity.constraints && activity.constraints.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Contraintes</h3>
+                  <ul className="list-disc list-inside space-y-2">
+                    {activity.constraints.map((constraint, idx) => (
+                      <li key={idx} className="text-gray-700">{constraint}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-        {/* 🎯 NOUVEAUTÉ: Onglet Discussions */}
-        {activeTab === 'discussions' && (
-          <CommentSection
-            targetType="activity"
-            targetId={activity.id}
-            title={`Discussions de l'activité "${activity.title}"`}
-            showStats={false}
-            className="bg-gray-50 p-6 rounded-lg"
-          />
-        )}
+              {/* Résultats obtenus */}
+              {activity.results && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Résultats obtenus</h3>
+                  <p className="text-gray-700">{activity.results}</p>
+                </div>
+              )}
+
+              {/* Conclusions */}
+              {activity.conclusions && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Conclusions</h3>
+                  <p className="text-gray-700">{activity.conclusions}</p>
+                </div>
+              )}
+
+              {/* Reconduction */}
+              {activity.isRecurrent && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-purple-900 mb-2 flex items-center">
+                    <Clock className="w-5 h-5 mr-2" />
+                    Informations de reconduction
+                  </h3>
+                  <div className="space-y-2 text-sm text-purple-800">
+                    <p><strong>Statut:</strong> {ActivityLifecycleStatusLabels[activity.lifecycleStatus]}</p>
+                    <p><strong>Nombre de reconductions:</strong> {activity.recurrenceCount}</p>
+                    {activity.recurrenceReason && (
+                      <p><strong>Raison:</strong> {activity.recurrenceReason}</p>
+                    )}
+                    {activity.parentActivity && (
+                      <p>
+                        <strong>Activité parente:</strong>{' '}
+                        <Link
+                          to={`/chercheur/activities/${activity.parentActivity.id}`}
+                          className="text-purple-600 hover:underline"
+                        >
+                          {activity.parentActivity.title}
+                        </Link>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Historique des reconductions */}
+                  {recurrenceHistory && recurrenceHistory.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-purple-200">
+                      <h4 className="text-md font-semibold text-purple-900 mb-3">
+                        Historique des reconductions ({recurrenceHistory.length})
+                      </h4>
+                      <div className="space-y-2">
+                        {recurrenceHistory.map((recurrent) => (
+                          <div
+                            key={recurrent.id}
+                            className="bg-white rounded-lg p-3 border border-purple-200"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <Link
+                                  to={`/chercheur/activities/${recurrent.id}`}
+                                  className="font-medium text-purple-700 hover:text-purple-900 hover:underline"
+                                >
+                                  {recurrent.title}
+                                </Link>
+                                <p className="text-xs text-gray-600 mt-1">
+                                  {recurrent.startDate
+                                    ? new Date(recurrent.startDate).toLocaleDateString('fr-FR')
+                                    : '?'}{' '}
+                                  →{' '}
+                                  {recurrent.endDate
+                                    ? new Date(recurrent.endDate).toLocaleDateString('fr-FR')
+                                    : '?'}
+                                </p>
+                                {recurrent.recurrenceReason && (
+                                  <p className="text-xs text-gray-600 mt-1 italic">
+                                    "{recurrent.recurrenceReason}"
+                                  </p>
+                                )}
+                              </div>
+                              <span
+                                className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                  ActivityStatusColors[recurrent.status]
+                                }`}
+                              >
+                                {ActivityStatusLabels[recurrent.status]}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'participants' && (
+            <ActivityParticipants
+              activityId={activity.id}
+              participants={activity.participants || []}
+            />
+          )}
+
+          {activeTab === 'partnerships' && (
+            <ActivityPartnerships
+              activityId={activity.id}
+              partnerships={activity.partnerships || []}
+            />
+          )}
+
+          {activeTab === 'funding' && (
+            <ActivityFunding
+              activityId={activity.id}
+              fundings={activity.fundings || []}
+            />
+          )}
+
+          {activeTab === 'tasks' && (
+            <ActivityTasks
+              activityId={activity.id}
+              tasks={activity.tasks || []}
+            />
+          )}
+        </div>
       </div>
+
+      {/* Modal de reconduction */}
+      {showReconductModal && (
+        <ReconductActivityModal
+          activityId={activity.id}
+          activityTitle={activity.title}
+          onClose={() => setShowReconductModal(false)}
+          onSuccess={(newActivityId) => {
+            setShowReconductModal(false);
+            navigate(`/chercheur/activities/${newActivityId}`);
+          }}
+        />
+      )}
     </div>
   );
 };

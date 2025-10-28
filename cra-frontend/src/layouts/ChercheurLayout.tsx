@@ -151,13 +151,11 @@ const ChercheurLayout: React.FC = () => {
                 </Route>
                 
                 {/* ROUTES DES ACTIVITÉS (existantes) */}
-                <Route path="activities">
-                  <Route index element={<ActivitiesList />} />
-                  <Route path="new" element={<CreateActivity />} />
-                  <Route path=":id" element={<ActivityDetail />} />
-                  <Route path=":id/edit" element={<EditActivity />} />
-                  <Route path=":id/tasks/new" element={<CreateTask />} />
-                </Route>
+                <Route path="activities" element={<ActivitiesList />} />
+                <Route path="activities/create" element={<CreateActivity />} />
+                <Route path="activities/:id" element={<ActivityDetail />} />
+                <Route path="activities/:id/edit" element={<EditActivity />} />
+                <Route path="activities/:id/tasks/new" element={<CreateTask />} />
                 
                 {/* ROUTES DES TÂCHES (existantes) */}
                 <Route path="tasks">

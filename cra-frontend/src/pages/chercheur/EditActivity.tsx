@@ -1,487 +1,618 @@
-// src/pages/chercheur/EditActivity.tsx - Version finale avec modification du projet
+// src/pages/chercheur/EditActivity.tsx
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, X, Save, Calendar, MapPin, Target, FileText, Lightbulb, AlertCircle } from 'lucide-react';
-import activitiesApi, { UpdateActivityRequest, Activity } from '../../services/activitiesApi';
-import projectsApi, { Project } from '../../services/projectsApi';
-
-interface FormData {
-  title: string;
-  description: string;
-  objectives: string[];
-  methodology: string;
-  location: string;
-  startDate: string;
-  endDate: string;
-  results: string;
-  conclusions: string;
-  projectId: string;
-}
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, Plus, X, Save } from 'lucide-react';
+import { activitiesApi } from '../../services/activitiesApi';
+import api from '../../services/api';
+import { Button } from '../../components/ui/Button';
+import toast from 'react-hot-toast';
+import {
+  ActivityType,
+  ActivityTypeLabels,
+  ActivityStatus,
+  ActivityStatusLabels,
+  TaskPriority,
+  TaskPriorityLabels,
+  type UpdateActivityRequest,
+} from '../../types/activity.types';
 
 const EditActivity: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
-  const [activity, setActivity] = useState<Activity | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [objectives, setObjectives] = useState<string[]>(['']);
+  const [constraints, setConstraints] = useState<string[]>(['']);
+  const [expectedResults, setExpectedResults] = useState<string[]>(['']);
+  const [transferMethods, setTransferMethods] = useState<string[]>(['']);
+  const [loading, setLoading] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<UpdateActivityRequest>({
     title: '',
     description: '',
-    objectives: [''],
+    type: ActivityType.RECHERCHE_EXPERIMENTALE,
+    status: ActivityStatus.PLANIFIEE,
+    objectives: [],
+    themeId: '',
+    responsibleId: '',
+    projectId: '',
+    stationId: '',
+    conventionId: '',
     methodology: '',
     location: '',
     startDate: '',
     endDate: '',
-    results: '',
-    conclusions: '',
-    projectId: ''
+    interventionRegion: '',
+    strategicPlan: '',
+    strategicAxis: '',
+    subAxis: '',
+    priority: TaskPriority.NORMALE,
+    justifications: '',
+    constraints: [],
+    expectedResults: [],
+    transferMethods: [],
   });
 
-  // Charger l'activité à modifier
-  useEffect(() => {
-    const loadActivity = async () => {
-      if (!id) return;
-      
+  // Empêcher le chargement si l'ID est "create" (route réservée) ou invalide
+  const isValidId = id && id !== 'create' && !id.includes('/');
+
+  // Charger l'activité existante
+  const { data: activity, isLoading: activityLoading, error } = useQuery({
+    queryKey: ['activity', id],
+    queryFn: () => activitiesApi.getActivityById(id!),
+    enabled: !!isValidId,
+  });
+
+  // Charger les données de référence
+  const { data: themes = [] } = useQuery({
+    queryKey: ['themes'],
+    queryFn: async () => {
       try {
-        setLoading(true);
-        setError(null);
-        const activityData = await activitiesApi.getActivityById(id);
-        setActivity(activityData);
-        
-        // Pré-remplir le formulaire
-        setFormData({
-          title: activityData.title,
-          description: activityData.description || '',
-          objectives: activityData.objectives.length > 0 ? activityData.objectives : [''],
-          methodology: activityData.methodology || '',
-          location: activityData.location || '',
-          startDate: activityData.startDate ? activityData.startDate.split('T')[0] : '',
-          endDate: activityData.endDate ? activityData.endDate.split('T')[0] : '',
-          results: activityData.results || '',
-          conclusions: activityData.conclusions || '',
-          projectId: activityData.projectId
-        });
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        const response = await api.get('/strategic-planning/themes');
+        return response.data.data || [];
+      } catch (error) {
+        console.error('Erreur lors du chargement des thèmes:', error);
+        return [];
       }
-    };
+    },
+  });
 
-    loadActivity();
-  }, [id]);
+  const { data: users = [] } = useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const response = await api.get('/users');
+      return response.data.data || [];
+    },
+  });
 
-  // Charger les projets disponibles
-  useEffect(() => {
-    const loadProjects = async () => {
+  const { data: projects = [] } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const response = await api.get('/projects');
+      return response.data.data || [];
+    },
+  });
+
+  const { data: stations = [] } = useQuery({
+    queryKey: ['stations'],
+    queryFn: async () => {
       try {
-        setLoadingProjects(true);
-        const response = await projectsApi.listProjects({
-          limit: 100,
-          sortBy: 'title',
-          sortOrder: 'asc'
-        });
-        setProjects(response.projects);
-      } catch (err) {
-        console.error('Erreur lors du chargement des projets:', err);
-      } finally {
-        setLoadingProjects(false);
+        const response = await api.get('/strategic-planning/stations');
+        return response.data.data || [];
+      } catch (error) {
+        console.error('Erreur lors du chargement des stations:', error);
+        return [];
       }
-    };
+    },
+  });
 
-    loadProjects();
-  }, []);
+  const { data: conventions = [] } = useQuery({
+    queryKey: ['conventions'],
+    queryFn: async () => {
+      const response = await api.get('/conventions');
+      return response.data.data || [];
+    },
+  });
 
-  // Mise à jour des champs simples
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
+  // Pré-remplir le formulaire avec les données de l'activité
+  useEffect(() => {
+    if (activity && !dataLoaded) {
+      setFormData({
+        title: activity.title || '',
+        description: activity.description || '',
+        type: activity.type,
+        status: activity.status || ActivityStatus.PLANIFIEE,
+        objectives: activity.objectives || [],
+        themeId: activity.themeId || '',
+        responsibleId: activity.responsibleId || '',
+        projectId: activity.projectId || '',
+        stationId: activity.stationId || '',
+        conventionId: activity.conventionId || '',
+        methodology: activity.methodology || '',
+        location: activity.location || '',
+        startDate: activity.startDate ? new Date(activity.startDate).toISOString().split('T')[0] : '',
+        endDate: activity.endDate ? new Date(activity.endDate).toISOString().split('T')[0] : '',
+        interventionRegion: activity.interventionRegion || '',
+        strategicPlan: activity.strategicPlan || '',
+        strategicAxis: activity.strategicAxis || '',
+        subAxis: activity.subAxis || '',
+        priority: activity.priority || TaskPriority.NORMALE,
+        justifications: activity.justifications || '',
+        constraints: activity.constraints || [],
+        expectedResults: activity.expectedResults || [],
+        transferMethods: activity.transferMethods || [],
+      });
 
-  // Gestion des objectifs
-  const addObjective = () => {
-    setFormData(prev => ({
-      ...prev,
-      objectives: [...prev.objectives, '']
-    }));
-  };
+      setObjectives(activity.objectives && activity.objectives.length > 0 ? activity.objectives : ['']);
+      setConstraints(activity.constraints && activity.constraints.length > 0 ? activity.constraints : ['']);
+      setExpectedResults(activity.expectedResults && activity.expectedResults.length > 0 ? activity.expectedResults : ['']);
+      setTransferMethods(activity.transferMethods && activity.transferMethods.length > 0 ? activity.transferMethods : ['']);
 
-  const updateObjective = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      objectives: prev.objectives.map((obj, i) => i === index ? value : obj)
-    }));
-  };
-
-  const removeObjective = (index: number) => {
-    if (formData.objectives.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        objectives: prev.objectives.filter((_, i) => i !== index)
-      }));
+      setDataLoaded(true);
     }
-  };
+  }, [activity, dataLoaded]);
 
-  // Validation du formulaire
-  const validateForm = (): string | null => {
-    if (!formData.title.trim()) {
-      return 'Le titre est obligatoire';
-    }
-    
-    if (!formData.projectId) {
-      return 'Le projet est obligatoire';
-    }
-    
-    if (formData.objectives.some(obj => !obj.trim())) {
-      return 'Tous les objectifs doivent être renseignés';
-    }
-
-    if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
-      return 'La date de fin doit être postérieure à la date de début';
-    }
-
-    return null;
-  };
-
-  // Soumission du formulaire
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!id) return;
-    
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
+
+    // Validation
+    if (!formData.title || !formData.themeId || !formData.responsibleId) {
+      toast.error('Veuillez remplir tous les champs obligatoires');
       return;
     }
 
-    setSaving(true);
-    setError(null);
+    const filteredObjectives = objectives.filter(obj => obj.trim() !== '');
+    if (filteredObjectives.length === 0) {
+      toast.error('Veuillez ajouter au moins un objectif');
+      return;
+    }
 
     try {
-      // ✅ CORRECTION: Inclure le projectId dans les données de mise à jour
+      setLoading(true);
       const activityData: UpdateActivityRequest = {
-        title: formData.title.trim(),
-        description: formData.description.trim() || undefined,
-        objectives: formData.objectives.filter(obj => obj.trim()),
-        methodology: formData.methodology.trim() || undefined,
-        location: formData.location.trim() || undefined,
-        startDate: formData.startDate || undefined,
-        endDate: formData.endDate || undefined,
-        results: formData.results.trim() || undefined,
-        conclusions: formData.conclusions.trim() || undefined,
-        projectId: formData.projectId // ✅ MAINTENANT INCLUS
+        ...formData,
+        projectId: formData.projectId || undefined,
+        stationId: formData.stationId || undefined,
+        conventionId: formData.conventionId || undefined,
+        objectives: filteredObjectives,
+        constraints: constraints.filter(c => c.trim() !== ''),
+        expectedResults: expectedResults.filter(r => r.trim() !== ''),
+        transferMethods: transferMethods.filter(m => m.trim() !== ''),
       };
 
-      await activitiesApi.updateActivity(id, activityData);
+      await activitiesApi.updateActivity(id!, activityData);
+      toast.success('Activité mise à jour avec succès');
       navigate(`/chercheur/activities/${id}`);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de la mise à jour de l\'activité');
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
-  const getSelectedProject = () => {
-    return projects.find(p => p.id === formData.projectId);
+  const addArrayItem = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
+    setter(prev => [...prev, '']);
   };
 
-  if (loading) {
+  const removeArrayItem = (setter: React.Dispatch<React.SetStateAction<string[]>>, index: number) => {
+    setter(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updateArrayItem = (setter: React.Dispatch<React.SetStateAction<string[]>>, index: number, value: string) => {
+    setter(prev => prev.map((item, i) => (i === index ? value : item)));
+  };
+
+  if (activityLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
       </div>
     );
   }
 
-  if (error && !activity) {
+  if (error || !activity) {
     return (
-      <div className="text-center py-12">
-        <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-          <AlertCircle className="h-8 w-8 text-red-500" />
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <p className="text-red-600">Erreur lors du chargement de l'activité</p>
+          <Link to="/chercheur/activities">
+            <Button className="mt-4 bg-green-600 hover:bg-green-700">
+              Retour aux activités
+            </Button>
+          </Link>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          Erreur de chargement
-        </h3>
-        <p className="text-gray-600 mb-4">{error}</p>
-        <button
-          onClick={() => navigate('/chercheur/activities')}
-          className="text-blue-600 hover:text-blue-700 font-medium"
-        >
-          Retour aux activités
-        </button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate(`/chercheur/activities/${id}`)}
-          className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Modifier l'activité</h1>
-          <p className="text-gray-600 mt-1">
-            Modifiez les informations de votre activité de recherche
-          </p>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      {/* Breadcrumb */}
+      <div className="mb-6">
+        <Link to={`/chercheur/activities/${id}`} className="text-green-600 hover:text-green-700 flex items-center">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour à l'activité
+        </Link>
+      </div>
+
+      {/* En-tête */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Modifier l'activité</h1>
+        <p className="text-gray-600 mt-2">
+          Modifiez les informations de l'activité "{activity.title}"
+        </p>
       </div>
 
       {/* Formulaire */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Message d'erreur */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-            {error}
-          </div>
-        )}
-
+      <form onSubmit={handleSubmit} className="space-y-8">
         {/* Informations de base */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            Informations générales
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Titre */}
-            <div className="md:col-span-2">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Informations de base</h2>
+          <div className="space-y-4">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Titre de l'activité *
               </label>
               <input
                 type="text"
                 value={formData.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: Collecte de données terrain sur les variétés de riz..."
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
             </div>
 
-            {/* ✅ PROJET MODIFIABLE - Version corrigée */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Projet associé *
-              </label>
-              <select
-                value={formData.projectId}
-                onChange={(e) => handleInputChange('projectId', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-                disabled={loadingProjects}
-              >
-                <option value="">
-                  {loadingProjects ? 'Chargement des projets...' : 'Sélectionner un projet'}
-                </option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.title}
-                  </option>
-                ))}
-              </select>
-              {getSelectedProject() && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Statut du projet: {getSelectedProject()?.status}
-                </p>
-              )}
-              <p className="text-sm text-blue-600 mt-1">
-                ✅ Vous pouvez maintenant changer le projet associé à cette activité
-              </p>
-            </div>
-
-            {/* Description */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
               <textarea
                 value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={4}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Décrivez le contexte et les objectifs de cette activité..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
             </div>
 
-            {/* Lieu */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                Lieu de l'activité
-              </label>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={(e) => handleInputChange('location', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: Parcelles expérimentales de Saint-Louis"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type d'activité *
+                </label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value as ActivityType })}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  {Object.entries(ActivityTypeLabels).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Statut *
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as ActivityStatus })}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  {Object.entries(ActivityStatusLabels).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Priorité</label>
+                <select
+                  value={formData.priority}
+                  onChange={(e) => setFormData({ ...formData, priority: e.target.value as TaskPriority })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  {Object.entries(TaskPriorityLabels).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            {/* Méthodologie */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
-                <Lightbulb className="h-4 w-4" />
-                Méthodologie
-              </label>
-              <textarea
-                value={formData.methodology}
-                onChange={(e) => handleInputChange('methodology', e.target.value)}
-                rows={3}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Décrivez la méthodologie utilisée..."
-              />
-            </div>
-          </div>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Thème *</label>
+                <select
+                  value={formData.themeId}
+                  onChange={(e) => setFormData({ ...formData, themeId: e.target.value })}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">-- Sélectionner un thème --</option>
+                  {themes.map((theme: any) => (
+                    <option key={theme.id} value={theme.id}>
+                      {theme.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        {/* Dates */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Planification
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date de début
-              </label>
-              <input
-                type="date"
-                value={formData.startDate}
-                onChange={(e) => handleInputChange('startDate', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date de fin prévue
-              </label>
-              <input
-                type="date"
-                value={formData.endDate}
-                onChange={(e) => handleInputChange('endDate', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Responsable *</label>
+                <select
+                  value={formData.responsibleId}
+                  onChange={(e) => setFormData({ ...formData, responsibleId: e.target.value })}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">-- Sélectionner un responsable --</option>
+                  {users.map((user: any) => (
+                    <option key={user.id} value={user.id}>
+                      {user.firstName} {user.lastName}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Objectifs */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            Objectifs de l'activité
-          </h2>
-          
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Objectifs *</h2>
           <div className="space-y-3">
-            {formData.objectives.map((objective, index) => (
+            {objectives.map((obj, index) => (
               <div key={index} className="flex gap-2">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    value={objective}
-                    onChange={(e) => updateObjective(index, e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={`Objectif ${index + 1}`}
-                    required
-                  />
-                </div>
-                {formData.objectives.length > 1 && (
-                  <button
+                <input
+                  type="text"
+                  value={obj}
+                  onChange={(e) => updateArrayItem(setObjectives, index, e.target.value)}
+                  placeholder={`Objectif ${index + 1}`}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                {objectives.length > 1 && (
+                  <Button
                     type="button"
-                    onClick={() => removeObjective(index)}
-                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
+                    onClick={() => removeArrayItem(setObjectives, index)}
+                    variant="outline"
+                    className="border-red-600 text-red-600 hover:bg-red-50"
                   >
-                    <X className="h-4 w-4" />
-                  </button>
+                    <X className="w-4 h-4" />
+                  </Button>
                 )}
               </div>
             ))}
-            
-            <button
+            <Button
               type="button"
-              onClick={addObjective}
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+              onClick={() => addArrayItem(setObjectives)}
+              variant="outline"
+              className="border-green-600 text-green-600 hover:bg-green-50"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="w-4 h-4 mr-2" />
               Ajouter un objectif
-            </button>
+            </Button>
           </div>
         </div>
 
-        {/* Résultats et conclusions */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Résultats et conclusions
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Liens avec d'autres entités */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Liens et associations</h2>
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Résultats observés
+                Projet (optionnel - activité peut être indépendante)
               </label>
-              <textarea
-                value={formData.results}
-                onChange={(e) => handleInputChange('results', e.target.value)}
-                rows={4}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Décrivez les résultats obtenus..."
-              />
+              <select
+                value={formData.projectId}
+                onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="">-- Aucun projet (activité indépendante) --</option>
+                {projects.map((project: any) => (
+                  <option key={project.id} value={project.id}>
+                    {project.title}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Laissez vide si l'activité n'est pas liée à un projet
+              </p>
             </div>
-            
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Station</label>
+                <select
+                  value={formData.stationId}
+                  onChange={(e) => setFormData({ ...formData, stationId: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">-- Aucune station --</option>
+                  {stations.map((station: any) => (
+                    <option key={station.id} value={station.id}>
+                      {station.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Convention</label>
+                <select
+                  value={formData.conventionId}
+                  onChange={(e) => setFormData({ ...formData, conventionId: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">-- Aucune convention --</option>
+                  {conventions.map((convention: any) => (
+                    <option key={convention.id} value={convention.id}>
+                      {convention.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Détails techniques */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Détails techniques</h2>
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Conclusions
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Méthodologie</label>
               <textarea
-                value={formData.conclusions}
-                onChange={(e) => handleInputChange('conclusions', e.target.value)}
+                value={formData.methodology}
+                onChange={(e) => setFormData({ ...formData, methodology: e.target.value })}
                 rows={4}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Quelles conclusions tirez-vous de cette activité..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Localisation</label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Région d'intervention</label>
+                <input
+                  type="text"
+                  value={formData.interventionRegion}
+                  onChange={(e) => setFormData({ ...formData, interventionRegion: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date de début</label>
+                <input
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date de fin</label>
+                <input
+                  type="date"
+                  value={formData.endDate}
+                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Résultats attendus */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Résultats attendus</h2>
+          <div className="space-y-3">
+            {expectedResults.map((result, index) => (
+              <div key={index} className="flex gap-2">
+                <input
+                  type="text"
+                  value={result}
+                  onChange={(e) => updateArrayItem(setExpectedResults, index, e.target.value)}
+                  placeholder={`Résultat ${index + 1}`}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                {expectedResults.length > 1 && (
+                  <Button
+                    type="button"
+                    onClick={() => removeArrayItem(setExpectedResults, index)}
+                    variant="outline"
+                    className="border-red-600 text-red-600 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button
+              type="button"
+              onClick={() => addArrayItem(setExpectedResults)}
+              variant="outline"
+              className="border-green-600 text-green-600 hover:bg-green-50"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Ajouter un résultat
+            </Button>
+          </div>
+        </div>
+
+        {/* Contraintes */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Contraintes</h2>
+          <div className="space-y-3">
+            {constraints.map((constraint, index) => (
+              <div key={index} className="flex gap-2">
+                <input
+                  type="text"
+                  value={constraint}
+                  onChange={(e) => updateArrayItem(setConstraints, index, e.target.value)}
+                  placeholder={`Contrainte ${index + 1}`}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                {constraints.length > 1 && (
+                  <Button
+                    type="button"
+                    onClick={() => removeArrayItem(setConstraints, index)}
+                    variant="outline"
+                    className="border-red-600 text-red-600 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button
+              type="button"
+              onClick={() => addArrayItem(setConstraints)}
+              variant="outline"
+              className="border-green-600 text-green-600 hover:bg-green-50"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Ajouter une contrainte
+            </Button>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-4 pt-6">
-          <button
-            type="button"
-            onClick={() => navigate(`/chercheur/activities/${id}`)}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Annuler
-          </button>
-          <button
+        <div className="flex justify-end gap-4">
+          <Link to={`/chercheur/activities/${id}`}>
+            <Button type="button" variant="outline">
+              Annuler
+            </Button>
+          </Link>
+          <Button
             type="submit"
-            disabled={saving}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+            disabled={loading}
+            className="bg-green-600 hover:bg-green-700 text-white"
           >
-            {saving ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
-          </button>
+            <Save className="w-4 h-4 mr-2" />
+            {loading ? 'Mise à jour en cours...' : 'Enregistrer les modifications'}
+          </Button>
         </div>
       </form>
     </div>
