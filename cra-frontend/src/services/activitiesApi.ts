@@ -318,7 +318,7 @@ class ActivitiesApiService {
    */
   async reconductActivity(activityId: string, data: ReconductActivityRequest): Promise<Activity> {
     try {
-      const response = await api.post(`${this.baseUrl}/${activityId}/reconduct`, data);
+      const response = await api.post(`${this.baseUrl}/${activityId}/recurrence`, data);
       return response.data.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Erreur lors de la reconduction de l\'activité');

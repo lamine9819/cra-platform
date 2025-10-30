@@ -320,19 +320,56 @@ export class ActivityController {
           ]
         },
         include: {
-          sourceActivity: { 
-            select: { id: true, title: true, code: true, createdAt: true }
+          sourceActivity: {
+            select: {
+              id: true,
+              title: true,
+              code: true,
+              createdAt: true,
+              startDate: true,
+              endDate: true,
+              lifecycleStatus: true
+            }
           },
-          newActivity: { 
-            select: { id: true, title: true, code: true, createdAt: true }
+          newActivity: {
+            select: {
+              id: true,
+              title: true,
+              code: true,
+              createdAt: true,
+              startDate: true,
+              endDate: true,
+              lifecycleStatus: true
+            }
           }
         },
         orderBy: { createdAt: 'desc' }
       });
 
+      // Transformer les données pour renvoyer les activités liées
+      const activities = recurrenceHistory.map((rec: any) => {
+        // Si c'est l'activité source, on renvoie la nouvelle activité
+        // Si c'est la nouvelle activité, on renvoie l'activité source
+        const isSource = rec.sourceActivityId === id;
+        const relatedActivity = isSource ? rec.newActivity : rec.sourceActivity;
+
+        return {
+          id: relatedActivity.id,
+          title: relatedActivity.title,
+          code: relatedActivity.code,
+          startDate: relatedActivity.startDate,
+          endDate: relatedActivity.endDate,
+          status: relatedActivity.lifecycleStatus,
+          recurrenceReason: rec.reason,
+          recurrenceNotes: rec.notes,
+          recurrenceDate: rec.createdAt,
+          isSourceActivity: !isSource, // Si on est la source, l'activité liée est la nouvelle (donc false)
+        };
+      });
+
       res.status(200).json({
         success: true,
-        data: recurrenceHistory,
+        data: activities,
       });
     } catch (error) {
       next(error);
@@ -685,12 +722,12 @@ addPartner = async (req: Request, res: Response, next: NextFunction) => {
 updatePartner = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authenticatedReq = req as AuthenticatedRequest;
-    const { id, partnerId } = req.params;
+    const { id, partnershipId } = req.params;
     const validatedData = updateActivityPartnerSchema.parse(req.body);
     const userId = authenticatedReq.user.userId;
     const userRole = authenticatedReq.user.role;
 
-    const partnership = await activityService.updatePartner(id, partnerId, validatedData, userId, userRole);
+    const partnership = await activityService.updatePartner(id, partnershipId, validatedData, userId, userRole);
 
     res.status(200).json({
       success: true,
@@ -705,11 +742,11 @@ updatePartner = async (req: Request, res: Response, next: NextFunction) => {
 removePartner = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authenticatedReq = req as AuthenticatedRequest;
-    const { id, partnerId } = req.params;
+    const { id, partnershipId } = req.params;
     const userId = authenticatedReq.user.userId;
     const userRole = authenticatedReq.user.role;
 
-    await activityService.removePartner(id, partnerId, userId, userRole);
+    await activityService.removePartner(id, partnershipId, userId, userRole);
 
     res.status(200).json({
       success: true,

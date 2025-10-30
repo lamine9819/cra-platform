@@ -151,8 +151,8 @@ const ActivityDetail: React.FC = () => {
   const tabs = [
     { id: 'overview' as TabType, label: 'Vue d\'ensemble', icon: FileText },
     { id: 'participants' as TabType, label: 'Participants', icon: Users, count: activity._count?.participants },
-    { id: 'partnerships' as TabType, label: 'Partenariats', icon: TrendingUp, count: activity._count?.partnerships },
-    { id: 'funding' as TabType, label: 'Financements', icon: Target, count: activity._count?.fundings },
+    { id: 'partnerships' as TabType, label: 'Partenariats', icon: TrendingUp, count: activity.partners?.length || 0 },
+    { id: 'funding' as TabType, label: 'Financements', icon: Target, count: activity.fundings?.length || 0 },
     { id: 'tasks' as TabType, label: 'Tâches', icon: CheckCircle, count: activity._count?.tasks },
   ];
 
@@ -481,7 +481,7 @@ const ActivityDetail: React.FC = () => {
           {activeTab === 'partnerships' && (
             <ActivityPartnerships
               activityId={activity.id}
-              partnerships={activity.partnerships || []}
+              partnerships={activity.partners || []}
             />
           )}
 

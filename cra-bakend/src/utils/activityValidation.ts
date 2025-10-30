@@ -210,14 +210,28 @@ export const addFundingSchema = z.object({
 });
 // Schema pour ajouter un partenaire à une activité
 export const addActivityPartnerSchema = z.object({
-  partnerId: z.string().cuid('ID de partenaire requis'),
+  // Option 1 : Lier un partenaire existant
+  partnerId: z.string().cuid().optional(),
+
+  // Option 2 : Créer un nouveau partenaire
+  partnerName: z.string().min(2).max(200).optional(),
   partnerType: z.string().min(2, 'Type de partenariat requis').max(100),
-  contribution: z.string().max(500).optional(),
-  benefits: z.string().max(500).optional(),
+  contactPerson: z.string().max(200).or(z.literal('')).nullable().optional(),
+  contactEmail: z.string().email().or(z.literal('')).nullable().optional(),
+
+  // Informations sur le partenariat
+  contribution: z.string().max(500).or(z.literal('')).nullable().optional(),
+  benefits: z.string().max(500).or(z.literal('')).nullable().optional(),
   startDate: dateValidation.optional(),
   endDate: dateValidation.optional(),
 }).refine(data => {
-  if (data.startDate && data.endDate && 
+  // Soit partnerId, soit partnerName doit être fourni
+  return data.partnerId || data.partnerName;
+}, {
+  message: 'Un ID de partenaire ou un nom de partenaire est requis',
+  path: ['partnerId']
+}).refine(data => {
+  if (data.startDate && data.endDate &&
       data.startDate !== '' && data.endDate !== '') {
     return new Date(data.startDate) <= new Date(data.endDate);
   }

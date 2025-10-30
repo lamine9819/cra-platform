@@ -1,7 +1,7 @@
 // src/components/activities/ActivityPartnerships.tsx
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Edit, Trash2, X, Handshake } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Handshake, Eye } from 'lucide-react';
 import { activitiesApi } from '../../services/activitiesApi';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
@@ -9,6 +9,8 @@ import {
   type ActivityPartnership,
   type AddActivityPartnershipRequest,
   type UpdateActivityPartnershipRequest,
+  PartnerType,
+  PartnerTypeLabels,
 } from '../../types/activity.types';
 
 interface ActivityPartnershipsProps {
@@ -23,11 +25,12 @@ const ActivityPartnerships: React.FC<ActivityPartnershipsProps> = ({
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedPartnership, setSelectedPartnership] = useState<ActivityPartnership | null>(null);
 
   const [newPartnership, setNewPartnership] = useState<AddActivityPartnershipRequest>({
     partnerName: '',
-    partnerType: '',
+    partnerType: PartnerType.ASSOCIATION,
     contactPerson: '',
     contactEmail: '',
     contribution: '',
@@ -79,7 +82,7 @@ const ActivityPartnerships: React.FC<ActivityPartnershipsProps> = ({
   const resetForm = () => {
     setNewPartnership({
       partnerName: '',
-      partnerType: '',
+      partnerType: PartnerType.ASSOCIATION,
       contactPerson: '',
       contactEmail: '',
       contribution: '',
@@ -96,6 +99,11 @@ const ActivityPartnerships: React.FC<ActivityPartnershipsProps> = ({
   const handleEdit = (partnership: ActivityPartnership) => {
     setSelectedPartnership(partnership);
     setShowEditModal(true);
+  };
+
+  const handleViewDetails = (partnership: ActivityPartnership) => {
+    setSelectedPartnership(partnership);
+    setShowDetailsModal(true);
   };
 
   const handleUpdate = (e: React.FormEvent) => {
@@ -173,9 +181,9 @@ const ActivityPartnerships: React.FC<ActivityPartnershipsProps> = ({
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center mb-2">
-                    <h4 className="font-medium text-gray-900">{partnership.partnerName}</h4>
+                    <h4 className="font-medium text-gray-900">{partnership.partnerName || partnership.partner?.name}</h4>
                     <span className="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                      {partnership.partnerType}
+                      {PartnerTypeLabels[partnership.partnerType as PartnerType] || partnership.partnerType}
                     </span>
                     {!partnership.isActive && (
                       <span className="ml-2 px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
@@ -210,6 +218,13 @@ const ActivityPartnerships: React.FC<ActivityPartnershipsProps> = ({
                   )}
                 </div>
                 <div className="flex gap-2 ml-4">
+                  <button
+                    onClick={() => handleViewDetails(partnership)}
+                    className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                    title="Voir les détails"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={() => handleEdit(partnership)}
                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
@@ -268,16 +283,20 @@ const ActivityPartnerships: React.FC<ActivityPartnershipsProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Type de partenaire *
                 </label>
-                <input
-                  type="text"
+                <select
                   value={newPartnership.partnerType}
                   onChange={(e) =>
                     setNewPartnership({ ...newPartnership, partnerType: e.target.value })
                   }
                   required
-                  placeholder="Ex: Université, ONG, Entreprise privée..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
+                >
+                  {Object.entries(PartnerTypeLabels).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -395,8 +414,8 @@ const ActivityPartnerships: React.FC<ActivityPartnershipsProps> = ({
 
             <form onSubmit={handleUpdate} className="p-6 space-y-4">
               <div>
-                <p className="text-sm font-medium text-gray-700">{selectedPartnership.partnerName}</p>
-                <p className="text-sm text-gray-500">{selectedPartnership.partnerType}</p>
+                <p className="text-sm font-medium text-gray-700">{selectedPartnership.partnerName || selectedPartnership.partner?.name}</p>
+                <p className="text-sm text-gray-500">{PartnerTypeLabels[selectedPartnership.partnerType as PartnerType] || selectedPartnership.partnerType}</p>
               </div>
 
               <div>
@@ -503,6 +522,152 @@ const ActivityPartnerships: React.FC<ActivityPartnershipsProps> = ({
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de détails */}
+      {showDetailsModal && selectedPartnership && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-green-50">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                <Handshake className="w-5 h-5 mr-2 text-green-600" />
+                Détails du Partenariat
+              </h3>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setSelectedPartnership(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Informations principales */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-gray-900 mb-3">Informations du partenaire</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-600">Nom du partenaire:</span>
+                    <span className="text-sm text-gray-900 font-semibold">
+                      {selectedPartnership.partnerName || selectedPartnership.partner?.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-600">Type:</span>
+                    <span className="text-sm">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                        {PartnerTypeLabels[selectedPartnership.partnerType as PartnerType] || selectedPartnership.partnerType}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-600">Statut:</span>
+                    <span className="text-sm">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        selectedPartnership.isActive
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {selectedPartnership.isActive ? 'Actif' : 'Inactif'}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informations de contact */}
+              {(selectedPartnership.contactPerson || selectedPartnership.contactEmail) && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-3">Contact</h4>
+                  <div className="space-y-2">
+                    {selectedPartnership.contactPerson && (
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Personne de contact:</span>
+                        <span className="text-sm text-gray-900">{selectedPartnership.contactPerson}</span>
+                      </div>
+                    )}
+                    {selectedPartnership.contactEmail && (
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Email:</span>
+                        <a
+                          href={`mailto:${selectedPartnership.contactEmail}`}
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          {selectedPartnership.contactEmail}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Période de collaboration */}
+              {(selectedPartnership.startDate || selectedPartnership.endDate) && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-3">Période de collaboration</h4>
+                  <div className="space-y-2">
+                    {selectedPartnership.startDate && (
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Date de début:</span>
+                        <span className="text-sm text-gray-900">
+                          {new Date(selectedPartnership.startDate).toLocaleDateString('fr-FR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                    )}
+                    {selectedPartnership.endDate && (
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Date de fin:</span>
+                        <span className="text-sm text-gray-900">
+                          {new Date(selectedPartnership.endDate).toLocaleDateString('fr-FR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Contribution */}
+              {selectedPartnership.contribution && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-2">Contribution du partenaire</h4>
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedPartnership.contribution}</p>
+                </div>
+              )}
+
+              {/* Bénéfices */}
+              {selectedPartnership.benefits && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-2">Bénéfices attendus</h4>
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedPartnership.benefits}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setSelectedPartnership(null);
+                }}
+              >
+                Fermer
+              </Button>
+            </div>
           </div>
         </div>
       )}

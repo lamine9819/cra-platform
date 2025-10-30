@@ -90,10 +90,10 @@ router.patch('/:id/fundings/:fundingId', activityController.updateFunding);
 router.delete('/:id/fundings/:fundingId', activityController.removeFunding);
 
 // Gestion des partenaires
-router.post('/:id/partners', activityController.addPartner);
-router.get('/:id/partners', activityController.listPartners);
-router.patch('/:id/partners/:partnerId', activityController.updatePartner);
-router.delete('/:id/partners/:partnerId', activityController.removePartner);
+router.post('/:id/partnerships', activityController.addPartner);
+router.get('/:id/partnerships', activityController.listPartners);
+router.patch('/:id/partnerships/:partnershipId', activityController.updatePartner);
+router.delete('/:id/partnerships/:partnershipId', activityController.removePartner);
 
 // Gestion des tâches
 router.post('/:id/tasks', activityController.createTask);

@@ -1733,9 +1733,9 @@ async addPartner(
 ) {
   const activity = await prisma.activity.findUnique({
     where: { id: activityId },
-    include: { 
+    include: {
       responsible: true,
-      partnerships: { where: { partnerId: partnerData.partnerId } },
+      partnerships: true,
       project: { include: { participants: { where: { userId } } } }
     }
   });
@@ -1749,29 +1749,40 @@ async addPartner(
     throw new AuthError('Permissions insuffisantes');
   }
 
-  // Vérifier que le partenaire existe
-  const partner = await prisma.partner.findUnique({
-    where: { id: partnerData.partnerId }
-  });
+  let partnerId = partnerData.partnerId;
 
-  if (!partner) {
-    throw new ValidationError('Partenaire non trouvé');
+  // Si partnerId n'est pas fourni, créer un nouveau partenaire
+  if (!partnerId && partnerData.partnerName) {
+    const newPartner = await prisma.partner.create({
+      data: {
+        name: partnerData.partnerName,
+        type: 'ASSOCIATION', // Type par défaut
+        contactPerson: partnerData.contactPerson && partnerData.contactPerson !== '' ? partnerData.contactPerson : null,
+        contactEmail: partnerData.contactEmail && partnerData.contactEmail !== '' ? partnerData.contactEmail : null,
+      }
+    });
+    partnerId = newPartner.id;
+  }
+
+  if (!partnerId) {
+    throw new ValidationError('Un ID de partenaire ou un nom de partenaire est requis');
   }
 
   // Vérifier qu'il n'est pas déjà partenaire
-  if (activity.partnerships?.length > 0) {
+  const existingPartnership = activity.partnerships?.find(p => p.partnerId === partnerId);
+  if (existingPartnership) {
     throw new ValidationError('Ce partenaire est déjà associé à cette activité');
   }
 
   const partnership = await prisma.activityPartner.create({
     data: {
       activityId,
-      partnerId: partnerData.partnerId,
+      partnerId,
       partnerType: partnerData.partnerType,
-      contribution: partnerData.contribution,
-      benefits: partnerData.benefits,
-      startDate: partnerData.startDate ? new Date(partnerData.startDate) : new Date(),
-      endDate: partnerData.endDate ? new Date(partnerData.endDate) : null,
+      contribution: partnerData.contribution && partnerData.contribution !== '' ? partnerData.contribution : null,
+      benefits: partnerData.benefits && partnerData.benefits !== '' ? partnerData.benefits : null,
+      startDate: partnerData.startDate && partnerData.startDate !== '' ? new Date(partnerData.startDate) : new Date(),
+      endDate: partnerData.endDate && partnerData.endDate !== '' ? new Date(partnerData.endDate) : null,
     },
     include: {
       partner: true
@@ -1783,16 +1794,16 @@ async addPartner(
 
 async updatePartner(
   activityId: string,
-  partnerId: string,
+  partnershipId: string,
   updateData: UpdateActivityPartnerInput,
   userId: string,
   userRole: string
 ) {
   const activity = await prisma.activity.findUnique({
     where: { id: activityId },
-    include: { 
+    include: {
       responsible: true,
-      partnerships: { where: { partnerId } },
+      partnerships: { where: { id: partnershipId } },
       project: { include: { participants: { where: { userId } } } }
     }
   });
@@ -1837,15 +1848,15 @@ async updatePartner(
 
 async removePartner(
   activityId: string,
-  partnerId: string,
+  partnershipId: string,
   userId: string,
   userRole: string
 ) {
   const activity = await prisma.activity.findUnique({
     where: { id: activityId },
-    include: { 
+    include: {
       responsible: true,
-      partnerships: { where: { partnerId } },
+      partnerships: { where: { id: partnershipId } },
       project: { include: { participants: { where: { userId } } } }
     }
   });
@@ -1865,7 +1876,7 @@ async removePartner(
   }
 
   await prisma.activityPartner.delete({
-    where: { id: partnership.id }
+    where: { id: partnershipId }
   });
 }
 

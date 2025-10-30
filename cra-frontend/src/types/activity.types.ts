@@ -99,6 +99,28 @@ export enum ActivityParticipantRole {
   CONSULTANT = 'CONSULTANT',
 }
 
+export enum PartnerType {
+  UNIVERSITE = 'UNIVERSITE',
+  INSTITUT_RECHERCHE = 'INSTITUT_RECHERCHE',
+  ENTREPRISE_PRIVEE = 'ENTREPRISE_PRIVEE',
+  ONG = 'ONG',
+  ORGANISME_PUBLIC = 'ORGANISME_PUBLIC',
+  ORGANISATION_INTERNATIONALE = 'ORGANISATION_INTERNATIONALE',
+  COOPERATIVE = 'COOPERATIVE',
+  ASSOCIATION = 'ASSOCIATION',
+}
+
+export const PartnerTypeLabels: Record<PartnerType, string> = {
+  [PartnerType.UNIVERSITE]: 'Université',
+  [PartnerType.INSTITUT_RECHERCHE]: 'Institut de Recherche',
+  [PartnerType.ENTREPRISE_PRIVEE]: 'Entreprise Privée',
+  [PartnerType.ONG]: 'ONG',
+  [PartnerType.ORGANISME_PUBLIC]: 'Organisme Public',
+  [PartnerType.ORGANISATION_INTERNATIONALE]: 'Organisation Internationale',
+  [PartnerType.COOPERATIVE]: 'Coopérative',
+  [PartnerType.ASSOCIATION]: 'Association',
+};
+
 export const ActivityParticipantRoleLabels: Record<ActivityParticipantRole, string> = {
   [ActivityParticipantRole.RESPONSABLE]: 'Responsable',
   [ActivityParticipantRole.CO_RESPONSABLE]: 'Co-responsable',
@@ -293,14 +315,12 @@ export interface Activity {
   }[];
 
   participants?: ActivityParticipant[];
-  partnerships?: ActivityPartnership[];
+  partners?: ActivityPartnership[];
   fundings?: ActivityFunding[];
   tasks?: ActivityTask[];
 
   _count?: {
     participants: number;
-    partnerships: number;
-    fundings: number;
     tasks: number;
     documents: number;
     comments: number;
@@ -330,14 +350,20 @@ export interface ActivityParticipant {
 
 export interface ActivityPartnership {
   id: string;
-  partnerName: string;
+  partnerName?: string;
   partnerType: string;
   contactPerson?: string;
   contactEmail?: string;
   contribution?: string;
+  benefits?: string;
   startDate?: string;
   endDate?: string;
   isActive: boolean;
+  partner?: {
+    id: string;
+    name: string;
+    type: string;
+  };
 }
 
 export interface ActivityFunding {

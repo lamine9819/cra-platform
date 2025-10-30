@@ -1,7 +1,7 @@
 // src/components/activities/ActivityFunding.tsx
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Edit, Trash2, X, DollarSign, TrendingUp } from 'lucide-react';
+import { Plus, Edit, Trash2, X, DollarSign, TrendingUp, Eye } from 'lucide-react';
 import { activitiesApi } from '../../services/activitiesApi';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
@@ -28,6 +28,7 @@ const ActivityFundingComponent: React.FC<ActivityFundingProps> = ({
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedFunding, setSelectedFunding] = useState<ActivityFunding | null>(null);
 
   const [newFunding, setNewFunding] = useState<AddActivityFundingRequest>({
@@ -120,6 +121,11 @@ const ActivityFundingComponent: React.FC<ActivityFundingProps> = ({
         conditions: selectedFunding.conditions,
       },
     });
+  };
+
+  const handleViewDetails = (funding: ActivityFunding) => {
+    setSelectedFunding(funding);
+    setShowDetailsModal(true);
   };
 
   const handleRemove = (fundingId: string) => {
@@ -250,6 +256,13 @@ const ActivityFundingComponent: React.FC<ActivityFundingProps> = ({
                   )}
                 </div>
                 <div className="flex gap-2 ml-4">
+                  <button
+                    onClick={() => handleViewDetails(funding)}
+                    className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                    title="Voir les détails"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={() => handleEdit(funding)}
                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
@@ -575,6 +588,171 @@ const ActivityFundingComponent: React.FC<ActivityFundingProps> = ({
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de détails */}
+      {showDetailsModal && selectedFunding && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-green-50">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                <DollarSign className="w-5 h-5 mr-2 text-green-600" />
+                Détails du Financement
+              </h3>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setSelectedFunding(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Informations de base */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-gray-900 mb-3">Informations générales</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-600">Source de financement:</span>
+                    <span className="text-sm text-gray-900 font-semibold">{selectedFunding.fundingSource}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-600">Type:</span>
+                    <span className="text-sm">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                        {FundingTypeLabels[selectedFunding.fundingType]}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-600">Statut:</span>
+                    <span className="text-sm">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${FundingStatusColors[selectedFunding.status]}`}>
+                        {FundingStatusLabels[selectedFunding.status]}
+                      </span>
+                    </span>
+                  </div>
+                  {selectedFunding.contractNumber && (
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium text-gray-600">N° de contrat:</span>
+                      <span className="text-sm text-gray-900">{selectedFunding.contractNumber}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Montants */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-gray-900 mb-3">Montants</h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <span className="text-sm font-medium text-blue-900">Montant demandé:</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: selectedFunding.currency }).format(selectedFunding.requestedAmount)}
+                    </span>
+                  </div>
+                  {selectedFunding.approvedAmount !== null && selectedFunding.approvedAmount !== undefined && (
+                    <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                      <span className="text-sm font-medium text-green-900">Montant approuvé:</span>
+                      <span className="text-lg font-bold text-green-600">
+                        {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: selectedFunding.currency }).format(selectedFunding.approvedAmount)}
+                      </span>
+                    </div>
+                  )}
+                  {selectedFunding.receivedAmount !== null && selectedFunding.receivedAmount !== undefined && (
+                    <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                      <span className="text-sm font-medium text-purple-900">Montant reçu:</span>
+                      <span className="text-lg font-bold text-purple-600">
+                        {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: selectedFunding.currency }).format(selectedFunding.receivedAmount)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Dates importantes */}
+              {(selectedFunding.applicationDate || selectedFunding.approvalDate || selectedFunding.startDate || selectedFunding.endDate) && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-3">Dates importantes</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {selectedFunding.applicationDate && (
+                      <div>
+                        <span className="text-xs font-medium text-gray-600">Date de demande:</span>
+                        <p className="text-sm text-gray-900">
+                          {new Date(selectedFunding.applicationDate).toLocaleDateString('fr-FR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    )}
+                    {selectedFunding.approvalDate && (
+                      <div>
+                        <span className="text-xs font-medium text-gray-600">Date d'approbation:</span>
+                        <p className="text-sm text-gray-900">
+                          {new Date(selectedFunding.approvalDate).toLocaleDateString('fr-FR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    )}
+                    {selectedFunding.startDate && (
+                      <div>
+                        <span className="text-xs font-medium text-gray-600">Date de début:</span>
+                        <p className="text-sm text-gray-900">
+                          {new Date(selectedFunding.startDate).toLocaleDateString('fr-FR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    )}
+                    {selectedFunding.endDate && (
+                      <div>
+                        <span className="text-xs font-medium text-gray-600">Date de fin:</span>
+                        <p className="text-sm text-gray-900">
+                          {new Date(selectedFunding.endDate).toLocaleDateString('fr-FR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Conditions */}
+              {selectedFunding.conditions && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-2">Conditions et modalités</h4>
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedFunding.conditions}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setSelectedFunding(null);
+                }}
+              >
+                Fermer
+              </Button>
+            </div>
           </div>
         </div>
       )}
