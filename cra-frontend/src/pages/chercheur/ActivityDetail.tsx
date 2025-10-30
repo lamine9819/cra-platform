@@ -496,6 +496,27 @@ const ActivityDetail: React.FC = () => {
             <ActivityTasks
               activityId={activity.id}
               tasks={activity.tasks || []}
+              availableUsers={[
+                // Ajouter le responsable de l'activité
+                {
+                  id: activity.responsible.id,
+                  firstName: activity.responsible.firstName,
+                  lastName: activity.responsible.lastName,
+                  email: activity.responsible.email,
+                },
+                // Ajouter tous les participants actifs
+                ...(activity.participants || [])
+                  .filter(p => p.isActive)
+                  .map(p => ({
+                    id: p.user.id,
+                    firstName: p.user.firstName,
+                    lastName: p.user.lastName,
+                    email: p.user.email,
+                  }))
+              ].filter((user, index, self) =>
+                // Éliminer les doublons basés sur l'ID
+                index === self.findIndex(u => u.id === user.id)
+              )}
             />
           )}
         </div>

@@ -625,34 +625,6 @@ class ActivitiesApiService {
       throw new Error(error.response?.data?.message || 'Erreur lors de l\'exportation des activités');
     }
   }
-
-  // Reconduire une activité
-  async reconductActivity(activityId: string, data: {
-    newTitle: string;
-    reason: string;
-    notes?: string;
-    copyParticipants?: boolean;
-    copyTasks?: boolean;
-    copyPartnerships?: boolean;
-    copyFundings?: boolean;
-  }): Promise<Activity> {
-    try {
-      const response = await api.post(`${this.baseUrl}/${activityId}/recurrence`, data);
-      return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Erreur lors de la reconduction de l\'activité');
-    }
-  }
-
-  // Obtenir l'historique des reconductions d'une activité
-  async getRecurrenceHistory(activityId: string): Promise<Activity[]> {
-    try {
-      const response = await api.get(`${this.baseUrl}/${activityId}/recurrence-history`);
-      return response.data.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Erreur lors de la récupération de l\'historique');
-    }
-  }
 }
 
 // Export singleton

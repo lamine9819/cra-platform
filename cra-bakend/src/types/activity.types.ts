@@ -63,18 +63,19 @@ export interface ActivityListQuery {
   startDate?: string;
   endDate?: string;
   hasResults?: boolean;
-  
+
   // Filtres CRA spécifiques
   themeId?: string;
   stationId?: string;
   responsibleId?: string;
   type?: ActivityType;
   lifecycleStatus?: ActivityLifecycleStatus;
+  status?: ActivityStatus;
   interventionRegion?: string;
   withoutProject?: boolean;
   isRecurrent?: boolean;
   conventionId?: string;
-  
+
   // Projet devient optionnel
   projectId?: string;
 }
@@ -109,8 +110,8 @@ export interface AddParticipantInput {
 export interface UpdateParticipantInput {
   role?: ParticipantRole;
   timeAllocation?: number;
-  responsibilities?: string;
-  expertise?: string;
+  responsibilities?: string | null;
+  expertise?: string | null;
   isActive?: boolean;
 }
 
@@ -195,14 +196,23 @@ export interface ActivityResponse {
   tasks?: {
     id: string;
     title: string;
+    description?: string;
     status: string;
     priority: string;
     dueDate?: Date;
+    progress?: number;
     assignee?: {
       id: string;
       firstName: string;
       lastName: string;
     };
+    createdBy?: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+    createdAt: Date;
+    updatedAt: Date;
   }[];
   
   documents?: {
@@ -238,27 +248,58 @@ export interface ActivityResponse {
   participants?: {
     id: string;
     role: string;
+    isActive: boolean;
     user: {
       id: string;
       firstName: string;
       lastName: string;
     };
   }[];
-  
+
+  partners?: {
+    id: string;
+    partnerType: string;
+    contribution?: string;
+    benefits?: string;
+    isActive: boolean;
+    partner: {
+      id: string;
+      name: string;
+      type: string;
+    };
+  }[];
+
+  fundings?: {
+    id: string;
+    fundingSource: string;
+    fundingType: string;
+    status: string;
+    requestedAmount: number;
+    approvedAmount?: number;
+    receivedAmount?: number;
+    currency: string;
+    applicationDate?: Date;
+    approvalDate?: Date;
+    startDate?: Date;
+    endDate?: Date;
+    conditions?: string;
+    contractNumber?: string;
+  }[];
+
   // Historique des reconductions
   parentActivity?: {
     id: string;
     title: string;
     code?: string;
   };
-  
+
   childActivities?: {
     id: string;
     title: string;
     code?: string;
     createdAt: Date;
   }[];
-  
+
   _count?: {
     tasks: number;
     documents: number;
@@ -303,6 +344,14 @@ export enum ActivityType {
 export enum ActivityLifecycleStatus {
   NOUVELLE = 'NOUVELLE',
   RECONDUITE = 'RECONDUITE',
+  CLOTUREE = 'CLOTUREE'
+}
+
+export enum ActivityStatus {
+  PLANIFIEE = 'PLANIFIEE',
+  EN_COURS = 'EN_COURS',
+  SUSPENDUE = 'SUSPENDUE',
+  ANNULEE = 'ANNULEE',
   CLOTUREE = 'CLOTUREE'
 }
 export interface CreateTaskRequest {

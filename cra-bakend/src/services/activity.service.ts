@@ -1,23 +1,23 @@
 // src/services/activity.service.ts - Version CRA corrigée et complète
 import { PrismaClient } from '@prisma/client';
 import { ValidationError, AuthError } from '../utils/errors';
-import { 
-  CreateActivityRequest, 
-  UpdateActivityRequest, 
-  ActivityListQuery, 
+import {
+  CreateActivityRequest,
+  UpdateActivityRequest,
+  ActivityListQuery,
   ActivityResponse,
   ActivityRecurrenceRequest,
   CRAActivityStats,
   ActivityType,
-  AddParticipantInput,
-  UpdateParticipantInput,
   ActivityLifecycleStatus
 } from '../types/activity.types';
-import { 
+import {
   AddActivityPartnerInput,UpdateFundingInput,
-  AddFundingInput,UpdateActivityPartnerInput, 
+  AddFundingInput,UpdateActivityPartnerInput,
   CreateTaskInput, UpdateTaskInput,
-  CreateCommentInput, UpdateCommentInput,LinkKnowledgeTransferInput,ReassignTaskInput } from '@/utils/activityValidation';
+  CreateCommentInput, UpdateCommentInput,LinkKnowledgeTransferInput,ReassignTaskInput,
+  AddParticipantInput,
+  UpdateParticipantInput } from '@/utils/activityValidation';
 
 const prisma = new PrismaClient();
 
@@ -143,6 +143,7 @@ export class ActivityService {
     if (query.stationId) where.stationId = query.stationId;
     if (query.responsibleId) where.responsibleId = query.responsibleId;
     if (query.type) where.type = query.type;
+    if (query.status) where.status = query.status;
     if (query.lifecycleStatus) where.lifecycleStatus = query.lifecycleStatus;
     if (query.conventionId) where.conventionId = query.conventionId;
     if (query.projectId) where.projectId = query.projectId;
@@ -315,24 +316,46 @@ export class ActivityService {
         },
         participants: {
           include: {
-            user: { 
-              select: { 
-                id: true, 
-                firstName: true, 
-                lastName: true 
-              } 
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true
+              }
             }
           },
           orderBy: { role: 'asc' }
         },
+        partnerships: {
+          include: {
+            partner: {
+              select: {
+                id: true,
+                name: true,
+                type: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' }
+        },
+        fundings: {
+          orderBy: { createdAt: 'desc' }
+        },
         tasks: {
           include: {
-            assignee: { 
-              select: { 
-                id: true, 
-                firstName: true, 
-                lastName: true 
-              } 
+            assignee: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true
+              }
+            },
+            creator: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true
+              }
             }
           },
           orderBy: { createdAt: 'desc' }
@@ -367,12 +390,12 @@ export class ActivityService {
           orderBy: { createdAt: 'desc' }
         },
         _count: {
-          select: { 
-            tasks: true, 
-            documents: true, 
-            forms: true, 
-            comments: true, 
-            participants: true 
+          select: {
+            tasks: true,
+            documents: true,
+            forms: true,
+            comments: true,
+            participants: true
           }
         }
       }
@@ -1279,13 +1302,20 @@ export class ActivityService {
       parentActivity: activity.parentActivity || undefined,
       childActivities: activity.childActivities || undefined,
       participants: activity.participants || undefined,
+      partners: activity.partnerships || undefined,
+      fundings: activity.fundings || undefined,
       tasks: activity.tasks?.map((task: any) => ({
         id: task.id,
         title: task.title,
+        description: task.description || undefined,
         status: task.status,
         priority: task.priority,
         dueDate: task.dueDate || undefined,
+        progress: task.progress || undefined,
         assignee: task.assignee || undefined,
+        createdBy: task.creator || undefined,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
       })) || undefined,
       documents: activity.documents || undefined,
       forms: activity.forms?.map((form: any) => ({
@@ -1376,37 +1406,40 @@ async addParticipant(
 // Mettre à jour un participant
 async updateParticipant(
   activityId: string,
-  participantUserId: string,
+  participantId: string,
   updateData: UpdateParticipantInput,
   userId: string,
   userRole: string
 ) {
-  const activity = await prisma.activity.findUnique({
-    where: { id: activityId },
-    include: { 
-      responsible: true,
-      participants: { where: { userId: participantUserId } },
-      project: { include: { participants: { where: { userId } } } }
+  // Vérifier que le participant existe et appartient à cette activité
+  const existingParticipant = await prisma.activityParticipant.findUnique({
+    where: { id: participantId },
+    include: {
+      activity: {
+        include: {
+          responsible: true,
+          project: { include: { participants: { where: { userId } } } }
+        }
+      }
     }
   });
 
-  if (!activity) {
-    throw new ValidationError('Activité non trouvée');
+  if (!existingParticipant) {
+    throw new ValidationError('Participant non trouvé');
   }
 
-  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
+  if (existingParticipant.activityId !== activityId) {
+    throw new ValidationError('Ce participant n\'appartient pas à cette activité');
+  }
+
+  const canModify = this.checkActivityModifyRights(existingParticipant.activity, userId, userRole);
   if (!canModify) {
     throw new AuthError('Permissions insuffisantes');
   }
 
-  const existingParticipant = activity.participants?.[0];
-  if (!existingParticipant) {
-    throw new ValidationError('Participant non trouvé dans cette activité');
-  }
-
   const updatedParticipant = await prisma.activityParticipant.update({
-    where: { 
-      id: existingParticipant.id 
+    where: {
+      id: participantId
     },
     data: {
       ...updateData
@@ -1429,35 +1462,38 @@ async updateParticipant(
 // Retirer un participant
 async removeParticipant(
   activityId: string,
-  participantUserId: string,
+  participantId: string,
   userId: string,
   userRole: string
 ) {
-  const activity = await prisma.activity.findUnique({
-    where: { id: activityId },
-    include: { 
-      responsible: true,
-      participants: { where: { userId: participantUserId } },
-      project: { include: { participants: { where: { userId } } } }
+  // Vérifier que le participant existe et appartient à cette activité
+  const existingParticipant = await prisma.activityParticipant.findUnique({
+    where: { id: participantId },
+    include: {
+      activity: {
+        include: {
+          responsible: true,
+          project: { include: { participants: { where: { userId } } } }
+        }
+      }
     }
   });
 
-  if (!activity) {
-    throw new ValidationError('Activité non trouvée');
-  }
-
-  const canModify = this.checkActivityModifyRights(activity, userId, userRole);
-  if (!canModify) {
-    throw new AuthError('Permissions insuffisantes');
-  }
-
-  const existingParticipant = activity.participants?.[0];
   if (!existingParticipant) {
     throw new ValidationError('Participant non trouvé');
   }
 
+  if (existingParticipant.activityId !== activityId) {
+    throw new ValidationError('Ce participant n\'appartient pas à cette activité');
+  }
+
+  const canModify = this.checkActivityModifyRights(existingParticipant.activity, userId, userRole);
+  if (!canModify) {
+    throw new AuthError('Permissions insuffisantes');
+  }
+
   await prisma.activityParticipant.delete({
-    where: { id: existingParticipant.id }
+    where: { id: participantId }
   });
 }
 

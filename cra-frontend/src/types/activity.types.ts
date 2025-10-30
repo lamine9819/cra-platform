@@ -57,7 +57,6 @@ export enum ActivityStatus {
   EN_COURS = 'EN_COURS',
   SUSPENDUE = 'SUSPENDUE',
   ANNULEE = 'ANNULEE',
-  RECONDUITE = 'RECONDUITE',
   CLOTUREE = 'CLOTUREE',
 }
 
@@ -66,7 +65,6 @@ export const ActivityStatusLabels: Record<ActivityStatus, string> = {
   [ActivityStatus.EN_COURS]: 'En Cours',
   [ActivityStatus.SUSPENDUE]: 'Suspendue',
   [ActivityStatus.ANNULEE]: 'Annulée',
-  [ActivityStatus.RECONDUITE]: 'Reconduite',
   [ActivityStatus.CLOTUREE]: 'Clôturée',
 };
 
@@ -75,7 +73,6 @@ export const ActivityStatusColors: Record<ActivityStatus, string> = {
   [ActivityStatus.EN_COURS]: 'bg-green-100 text-green-800',
   [ActivityStatus.SUSPENDUE]: 'bg-yellow-100 text-yellow-800',
   [ActivityStatus.ANNULEE]: 'bg-red-100 text-red-800',
-  [ActivityStatus.RECONDUITE]: 'bg-purple-100 text-purple-800',
   [ActivityStatus.CLOTUREE]: 'bg-gray-100 text-gray-800',
 };
 
@@ -512,6 +509,7 @@ export interface UpdateActivityTaskRequest {
   priority?: TaskPriority;
   dueDate?: string;
   progress?: number;
+  assigneeId?: string;
 }
 
 export interface ReconductActivityRequest {

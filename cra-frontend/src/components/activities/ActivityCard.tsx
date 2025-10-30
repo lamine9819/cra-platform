@@ -3,9 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   Calendar,
-  MapPin,
   Users,
-  Target,
   Clock,
   TrendingUp,
   CheckCircle,
@@ -82,7 +80,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
           </div>
         </div>
 
-        {/* Badges Type et Status */}
+        {/* Badges Type */}
         <div className="flex flex-wrap gap-2 mb-3">
           <span
             className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -90,14 +88,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
             }`}
           >
             {ActivityTypeLabels[activity.type]}
-          </span>
-          <span
-            className={`px-2 py-1 text-xs font-medium rounded-full ${
-              ActivityStatusColors[activity.status]
-            }`}
-          >
-            {getStatusIcon()}
-            <span className="ml-1">{ActivityStatusLabels[activity.status]}</span>
           </span>
           {activity.isRecurrent && (
             <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 flex items-center">
@@ -107,21 +97,16 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
           )}
         </div>
 
-        {/* Description */}
-        {activity.description && (
-          <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-            {activity.description}
-          </p>
-        )}
-
-        {/* Informations principales */}
+        {/* Informations principales simplifiées */}
         <div className="space-y-2 text-sm text-gray-600">
-          {/* Thème */}
-          <div className="flex items-center">
-            <Target className="w-4 h-4 mr-2 text-gray-400" />
-            <span className="font-medium text-gray-700">Thème:</span>
-            <span className="ml-1">{activity.theme.name}</span>
-          </div>
+          {/* Statut */}
+          {activity.status && (
+            <div className="flex items-center">
+              {getStatusIcon()}
+              <span className="font-medium text-gray-700 ml-2">Statut:</span>
+              <span className="ml-1">{ActivityStatusLabels[activity.status]}</span>
+            </div>
+          )}
 
           {/* Responsable */}
           <div className="flex items-center">
@@ -147,46 +132,11 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
               </span>
             </div>
           )}
-
-          {/* Localisation */}
-          {activity.location && (
-            <div className="flex items-center">
-              <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-              <span>{activity.location}</span>
-            </div>
-          )}
-
-          {/* Projet lié */}
-          {showProject && activity.project && (
-            <div className="flex items-center">
-              <span className="font-medium text-gray-700 mr-1">Projet:</span>
-              <Link
-                to={`/chercheur/projects/${activity.project.id}`}
-                className="text-green-600 hover:text-green-700 hover:underline"
-              >
-                {activity.project.title}
-              </Link>
-            </div>
-          )}
-
-          {/* Station */}
-          {activity.station && (
-            <div className="flex items-center">
-              <span className="font-medium text-gray-700 mr-1">Station:</span>
-              <span>{activity.station.name}</span>
-            </div>
-          )}
         </div>
 
         {/* Compteurs */}
-        {activity._count && (
+        {activity._count && (activity._count.tasks > 0 || activity._count.documents > 0) && (
           <div className="mt-4 pt-4 border-t border-gray-200 flex items-center gap-4 text-sm text-gray-600">
-            {activity._count.participants > 0 && (
-              <div className="flex items-center">
-                <Users className="w-4 h-4 mr-1" />
-                <span>{activity._count.participants} participant(s)</span>
-              </div>
-            )}
             {activity._count.tasks > 0 && (
               <div className="flex items-center">
                 <CheckCircle className="w-4 h-4 mr-1" />

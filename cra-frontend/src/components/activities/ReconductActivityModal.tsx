@@ -37,6 +37,11 @@ const ReconductActivityModal: React.FC<ReconductActivityModalProps> = ({
       return;
     }
 
+    if (formData.reason.trim().length < 10) {
+      toast.error('La raison de reconduction doit contenir au moins 10 caractères');
+      return;
+    }
+
     try {
       setLoading(true);
       const newActivity = await activitiesApi.reconductActivity(activityId, {
@@ -102,16 +107,20 @@ const ReconductActivityModal: React.FC<ReconductActivityModalProps> = ({
           {/* Raison de la reconduction */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Raison de la reconduction *
+              Raison de la reconduction * (minimum 10 caractères)
             </label>
             <textarea
               value={formData.reason}
               onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
               required
+              minLength={10}
               rows={3}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               placeholder="Ex: Poursuite des travaux de recherche, nouveaux résultats attendus..."
             />
+            <p className="text-xs text-gray-500 mt-1">
+              {formData.reason.length}/500 caractères (minimum 10)
+            </p>
           </div>
 
           {/* Notes additionnelles */}

@@ -497,15 +497,10 @@ addParticipant = async (req: Request, res: Response, next: NextFunction) => {
     const userId = authenticatedReq.user.userId;
     const userRole = authenticatedReq.user.role;
 
-    // Assurez-vous que le rôle est bien du type ParticipantRole (enum)
-    const { role, ...rest } = validatedData;
-    const participantRoleEnum = (global as any).ParticipantRole || require('../types/participant.types').ParticipantRole;
-    const mappedRole = participantRoleEnum[role as keyof typeof participantRoleEnum];
-
     const participant = await activityService.addParticipant(
-      id, 
-      { ...rest, role: mappedRole }, 
-      userId, 
+      id,
+      validatedData,
+      userId,
       userRole
     );
 
@@ -528,15 +523,10 @@ updateParticipant = async (req: Request, res: Response, next: NextFunction) => {
     const userId = authenticatedReq.user.userId;
     const userRole = authenticatedReq.user.role;
 
-    // Assurez-vous que le rôle est bien du type ParticipantRole (enum)
-    const { role, ...rest } = validatedData;
-    const participantRoleEnum = (global as any).ParticipantRole || require('../types/participant.types').ParticipantRole;
-    const mappedRole = participantRoleEnum[role as keyof typeof participantRoleEnum];
-
     const participant = await activityService.updateParticipant(
       id,
       participantUserId,
-      { ...rest, role: mappedRole },
+      validatedData,
       userId,
       userRole
     );

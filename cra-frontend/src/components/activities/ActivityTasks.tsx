@@ -1,7 +1,7 @@
 // src/components/activities/ActivityTasks.tsx
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Edit, Trash2, X, CheckCircle, Clock } from 'lucide-react';
+import { Plus, Edit, Trash2, X, CheckCircle, Clock, Users } from 'lucide-react';
 import { activitiesApi } from '../../services/activitiesApi';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
@@ -18,9 +18,15 @@ import {
 interface ActivityTasksProps {
   activityId: string;
   tasks: ActivityTask[];
+  availableUsers?: Array<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  }>;
 }
 
-const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks }) => {
+const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks, availableUsers = [] }) => {
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -106,6 +112,7 @@ const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks }) => {
         priority: selectedTask.priority,
         dueDate: selectedTask.dueDate,
         progress: selectedTask.progress,
+        assigneeId: selectedTask.assignee?.id || undefined,
       },
     });
   };
@@ -239,13 +246,23 @@ const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks }) => {
                     <p className="text-sm text-gray-600 mb-2">{task.description}</p>
                   )}
 
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    {task.assignee && (
-                      <div>
-                        <span className="font-medium">Assigné à:</span> {task.assignee.firstName}{' '}
-                        {task.assignee.lastName}
-                      </div>
-                    )}
+                  <div className="flex flex-col gap-2 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 flex-wrap">
+                      {task.createdBy && (
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 mr-1 text-purple-500" />
+                          <span className="font-medium text-purple-700">Superviseur:</span>
+                          <span className="ml-1">{task.createdBy.firstName} {task.createdBy.lastName}</span>
+                        </div>
+                      )}
+                      {task.assignee && (
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 mr-1 text-blue-500" />
+                          <span className="font-medium text-blue-700">Assigné à:</span>
+                          <span className="ml-1">{task.assignee.firstName} {task.assignee.lastName}</span>
+                        </div>
+                      )}
+                    </div>
                     {task.dueDate && (
                       <div className="flex items-center">
                         <Clock className="w-4 h-4 mr-1" />
@@ -361,6 +378,27 @@ const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks }) => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Assigner à
+                </label>
+                <select
+                  value={newTask.assigneeId || ''}
+                  onChange={(e) => setNewTask({ ...newTask, assigneeId: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">Aucun assigné</option>
+                  {availableUsers.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.firstName} {user.lastName}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Sélectionnez un membre de l'activité pour lui assigner cette tâche
+                </p>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
@@ -488,6 +526,39 @@ const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks }) => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Assigner à
+                </label>
+                <select
+                  value={selectedTask.assignee?.id || ''}
+                  onChange={(e) => {
+                    const userId = e.target.value;
+                    const user = availableUsers.find(u => u.id === userId);
+                    setSelectedTask({
+                      ...selectedTask,
+                      assignee: user ? {
+                        id: user.id,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        email: user.email
+                      } : undefined
+                    });
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="">Aucun assigné</option>
+                  {availableUsers.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.firstName} {user.lastName}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Réassigner cette tâche à un autre membre de l'activité
+                </p>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">

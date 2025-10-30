@@ -1,6 +1,6 @@
 // src/utils/activityValidation.ts - Version CRA adaptée
 import { z } from 'zod';
-import { ActivityType, ActivityLifecycleStatus } from '../types/activity.types';
+import { ActivityType, ActivityLifecycleStatus, ActivityStatus, ParticipantRole } from '../types/activity.types';
 import { TaskStatus, TaskPriority,FundingType, FundingStatus } from '@prisma/client';
 // Validation personnalisée pour les dates
 const dateValidation = z.union([
@@ -120,6 +120,7 @@ export const activityListQuerySchema = z.object({
   stationId: z.string().cuid().optional(),
   responsibleId: z.string().cuid().optional(),
   type: z.nativeEnum(ActivityType).optional(),
+  status: z.nativeEnum(ActivityStatus).optional(),
   lifecycleStatus: z.nativeEnum(ActivityLifecycleStatus).optional(),
   interventionRegion: z.string().optional(),
   withoutProject: z.string().transform(val => val === 'true').optional(),
@@ -169,35 +170,21 @@ export const duplicateActivitySchema = z.object({
 // Schema pour les participants à l'activité
 export const addParticipantSchema = z.object({
   userId: z.string().cuid('ID utilisateur requis'),
-  role: z.enum([
-    'RESPONSABLE',
-    'CO_RESPONSABLE', 
-    'CHERCHEUR_PRINCIPAL',
-    'CHERCHEUR_ASSOCIE',
-    'TECHNICIEN',
-    'STAGIAIRE',
-    'PARTENAIRE_EXTERNE',
-    'CONSULTANT'
-  ]),
+  role: z.nativeEnum(ParticipantRole, {
+    message: 'Rôle de participant invalide'
+  }),
   timeAllocation: z.number().min(0).max(100).optional(),
   responsibilities: z.string().max(500).optional(),
   expertise: z.string().max(200).optional(),
 });
 
 export const updateParticipantSchema = z.object({
-  role: z.enum([
-    'RESPONSABLE',
-    'CO_RESPONSABLE',
-    'CHERCHEUR_PRINCIPAL', 
-    'CHERCHEUR_ASSOCIE',
-    'TECHNICIEN',
-    'STAGIAIRE',
-    'PARTENAIRE_EXTERNE',
-    'CONSULTANT'
-  ]).optional(),
+  role: z.nativeEnum(ParticipantRole, {
+    message: 'Rôle de participant invalide'
+  }).optional(),
   timeAllocation: z.number().min(0).max(100).optional(),
-  responsibilities: z.string().max(500).optional(),
-  expertise: z.string().max(200).optional(),
+  responsibilities: z.string().max(500).nullable().optional(),
+  expertise: z.string().max(200).nullable().optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -242,9 +229,9 @@ export const addActivityPartnerSchema = z.object({
 
 // Schema pour mettre à jour un partenaire
 export const updateActivityPartnerSchema = z.object({
-  partnerType: z.string().min(2).max(100).optional(),
-  contribution: z.string().max(500).optional(),
-  benefits: z.string().max(500).optional(),
+  partnerType: z.string().min(2).max(100).nullable().optional(),
+  contribution: z.string().max(500).nullable().optional(),
+  benefits: z.string().max(500).nullable().optional(),
   startDate: dateValidation.optional(),
   endDate: dateValidation.optional(),
   isActive: z.boolean().optional(),
@@ -252,7 +239,7 @@ export const updateActivityPartnerSchema = z.object({
 
 // Schema pour mettre à jour un financement
 export const updateFundingSchema = z.object({
-  fundingSource: z.string().min(2).max(200).optional(),
+  fundingSource: z.string().min(2).max(200).nullable().optional(),
   fundingType: z.enum([
     'SUBVENTION',
     'CONTRAT',
@@ -269,16 +256,16 @@ export const updateFundingSchema = z.object({
     'TERMINE',
     'SUSPENDU'
   ]).optional(),
-  requestedAmount: z.number().positive().optional(),
-  approvedAmount: z.number().positive().optional(),
-  receivedAmount: z.number().positive().optional(),
+  requestedAmount: z.number().positive().nullable().optional(),
+  approvedAmount: z.number().positive().nullable().optional(),
+  receivedAmount: z.number().positive().nullable().optional(),
   applicationDate: dateValidation.optional(),
   approvalDate: dateValidation.optional(),
   startDate: dateValidation.optional(),
   endDate: dateValidation.optional(),
-  conditions: z.string().max(1000).optional(),
-  contractNumber: z.string().max(100).optional(),
-  conventionId: z.string().cuid().optional(),
+  conditions: z.string().max(1000).nullable().optional(),
+  contractNumber: z.string().max(100).nullable().optional(),
+  conventionId: z.string().cuid().nullable().optional(),
 });
 
 export const createTaskSchema = z.object({
@@ -291,19 +278,19 @@ export const createTaskSchema = z.object({
 });
 
 export const updateTaskSchema = z.object({
-  title: z.string().min(3).max(200).optional(),
-  description: z.string().max(1000).optional(),
+  title: z.string().min(3).max(200).nullable().optional(),
+  description: z.string().max(1000).nullable().optional(),
   status: z.nativeEnum(TaskStatus).optional(),
   priority: z.nativeEnum(TaskPriority).optional(),
   dueDate: dateValidation.optional(),
-  assigneeId: z.string().cuid().optional(),
-  progress: z.number().min(0).max(100).optional(),
+  assigneeId: z.string().cuid().nullable().optional(),
+  progress: z.number().min(0).max(100).nullable().optional(),
 });
 
 // Nouveau schéma pour réassigner une tâche
 export const reassignTaskSchema = z.object({
   newAssigneeId: z.string().cuid('ID utilisateur requis'),
-  reason: z.string().max(500).optional(),
+  reason: z.string().max(500).nullable().optional(),
 });
 
 export type ReassignTaskInput = z.infer<typeof reassignTaskSchema>;
