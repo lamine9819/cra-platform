@@ -68,6 +68,9 @@ export interface ActivityReportData {
   // Budget total
   budgetTotalAnnee?: number;
 
-  // Statut
+  // Statut du cycle de vie
+  lifecycleStatus: 'NOUVELLE' | 'RECONDUITE' | 'CLOTUREE';
+
+  // @deprecated - Utiliser lifecycleStatus à la place
   isReconduite: boolean;
 }

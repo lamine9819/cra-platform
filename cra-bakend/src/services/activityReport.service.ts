@@ -85,8 +85,17 @@ export class ActivityReportService {
       where: { userId: activity.responsibleId }
     });
 
-    // Préparer l'équipe de recherche
-    const equipeRecherche = await Promise.all(
+    // Préparer l'équipe de recherche - Ajouter le responsable en premier
+    const responsableEquipe = {
+      chercheur: `${activity.responsible.firstName} ${activity.responsible.lastName}`,
+      grade: responsibleProfile?.grade || 'Non spécifié',
+      discipline: activity.responsible.discipline || 'Non spécifiée',
+      institution: 'ISRA',
+      laboratoire: 'Responsable d\'activité',
+      tempsEnPourcent: 100
+    };
+
+    const participantsEquipe = await Promise.all(
       activity.participants.map(async (p: any) => {
         const profile = await prisma.individualProfile.findUnique({
           where: { userId: p.userId }
@@ -96,12 +105,15 @@ export class ActivityReportService {
           chercheur: `${p.user.firstName} ${p.user.lastName}`,
           grade: profile?.grade || 'Non spécifié',
           discipline: p.user.discipline || p.expertise || 'Non spécifiée',
-          institution: 'ISRA', // À adapter selon vos données
+          institution: 'ISRA',
           laboratoire: p.responsibilities || 'Non spécifié',
           tempsEnPourcent: p.timeAllocation || 0
         };
       })
     );
+
+    // Combiner le responsable et les participants (responsable en premier)
+    const equipeRecherche = [responsableEquipe, ...participantsEquipe];
 
     // Préparer les partenaires
     const institutionsPartenaires = activity.partnerships.map((p: any) => ({
@@ -142,7 +154,7 @@ export class ActivityReportService {
       discipline: activity.responsible.discipline || 'Non spécifiée',
 
       // Justificatifs (pour nouvelle activité)
-      justificatifs: !activity.isRecurrent ? this.generateJustificatifs(activity) : undefined,
+      justificatifs: activity.lifecycleStatus === 'NOUVELLE' ? this.generateJustificatifs(activity) : undefined,
 
       // Objectifs
       objectifs: activity.objectives.join('\n• '),
@@ -151,9 +163,9 @@ export class ActivityReportService {
       methodologie: activity.methodology || undefined,
 
       // Pour activité reconduite
-      applicationRecommandationsCST: activity.isRecurrent ? this.extractRecommandations(activity) : undefined,
-      contraintes: activity.isRecurrent ? this.extractContraintes(activity) : undefined,
-      resultatsObtenus: activity.isRecurrent ? activity.results : undefined,
+      applicationRecommandationsCST: activity.lifecycleStatus === 'RECONDUITE' ? this.extractRecommandations(activity) : undefined,
+      contraintes: activity.lifecycleStatus === 'RECONDUITE' ? this.extractContraintes(activity) : undefined,
+      resultatsObtenus: activity.lifecycleStatus === 'RECONDUITE' ? activity.results : undefined,
 
       // Mode de transfert
       modeTransfertAcquis: this.generateModeTransfert(activity),
@@ -170,7 +182,10 @@ export class ActivityReportService {
       // Budget
       budgetTotalAnnee: budgetTotal > 0 ? budgetTotal : undefined,
 
-      // Statut
+      // Statut du cycle de vie
+      lifecycleStatus: activity.lifecycleStatus,
+
+      // Rétrocompatibilité
       isReconduite: activity.isRecurrent
     };
   }

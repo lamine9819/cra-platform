@@ -10,8 +10,6 @@ import toast from 'react-hot-toast';
 import {
   ActivityType,
   ActivityTypeLabels,
-  ActivityStatus,
-  ActivityStatusLabels,
   TaskPriority,
   TaskPriorityLabels,
   type CreateActivityRequest,
@@ -29,7 +27,6 @@ const CreateActivity: React.FC = () => {
     title: '',
     description: '',
     type: ActivityType.RECHERCHE_EXPERIMENTALE,
-    status: ActivityStatus.PLANIFIEE,
     objectives: [],
     themeId: '',
     responsibleId: '',
@@ -200,7 +197,7 @@ const CreateActivity: React.FC = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Type d'activité *
@@ -212,24 +209,6 @@ const CreateActivity: React.FC = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   {Object.entries(ActivityTypeLabels).map(([key, label]) => (
-                    <option key={key} value={key}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Statut *
-                </label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as ActivityStatus })}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  {Object.entries(ActivityStatusLabels).map(([key, label]) => (
                     <option key={key} value={key}>
                       {label}
                     </option>

@@ -16,6 +16,7 @@ import {
   Copy,
   CheckCircle,
   RefreshCw,
+  Download,
 } from 'lucide-react';
 import { activitiesApi } from '../../services/activitiesApi';
 import { Button } from '../../components/ui/Button';
@@ -124,6 +125,18 @@ const ActivityDetail: React.FC = () => {
     }
   };
 
+  const handleGenerateReport = async () => {
+    try {
+      toast.loading('Génération du rapport Word en cours...');
+      await activitiesApi.generateReport(id!, 'word');
+      toast.dismiss();
+      toast.success('Rapport Word généré avec succès');
+    } catch (error: any) {
+      toast.dismiss();
+      toast.error(error.message || 'Erreur lors de la génération du rapport');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -168,17 +181,21 @@ const ActivityDetail: React.FC = () => {
 
       {/* En-tête */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-4">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
               {activity.code && (
                 <span className="text-sm text-gray-500 font-mono">{activity.code}</span>
               )}
               <span className={`px-3 py-1 text-sm font-medium rounded-full ${ActivityTypeColors[activity.type]}`}>
                 {ActivityTypeLabels[activity.type]}
               </span>
-              <span className={`px-3 py-1 text-sm font-medium rounded-full ${ActivityStatusColors[activity.status]}`}>
-                {ActivityStatusLabels[activity.status]}
+              <span className={`px-3 py-1 text-sm font-medium rounded-full ${
+                activity.lifecycleStatus === 'NOUVELLE' ? 'bg-blue-100 text-blue-800' :
+                activity.lifecycleStatus === 'RECONDUITE' ? 'bg-purple-100 text-purple-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                Cycle: {ActivityLifecycleStatusLabels[activity.lifecycleStatus]}
               </span>
               {activity.isRecurrent && (
                 <span className="px-3 py-1 text-sm font-medium rounded-full bg-purple-100 text-purple-800">
@@ -191,36 +208,57 @@ const ActivityDetail: React.FC = () => {
               <p className="text-gray-600">{activity.description}</p>
             )}
           </div>
-          <div className="flex gap-2 ml-4">
-            <Button
-              onClick={() => setShowReconductModal(true)}
-              variant="outline"
-              className="border-purple-600 text-purple-600 hover:bg-purple-50"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Reconduire
-            </Button>
-            <Button
-              onClick={handleDuplicate}
-              variant="outline"
-              className="border-green-600 text-green-600 hover:bg-green-50"
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              Dupliquer
-            </Button>
-            <Link to={`/chercheur/activities/${id}/edit`}>
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
-                <Edit className="w-4 h-4 mr-2" />
-                Modifier
+
+          {/* Actions - Responsive Design */}
+          <div className="flex flex-col sm:flex-row gap-2 lg:ml-4 min-w-fit">
+            {/* Boutons principaux */}
+            <div className="flex gap-2">
+              <Link to={`/chercheur/activities/${id}/edit`} className="flex-1 sm:flex-none">
+                <Button className="bg-green-600 hover:bg-green-700 text-white w-full">
+                  <Edit className="w-4 h-4 mr-2" />
+                  Modifier
+                </Button>
+              </Link>
+              <Button
+                onClick={handleDelete}
+                variant="outline"
+                className="border-red-600 text-red-600 hover:bg-red-50 flex-1 sm:flex-none"
+              >
+                <Trash2 className="w-4 h-4 sm:mr-0 mr-2" />
+                <span className="sm:hidden">Supprimer</span>
               </Button>
-            </Link>
-            <Button
-              onClick={handleDelete}
-              variant="outline"
-              className="border-red-600 text-red-600 hover:bg-red-50"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+            </div>
+
+            {/* Autres actions */}
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                onClick={handleGenerateReport}
+                variant="outline"
+                className="border-blue-600 text-blue-600 hover:bg-blue-50 flex-1 sm:flex-none"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Rapport</span>
+                <span className="sm:hidden">Rapport Word</span>
+              </Button>
+
+              <Button
+                onClick={() => setShowReconductModal(true)}
+                variant="outline"
+                className="border-purple-600 text-purple-600 hover:bg-purple-50 flex-1 sm:flex-none"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Reconduire
+              </Button>
+
+              <Button
+                onClick={handleDuplicate}
+                variant="outline"
+                className="border-gray-600 text-gray-600 hover:bg-gray-50 flex-1 sm:flex-none"
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                Dupliquer
+              </Button>
+            </div>
           </div>
         </div>
 

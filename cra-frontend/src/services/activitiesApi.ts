@@ -371,7 +371,7 @@ class ActivitiesApiService {
         });
       }
 
-      const url = params.toString() ? `${this.baseUrl}/statistics?${params.toString()}` : `${this.baseUrl}/statistics`;
+      const url = params.toString() ? `${this.baseUrl}/stats?${params.toString()}` : `${this.baseUrl}/stats`;
       const response = await api.get(url);
       return response.data.data;
     } catch (error: any) {
@@ -394,7 +394,7 @@ class ActivitiesApiService {
         params.append('sections', sections.join(','));
       }
 
-      const response = await api.get(`${this.baseUrl}/${activityId}/reports?${params.toString()}`, {
+      const response = await api.get(`${this.baseUrl}/${activityId}/report?${params.toString()}`, {
         responseType: 'blob',
       });
 

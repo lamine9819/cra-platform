@@ -453,6 +453,7 @@ export interface UpdateActivityRequest {
   strategicAxis?: string;
   subAxis?: string;
   status?: ActivityStatus;
+  lifecycleStatus?: ActivityLifecycleStatus;
   priority?: TaskPriority;
   justifications?: string;
   constraints?: string[];

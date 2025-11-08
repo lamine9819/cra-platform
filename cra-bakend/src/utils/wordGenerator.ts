@@ -4,10 +4,16 @@ import { ActivityReportData } from '../types/report.types';
 export async function generateWord(data: ActivityReportData): Promise<Buffer> {
   const sections: any[] = [];
 
-  // Titre
+  // Titre - Utilise le lifecycleStatus pour déterminer le type de fiche
+  const titreMapping: Record<string, string> = {
+    'NOUVELLE': 'FICHE D\'ACTIVITÉ NOUVELLE',
+    'RECONDUITE': 'FICHE D\'ACTIVITÉ RECONDUITE',
+    'CLOTUREE': 'FICHE D\'ACTIVITÉ CLÔTURÉE'
+  };
+
   sections.push(
     new Paragraph({
-      text: data.isReconduite ? 'FICHE D\'ACTIVITÉ RECONDUITE' : 'FICHE D\'ACTIVITÉ NOUVELLE',
+      text: titreMapping[data.lifecycleStatus] || 'FICHE D\'ACTIVITÉ',
       heading: 'Heading1',
       alignment: AlignmentType.CENTER,
       spacing: { after: 300 }
@@ -41,8 +47,8 @@ export async function generateWord(data: ActivityReportData): Promise<Buffer> {
   sections.push(infoTable);
   sections.push(new Paragraph({ text: '' }));
 
-  // Justificatifs ou Recommandations
-  if (data.isReconduite) {
+  // Justificatifs ou Recommandations basé sur le lifecycleStatus
+  if (data.lifecycleStatus === 'RECONDUITE' || data.lifecycleStatus === 'CLOTUREE') {
     sections.push(
       new Paragraph({
         text: 'APPLICATION DES RECOMMANDATIONS DU CST :',

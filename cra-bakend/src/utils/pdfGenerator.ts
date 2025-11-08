@@ -15,11 +15,17 @@ export async function generatePDF(data: ActivityReportData): Promise<Buffer> {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      // Titre principal
+      // Titre principal - Utilise le lifecycleStatus pour déterminer le type de fiche
+      const titreMapping: Record<string, string> = {
+        'NOUVELLE': 'FICHE D\'ACTIVITÉ NOUVELLE',
+        'RECONDUITE': 'FICHE D\'ACTIVITÉ RECONDUITE',
+        'CLOTUREE': 'FICHE D\'ACTIVITÉ CLÔTURÉE'
+      };
+
       doc.fontSize(16)
          .font('Helvetica-Bold')
          .text(
-           data.isReconduite ? 'FICHE D\'ACTIVITÉ RECONDUITE' : 'FICHE D\'ACTIVITÉ NOUVELLE',
+           titreMapping[data.lifecycleStatus] || 'FICHE D\'ACTIVITÉ',
            { align: 'center' }
          );
       
@@ -57,16 +63,16 @@ export async function generatePDF(data: ActivityReportData): Promise<Buffer> {
       
       doc.moveDown();
 
-      // Section spécifique selon le type
-      if (data.isReconduite) {
-        // Pour activité reconduite
+      // Section spécifique selon le lifecycleStatus
+      if (data.lifecycleStatus === 'RECONDUITE' || data.lifecycleStatus === 'CLOTUREE') {
+        // Pour activité reconduite ou clôturée
         addSection(doc, 'APPLICATION DES RECOMMANDATIONS DU CST');
         if (data.contraintes) {
           doc.fontSize(10).text('CONTRAINTES :', { continued: false });
           doc.fontSize(9).text(data.contraintes, { align: 'justify' });
           doc.moveDown(0.5);
         }
-        
+
         if (data.resultatsObtenus) {
           doc.fontSize(10).text('RESULTATS OBTENUS :', { continued: false });
           doc.fontSize(9).text(data.resultatsObtenus, { align: 'justify' });

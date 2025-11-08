@@ -77,6 +77,9 @@ router.get('/:id/recurrence-history', activityController.getActivityRecurrenceHi
 // Duplication d'activité
 router.post('/:id/duplicate', activityController.duplicateActivity);
 
+// Génération de rapport
+router.get('/:id/report', activityController.generateReport);
+
 // Gestion des participants (à placer après les routes de documents)
 router.post('/:id/participants', activityController.addParticipant);
 router.get('/:id/participants', activityController.listParticipants);
