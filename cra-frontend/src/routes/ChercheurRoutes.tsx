@@ -9,9 +9,9 @@ import ActivitiesList from '../pages/chercheur/ActivitiesList';
 import ActivityDetail from '../pages/chercheur/ActivityDetail';
 import CreateActivity from '../pages/chercheur/CreateActivity';
 import EditActivity from '../pages/chercheur/EditActivity';
+import { DocumentsHub } from '../pages/chercheur/DocumentsHub';
 
-{/* import DocumentsList from '../pages/chercheur/DocumentsList';
-import TeamManagement from '../pages/chercheur/TeamManagement';
+{/* import TeamManagement from '../pages/chercheur/TeamManagement';
 import SeminarsList from '../pages/chercheur/SeminarsList';
 import ReportsList from '../pages/chercheur/ReportsList'; */}
 
@@ -29,13 +29,8 @@ const ChercheurRoutes: React.FC = () => {
       <Route path="activities/create" element={<CreateActivity />} />
       <Route path="activities/:id" element={<ActivityDetail />} />
       <Route path="activities/:id/edit" element={<EditActivity />} />
+      <Route path="documents" element={<DocumentsHub />} />
       {/*<Route path="tasks" element={<TasksList />} />
-      <Route path="documents">
-        <Route index element={<DocumentsList />} />
-        <Route path="mine" element={<DocumentsList />} />
-        <Route path="shared" element={<DocumentsList />} />
-        <Route path="upload" element={<DocumentsList />} />
-      </Route>
       <Route path="team" element={<TeamManagement />} />
       <Route path="seminars" element={<SeminarsList />} />
       <Route path="reports" element={<ReportsList />} />

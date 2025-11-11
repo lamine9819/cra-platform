@@ -482,4 +482,372 @@ export class DocumentController {
       next(error);
     }
   };
+
+  // =============================================
+  // NOUVELLES MÉTHODES - GESTION AVANCÉE DOCUMENTS
+  // =============================================
+
+  /**
+   * PATCH /documents/:id
+   * Mettre à jour les métadonnées d'un document
+   */
+  updateDocumentMetadata = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      // Validation des données
+      const updateData = req.body;
+
+      const document = await documentService.updateDocumentMetadata(
+        id,
+        updateData,
+        userId,
+        userRole
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Document mis à jour avec succès',
+        data: document,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * POST /documents/:id/link
+   * Lier un document existant à une entité
+   */
+  linkDocument = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      const linkData = req.body;
+
+      const document = await documentService.linkDocument(
+        id,
+        linkData,
+        userId,
+        userRole
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Document lié avec succès',
+        data: document,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * DELETE /documents/:id/link
+   * Délier un document d'une ou plusieurs entités
+   */
+  unlinkDocument = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      // Body optionnel pour délier d'une entité spécifique
+      const { entityType, entityId } = req.body || {};
+
+      const document = await documentService.unlinkDocument(
+        id,
+        { entityType, entityId },
+        userId,
+        userRole
+      );
+
+      res.status(200).json({
+        success: true,
+        message: entityType
+          ? `Document délié de ${entityType}`
+          : 'Document délié de toutes les entités',
+        data: document,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // =============================================
+  // CORBEILLE (SOFT DELETE)
+  // =============================================
+
+  /**
+   * GET /documents/trash
+   * Obtenir les documents supprimés (corbeille)
+   */
+  getTrashDocuments = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const queryParams = req.query;
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      const result = await documentService.getTrashDocuments(userId, userRole, queryParams);
+
+      res.status(200).json({
+        success: true,
+        data: result.documents,
+        pagination: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * POST /documents/:id/restore
+   * Restaurer un document supprimé
+   */
+  restoreDocument = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      const document = await documentService.restoreDocument(id, userId, userRole);
+
+      res.status(200).json({
+        success: true,
+        message: 'Document restauré avec succès',
+        data: document,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * DELETE /documents/:id/permanent
+   * Supprimer définitivement un document
+   */
+  permanentDeleteDocument = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      await documentService.permanentDeleteDocument(id, userId, userRole);
+
+      res.status(200).json({
+        success: true,
+        message: 'Document supprimé définitivement',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * DELETE /documents/trash/empty
+   * Vider la corbeille (supprimer tous les documents supprimés depuis > 30 jours)
+   */
+  emptyTrash = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      const deletedCount = await documentService.emptyTrash(userId, userRole);
+
+      res.status(200).json({
+        success: true,
+        message: `${deletedCount} document(s) supprimé(s) définitivement`,
+        data: { deletedCount },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // =============================================
+  // GESTION AVANCÉE DES PARTAGES
+  // =============================================
+
+  /**
+   * GET /documents/:id/shares
+   * Obtenir la liste des partages d'un document
+   */
+  getDocumentShares = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      const shares = await documentService.getDocumentShares(id, userId, userRole);
+
+      res.status(200).json({
+        success: true,
+        data: shares,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * DELETE /documents/:id/shares/:shareId
+   * Révoquer un partage spécifique
+   */
+  revokeShare = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id, shareId } = req.params;
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      await documentService.revokeShare(id, shareId, userId, userRole);
+
+      res.status(200).json({
+        success: true,
+        message: 'Partage révoqué avec succès',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * PATCH /documents/:id/shares/:shareId
+   * Mettre à jour les permissions d'un partage
+   */
+  updateSharePermissions = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id, shareId } = req.params;
+      const { canEdit, canDelete } = req.body;
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      const share = await documentService.updateSharePermissions(
+        id,
+        shareId,
+        { canEdit, canDelete },
+        userId,
+        userRole
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Permissions mises à jour',
+        data: share,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // =============================================
+  // FAVORIS
+  // =============================================
+
+  /**
+   * POST /documents/:id/favorite
+   * Ajouter un document aux favoris
+   */
+  addToFavorites = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+      const userId = authenticatedReq.user.userId;
+
+      await documentService.addToFavorites(id, userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Document ajouté aux favoris',
+        data: { isFavorite: true },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * DELETE /documents/:id/favorite
+   * Retirer un document des favoris
+   */
+  removeFromFavorites = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+      const userId = authenticatedReq.user.userId;
+
+      await documentService.removeFromFavorites(id, userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Document retiré des favoris',
+        data: { isFavorite: false },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * GET /documents/favorites
+   * Obtenir les documents favoris de l'utilisateur
+   */
+  getFavoriteDocuments = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const queryParams = req.query;
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      const result = await documentService.getFavoriteDocuments(userId, userRole, queryParams);
+
+      res.status(200).json({
+        success: true,
+        data: result.documents,
+        pagination: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * GET /documents/:id/preview
+   * Obtenir le document pour preview (Content-Disposition: inline)
+   */
+  previewDocument = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+      const userId = authenticatedReq.user.userId;
+      const userRole = authenticatedReq.user.role;
+
+      const fileInfo = await documentService.getDocumentFilePath(id, userId, userRole);
+
+      // Utiliser 'inline' au lieu de 'attachment' pour preview dans le browser
+      res.setHeader('Content-Type', fileInfo.mimeType);
+      res.setHeader('Content-Disposition', `inline; filename="${fileInfo.filename}"`);
+
+      // Incrémenter le compteur de vues
+      await documentService.incrementViewCount(id);
+
+      const path = require('path');
+      res.sendFile(path.resolve(fileInfo.filepath));
+    } catch (error) {
+      next(error);
+    }
+  };
 }

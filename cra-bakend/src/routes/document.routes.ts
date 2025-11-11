@@ -11,7 +11,21 @@ const documentController = new DocumentController();
 router.use(authenticate);
 
 // =============================================
-// ROUTES CRUD DE BASE
+// ROUTES SPÉCIFIQUES (DOIVENT ÊTRE AVANT /:id)
+// =============================================
+
+// Statistiques des documents
+router.get('/stats/overview', documentController.getDocumentStats);
+
+// Favoris (AVANT /:id pour éviter conflits)
+router.get('/favorites', documentController.getFavoriteDocuments);
+
+// Corbeille (AVANT /:id pour éviter conflits)
+router.get('/trash', documentController.getTrashDocuments);
+router.delete('/trash/empty', documentController.emptyTrash);
+
+// =============================================
+// UPLOAD
 // =============================================
 
 // Upload de fichier unique
@@ -20,23 +34,12 @@ router.post('/upload', uploadSingle, documentController.uploadFile);
 // Upload de fichiers multiples
 router.post('/upload/multiple', uploadMultiple, documentController.uploadMultipleFiles);
 
-// Statistiques des documents (DOIT ÊTRE AVANT /:id)
-router.get('/stats/overview', documentController.getDocumentStats);
+// =============================================
+// LISTE
+// =============================================
 
 // Lister les documents (avec filtres)
 router.get('/', documentController.listDocuments);
-
-// Obtenir un document spécifique
-router.get('/:id', documentController.getDocumentById);
-
-// Télécharger un document
-router.get('/:id/download', documentController.downloadDocument);
-
-// Partager un document
-router.post('/:id/share', documentController.shareDocument);
-
-// Supprimer un document
-router.delete('/:id', documentController.deleteDocument);
 
 // =============================================
 // ROUTES PAR ENTITÉ - RÉCUPÉRATION DES DOCUMENTS
@@ -68,5 +71,44 @@ router.get('/knowledge-transfer/:knowledgeTransferId', documentController.getKno
 
 // Documents d'un événement spécifique
 router.get('/event/:eventId', documentController.getEventDocuments);
+
+// =============================================
+// ROUTES AVEC /:id (DOIVENT ÊTRE À LA FIN)
+// =============================================
+
+// Obtenir un document spécifique
+router.get('/:id', documentController.getDocumentById);
+
+// Preview document (inline dans le browser)
+router.get('/:id/preview', documentController.previewDocument);
+
+// Télécharger un document
+router.get('/:id/download', documentController.downloadDocument);
+
+// Partager un document
+router.post('/:id/share', documentController.shareDocument);
+
+// Gestion des partages
+router.get('/:id/shares', documentController.getDocumentShares);
+router.delete('/:id/shares/:shareId', documentController.revokeShare);
+router.patch('/:id/shares/:shareId', documentController.updateSharePermissions);
+
+// Liaison/Déliaison
+router.post('/:id/link', documentController.linkDocument);
+router.delete('/:id/link', documentController.unlinkDocument);
+
+// Favoris
+router.post('/:id/favorite', documentController.addToFavorites);
+router.delete('/:id/favorite', documentController.removeFromFavorites);
+
+// Corbeille - Restauration et suppression
+router.post('/:id/restore', documentController.restoreDocument);
+router.delete('/:id/permanent', documentController.permanentDeleteDocument);
+
+// Mise à jour métadonnées
+router.patch('/:id', documentController.updateDocumentMetadata);
+
+// Suppression (soft delete par défaut maintenant)
+router.delete('/:id', documentController.deleteDocument);
 
 export default router;

@@ -38,8 +38,7 @@ import TaskDetail from '../pages/chercheur/TaskDetail';
 import EditTask from '../pages/chercheur/EditTask';
 
 // Import des pages documents
-import DocumentsList from '../pages/chercheur/DocumentsList';
-import DocumentDetail from '../pages/chercheur/DocumentDetail';
+import { DocumentsHub } from '../pages/chercheur/DocumentsHub';
 
 // Import des pages formulaires (nouvelles)
 import FormsList from '../pages/chercheur/FormsList';
@@ -152,11 +151,8 @@ const ChercheurLayout: React.FC = () => {
                 <Route path="activities/:id/edit" element={<EditActivity />} />
                 <Route path="activities/:id/tasks/new" element={<CreateTask />} />
                 
-                {/* ROUTES DES DOCUMENTS (existantes) */}
-                <Route path="documents">
-                  <Route index element={<DocumentsList />} />
-                  <Route path=":id" element={<DocumentDetail />} />
-                </Route>
+                {/* ROUTES DES DOCUMENTS (mise à jour avec DocumentsHub) */}
+                <Route path="documents" element={<DocumentsHub />} />
                 
                 {/* ROUTES DES FORMULAIRES (nouvelles - intégrées) */}
                 <Route path="forms">
