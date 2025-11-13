@@ -90,11 +90,6 @@ const ChercheurLayout: React.FC = () => {
       icon: Archive,
     },
     {
-      name: 'Équipe',
-      href: '/chercheur/team',
-      icon: Users,
-    },
-    {
       name: 'Séminaires',
       href: '/chercheur/seminars',
       icon: Calendar,

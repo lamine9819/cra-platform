@@ -1,7 +1,7 @@
 // src/components/activities/ActivityPartnerships.tsx
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Edit, Trash2, X, Handshake, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Handshake, Eye, Upload, FileText } from 'lucide-react';
 import { activitiesApi } from '../../services/activitiesApi';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
@@ -12,6 +12,7 @@ import {
   PartnerType,
   PartnerTypeLabels,
 } from '../../types/activity.types';
+import { documentService } from '../../services/api/documentService';
 
 interface ActivityPartnershipsProps {
   activityId: string;
@@ -27,6 +28,8 @@ const ActivityPartnerships: React.FC<ActivityPartnershipsProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedPartnership, setSelectedPartnership] = useState<ActivityPartnership | null>(null);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const [newPartnership, setNewPartnership] = useState<AddActivityPartnershipRequest>({
     partnerName: '',
@@ -89,11 +92,34 @@ const ActivityPartnerships: React.FC<ActivityPartnershipsProps> = ({
       startDate: '',
       endDate: '',
     });
+    setUploadFile(null);
   };
 
-  const handleAdd = (e: React.FormEvent) => {
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    addMutation.mutate(newPartnership);
+
+    try {
+      setIsUploading(true);
+
+      // Si un fichier est sélectionné, l'uploader d'abord
+      if (uploadFile) {
+        toast.loading('Upload du document en cours...');
+        await documentService.uploadDocument(uploadFile, {
+          title: `Document de partenariat - ${newPartnership.partnerName}`,
+          type: 'CONTRAT',
+          activityId: activityId,
+          isPublic: false,
+        });
+        toast.dismiss();
+      }
+
+      // Ensuite créer le partenariat
+      addMutation.mutate(newPartnership);
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de l\'upload du document');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleEdit = (partnership: ActivityPartnership) => {
@@ -342,6 +368,54 @@ const ActivityPartnerships: React.FC<ActivityPartnershipsProps> = ({
                 />
               </div>
 
+              {/* Upload de document */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Document joint (optionnel)
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-green-500 transition-colors">
+                  <div className="flex flex-col items-center">
+                    {uploadFile ? (
+                      <div className="flex items-center gap-3 w-full">
+                        <FileText className="w-8 h-8 text-green-600" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{uploadFile.name}</p>
+                          <p className="text-xs text-gray-500">{(uploadFile.size / 1024).toFixed(2)} KB</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setUploadFile(null)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-10 h-10 text-gray-400 mb-3" />
+                        <label className="cursor-pointer">
+                          <span className="text-sm text-green-600 hover:text-green-700 font-medium">
+                            Cliquez pour sélectionner un fichier
+                          </span>
+                          <input
+                            type="file"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) setUploadFile(file);
+                            }}
+                            className="hidden"
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                          />
+                        </label>
+                        <p className="text-xs text-gray-500 mt-2">
+                          PDF, Word, Image (max 10MB)
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -379,15 +453,16 @@ const ActivityPartnerships: React.FC<ActivityPartnershipsProps> = ({
                     setShowAddModal(false);
                     resetForm();
                   }}
+                  disabled={addMutation.isPending || isUploading}
                 >
                   Annuler
                 </Button>
                 <Button
                   type="submit"
-                  disabled={addMutation.isPending}
+                  disabled={addMutation.isPending || isUploading}
                   className="bg-green-600 hover:bg-green-700"
                 >
-                  {addMutation.isPending ? 'Ajout en cours...' : 'Ajouter'}
+                  {isUploading ? 'Upload en cours...' : addMutation.isPending ? 'Ajout en cours...' : 'Ajouter'}
                 </Button>
               </div>
             </form>
