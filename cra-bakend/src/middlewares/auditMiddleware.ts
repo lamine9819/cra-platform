@@ -175,12 +175,39 @@ export const auditSystemError = async (
 ) => {
   try {
     const authenticatedReq = req as AuthenticatedRequest;
-    
+
+    // Ne pas créer d'audit log pour les erreurs d'authentification
+    // car l'utilisateur n'est pas (ou n'est plus) valide
+    if (error.name === 'AuthError' || (error as any).code === 'AUTH_ERROR') {
+      next(error);
+      return;
+    }
+
+    // Vérifier si l'utilisateur existe avant de créer l'audit log
+    let userId = authenticatedReq.user?.userId;
+    if (userId) {
+      const { PrismaClient } = await import('@prisma/client');
+      const prisma = new PrismaClient();
+      try {
+        const userExists = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { id: true }
+        });
+        if (!userExists) {
+          userId = undefined; // L'utilisateur n'existe plus, ne pas l'associer au log
+        }
+      } catch {
+        userId = undefined;
+      } finally {
+        await prisma.$disconnect();
+      }
+    }
+
     await createAuditLog(
       'SYSTEM_ERROR_OCCURRED',
       {
         level: 'ERROR',
-        userId: authenticatedReq.user?.userId,
+        userId,
         details: {
           error: {
             name: error.name,
@@ -200,7 +227,7 @@ export const auditSystemError = async (
   } catch (auditError) {
     console.error('❌ Erreur lors de l\'audit d\'erreur système:', auditError);
   }
-  
+
   next(error);
 };
 

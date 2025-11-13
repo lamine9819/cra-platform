@@ -60,9 +60,13 @@ app.use(helmet({
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'", "ws:", "wss:"],
+      frameAncestors: ["'self'", "http://localhost:5173", "http://127.0.0.1:5173"],
     },
   },
   crossOriginEmbedderPolicy: false,
+  frameguard: {
+    action: 'sameorigin'
+  }
 }));
 
 // CORS configuration
@@ -197,7 +201,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
   setHeaders: (res, filePath) => {
     // Sécurité pour les fichiers
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('Cache-Control', 'public, max-age=86400');
     
     // Types de fichiers autorisés
@@ -241,7 +245,7 @@ app.use('/public', express.static(path.join(__dirname, '../public'), {
 app.use((req, res, next) => {
   // Headers de sécurité additionnels
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');

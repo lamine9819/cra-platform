@@ -127,18 +127,40 @@ export const documentService = {
    * T�l�charger un document
    */
   async downloadDocument(id: string, filename: string): Promise<void> {
-    const response = await api.get(`${BASE_URL}/${id}/download`, {
-      responseType: 'blob',
-    });
+    // Récupérer le token depuis le localStorage
+    const token = localStorage.getItem('cra_auth_token');
 
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', filename);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
+    // Construire l'URL relative pour passer par le proxy Vite
+    let downloadUrl = `/api${BASE_URL}/${id}/download`;
+    if (token) {
+      downloadUrl += `?token=${encodeURIComponent(token)}`;
+    }
+
+    try {
+      // Utiliser fetch pour télécharger le fichier avec le token
+      const response = await fetch(downloadUrl);
+
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+
+      // Récupérer le blob
+      const blob = await response.blob();
+
+      // Créer un lien temporaire et déclencher le téléchargement
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error);
+      throw error;
+    }
   },
 
   // =============================================
@@ -391,7 +413,17 @@ export const documentService = {
    * Obtenir l'URL de preview (affichage dans le browser)
    */
   getPreviewUrl(documentId: string): string {
-    return `${api.defaults.baseURL}${BASE_URL}/${documentId}/preview`;
+    // Récupérer le token depuis le localStorage
+    const token = localStorage.getItem('cra_auth_token');
+    // Utiliser une URL relative pour passer par le proxy Vite
+    const baseUrl = `/api${BASE_URL}/${documentId}/preview`;
+
+    // Ajouter le token en query parameter si disponible
+    if (token) {
+      return `${baseUrl}?token=${encodeURIComponent(token)}`;
+    }
+
+    return baseUrl;
   },
 
   /**

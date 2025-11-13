@@ -42,6 +42,7 @@ import { DocumentPreviewModal } from '../../components/documents/modals/Document
 import { ShareDocumentModal } from '../../components/documents/modals/ShareDocumentModal';
 import { EditMetadataModal } from '../../components/documents/modals/EditMetadataModal';
 import { DocumentResponse } from '../../types/document.types';
+import { documentService } from '../../services/api/documentService';
 
 type TabType = 'all' | 'favorites' | 'trash';
 type ViewMode = 'grid' | 'list';
@@ -114,8 +115,11 @@ export const DocumentsHub: React.FC = () => {
   };
 
   const handleDownload = async (doc: DocumentResponse) => {
-    // Implémenter le téléchargement
-    window.open(`/api/documents/${doc.id}/download`, '_blank');
+    try {
+      await documentService.downloadDocument(doc.id, doc.filename);
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error);
+    }
   };
 
   const handleEdit = (doc: DocumentResponse) => {
