@@ -1,11 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cat convention.routes.ts)",
-      "Bash(cat strategic-planning.routes.ts)",
-      "Bash(npx prisma generate:*)",
-      "Bash(npx tsc:*)",
-      "Bash(cat:*)"
+      "Bash(sudo apt update:*)",
+      "Bash(psql:*)",
+      "Bash(pg_isready:*)",
+      "Bash(dpkg:*)"
     ],
     "deny": [],
     "ask": []
