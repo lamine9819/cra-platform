@@ -39,7 +39,7 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                 {document.title}
               </h2>
               <p className="text-sm text-gray-600">
-                {document.filename} " {formatDocumentSize(Number(document.size))}
+                {document.filename} • {formatDocumentSize(Number(document.size))}
               </p>
             </div>
           </div>
@@ -52,7 +52,7 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                 className="border-blue-600 text-blue-600 hover:bg-blue-50"
               >
                 <Download className="w-4 h-4 mr-2" />
-                T�l�charger
+                Télécharger
               </Button>
             )}
             {onShare && (
@@ -95,23 +95,23 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               <div className="text-center py-12">
                 <FileText className="w-20 h-20 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Aper�u non disponible
+                  Aperçu non disponible
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  Ce type de fichier ne peut pas �tre pr�visualis� dans le navigateur
+                  Ce type de fichier ne peut pas être prévisualisé dans le navigateur
                 </p>
                 <Button
                   onClick={onDownload}
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  T�l�charger pour voir
+                  Télécharger pour voir
                 </Button>
               </div>
             )}
           </div>
 
-          {/* Sidebar - M�tadonn�es */}
+          {/* Sidebar - Métadonnées */}
           <div className="w-80 border-l border-gray-200 bg-white overflow-y-auto">
             <div className="p-6 space-y-6">
               {/* Informations */}
@@ -140,7 +140,7 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-gray-600 mb-1">Ajout� le</label>
+                    <label className="block text-gray-600 mb-1">Ajouté le</label>
                     <p className="text-gray-900">
                       {new Date(document.createdAt).toLocaleDateString('fr-FR', {
                         day: 'numeric',
@@ -153,7 +153,7 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-gray-600 mb-1">Propri�taire</label>
+                    <label className="block text-gray-600 mb-1">Propriétaire</label>
                     <p className="text-gray-900">
                       {document.owner.firstName} {document.owner.lastName}
                     </p>
@@ -202,14 +202,14 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               {(document.activity || document.project || document.task) && (
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                    Li� �
+                    Lié à
                   </h3>
                   <div className="space-y-2">
                     {document.activity && (
                       <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
                         <FileText className="w-4 h-4 text-gray-600" />
                         <div className="text-sm">
-                          <p className="font-medium text-gray-900">Activit�</p>
+                          <p className="font-medium text-gray-900">Activité</p>
                           <p className="text-gray-600">{document.activity.title}</p>
                         </div>
                       </div>
@@ -227,7 +227,7 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                       <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
                         <FileText className="w-4 h-4 text-gray-600" />
                         <div className="text-sm">
-                          <p className="font-medium text-gray-900">T�che</p>
+                          <p className="font-medium text-gray-900">Tâche</p>
                           <p className="text-gray-600">{document.task.title}</p>
                         </div>
                       </div>
@@ -240,7 +240,7 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               {document.shares && document.shares.length > 0 && (
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                    Partag� avec ({document.shares.length})
+                    Partagé avec ({document.shares.length})
                   </h3>
                   <div className="space-y-2">
                     {document.shares.map((share) => (

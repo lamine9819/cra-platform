@@ -114,7 +114,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
     const validFiles = files.filter(f => f.status !== 'error');
 
     if (validFiles.length === 0) {
-      toast.error('Aucun fichier valide � uploader');
+      toast.error('Aucun fichier valide à uploader');
       return;
     }
 
@@ -174,7 +174,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
         });
       }
 
-      // Succ�s
+      // Succès
       setTimeout(() => {
         onSuccess?.();
         onClose();
@@ -193,7 +193,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
 
   if (!isOpen) return null;
 
-  const contextLabel = activityId ? 'activit�' : projectId ? 'projet' : taskId ? 't�che' : seminarId ? 's�minaire' : '';
+  const contextLabel = activityId ? 'activité' : projectId ? 'projet' : taskId ? 'tâche' : seminarId ? 'séminaire' : '';
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -204,7 +204,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
             <h2 className="text-2xl font-bold text-gray-900">Ajouter des documents</h2>
             {autoLink && contextLabel && (
               <p className="text-sm text-gray-600 mt-1">
-                Les documents seront automatiquement li�s � cette {contextLabel}
+                Les documents seront automatiquement liés à cette {contextLabel}
               </p>
             )}
           </div>
@@ -260,12 +260,12 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
                   <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-lg font-medium text-gray-900 mb-2">
                     {isDragActive
-                      ? 'D�posez les fichiers ici'
-                      : 'Glissez-d�posez vos fichiers ici'}
+                      ? 'Déposez les fichiers ici'
+                      : 'Glissez-déposez vos fichiers ici'}
                   </p>
-                  <p className="text-sm text-gray-600 mb-4">ou cliquez pour s�lectionner</p>
+                  <p className="text-sm text-gray-600 mb-4">ou cliquez pour sélectionner</p>
                   <p className="text-xs text-gray-500">
-                    Maximum {MAX_FILES_PER_UPLOAD} fichiers " {formatDocumentSize(MAX_FILE_SIZE)} par fichier
+                    Maximum {MAX_FILES_PER_UPLOAD} fichiers • {formatDocumentSize(MAX_FILE_SIZE)} par fichier
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     Formats: PDF, Word, Excel, Images, TXT, CSV
@@ -277,7 +277,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
               {files.length > 0 && (
                 <div className="space-y-4">
                   <h3 className="font-medium text-gray-900">
-                    Fichiers s�lectionn�s ({files.length})
+                    Fichiers sélectionnés ({files.length})
                   </h3>
 
                   {files.map((fileData) => (
@@ -302,7 +302,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
                               disabled={isUploading}
                             />
                             <p className="text-xs text-gray-500 mt-1">
-                              {fileData.file.name} " {formatDocumentSize(fileData.file.size)}
+                              {fileData.file.name} • {formatDocumentSize(fileData.file.size)}
                             </p>
                           </div>
                         </div>
@@ -379,9 +379,9 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
           ) : (
             <div className="text-center py-12">
               <File className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 mb-2">Fonctionnalit� "Lier existant" � venir</p>
+              <p className="text-gray-600 mb-2">Fonctionnalité "Lier existant" à venir</p>
               <p className="text-sm text-gray-500">
-                Permet de lier des documents d�j� upload�s � cette {contextLabel}
+                Permet de lier des documents déjà uploadés à cette {contextLabel}
               </p>
             </div>
           )}
@@ -392,7 +392,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
           <div className="text-sm text-gray-600">
             {files.length > 0 && currentTab === 'upload' && (
               <span>
-                {files.filter(f => f.status !== 'error').length} fichier(s) pr�t(s)
+                {files.filter(f => f.status !== 'error').length} fichier(s) prêt(s)
               </span>
             )}
           </div>

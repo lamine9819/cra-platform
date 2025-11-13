@@ -37,7 +37,7 @@ export function useDocuments(query?: DocumentListQuery) {
 }
 
 /**
- * Hook pour un document sp�cifique
+ * Hook pour un document spécifique
  */
 export function useDocument(id: string) {
   return useQuery({
@@ -77,7 +77,7 @@ export function useUploadDocument() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: documentKeys.lists() });
       queryClient.invalidateQueries({ queryKey: documentKeys.stats() });
-      toast.success('Document upload� avec succ�s');
+      toast.success('Document uploadé avec succès');
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erreur lors de l\'upload');
@@ -104,7 +104,7 @@ export function useUploadMultipleDocuments() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: documentKeys.lists() });
       queryClient.invalidateQueries({ queryKey: documentKeys.stats() });
-      toast.success(`${data.length} document(s) upload�(s) avec succ�s`);
+      toast.success(`${data.length} document(s) uploadé(s) avec succès`);
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erreur lors de l\'upload');
@@ -123,7 +123,8 @@ export function useDeleteDocument() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: documentKeys.lists() });
       queryClient.invalidateQueries({ queryKey: documentKeys.stats() });
-      toast.success('Document supprim�');
+      queryClient.invalidateQueries({ queryKey: documentKeys.trash() });
+      toast.success('Document déplacé dans la corbeille');
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erreur lors de la suppression');
@@ -142,7 +143,7 @@ export function useShareDocument() {
       documentService.shareDocument(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: documentKeys.detail(variables.id) });
-      toast.success('Document partag�');
+      toast.success('Document partagé');
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erreur lors du partage');
@@ -151,17 +152,17 @@ export function useShareDocument() {
 }
 
 /**
- * Hook pour t�l�charger un document
+ * Hook pour télécharger un document
  */
 export function useDownloadDocument() {
   return useMutation({
     mutationFn: ({ id, filename }: { id: string; filename: string }) =>
       documentService.downloadDocument(id, filename),
     onSuccess: () => {
-      toast.success('T�l�chargement d�marr�');
+      toast.success('Téléchargement démarré');
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Erreur lors du t�l�chargement');
+      toast.error(error.message || 'Erreur lors du téléchargement');
     },
   });
 }
@@ -171,7 +172,7 @@ export function useDownloadDocument() {
 // =============================================
 
 /**
- * Hook pour les documents d'une activit�
+ * Hook pour les documents d'une activité
  */
 export function useActivityDocuments(activityId: string, query?: DocumentListQuery) {
   return useQuery({
@@ -193,7 +194,7 @@ export function useProjectDocuments(projectId: string, query?: DocumentListQuery
 }
 
 /**
- * Hook pour les documents d'une t�che
+ * Hook pour les documents d'une tâche
  */
 export function useTaskDocuments(taskId: string, query?: DocumentListQuery) {
   return useQuery({

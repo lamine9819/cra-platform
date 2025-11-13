@@ -48,10 +48,10 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
 
   // Filtrer les utilisateurs
   const filteredUsers = users.filter((user) => {
-    // Exclure le propri�taire
+    // Exclure le propriétaire
     if (user.id === document.owner.id) return false;
 
-    // Exclure les utilisateurs d�j� partag\u00e9s
+    // Exclure les utilisateurs déjà partagés
     if (document.shares?.some(share => share.sharedWith.id === user.id)) return false;
 
     // Filtre de recherche
@@ -77,7 +77,7 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
 
   const handleShare = async () => {
     if (selectedUsers.length === 0) {
-      toast.error('Veuillez s�lectionner au moins un utilisateur');
+      toast.error('Veuillez sélectionner au moins un utilisateur');
       return;
     }
 
@@ -91,7 +91,7 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
         },
       });
 
-      toast.success(`Document partag� avec ${selectedUsers.length} utilisateur(s)`);
+      toast.success(`Document partagé avec ${selectedUsers.length} utilisateur(s)`);
       setSelectedUsers([]);
       setCanEdit(false);
       setCanDelete(false);
@@ -103,14 +103,14 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
   };
 
   const handleRevokeShare = async (shareId: string) => {
-    // TODO: N�cessite endpoint DELETE /documents/:id/shares/:shareId
-    toast.error('Fonctionnalit� "R�voquer" � impl�menter c�t� backend');
+    // TODO: Nécessite endpoint DELETE /documents/:id/shares/:shareId
+    toast.error('Fonctionnalité "Révoquer" à implémenter côté backend');
     // try {
     //   await api.delete(`/documents/${document.id}/shares/${shareId}`);
-    //   toast.success('Partage r�voqu�');
+    //   toast.success('Partage révoqué');
     //   onSuccess?.();
     // } catch (error: any) {
-    //   toast.error(error.message || 'Erreur lors de la r�vocation');
+    //   toast.error(error.message || 'Erreur lors de la révocation');
     // }
   };
 
@@ -144,7 +144,7 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
           {document.shares && document.shares.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                D�j� partag� avec ({document.shares.length})
+                Déjà partagé avec ({document.shares.length})
               </h3>
               <div className="space-y-2">
                 {document.shares.map((share) => (
@@ -160,7 +160,7 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
                       <div className="flex gap-2 mt-1">
                         {share.canEdit && (
                           <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded">
-                            Peut �diter
+                            Peut éditer
                           </span>
                         )}
                         {share.canDelete && (
@@ -173,7 +173,7 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
                     <button
                       onClick={() => handleRevokeShare(share.id)}
                       className="text-red-600 hover:text-red-700 p-2"
-                      title="R�voquer"
+                      title="Révoquer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -205,7 +205,7 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
             <div className="border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
               {filteredUsers.length === 0 ? (
                 <div className="p-4 text-center text-gray-600">
-                  {searchTerm ? 'Aucun utilisateur trouv�' : 'Tous les utilisateurs ont d�j� acc�s'}
+                  {searchTerm ? 'Aucun utilisateur trouvé' : 'Tous les utilisateurs ont déjà accès'}
                 </div>
               ) : (
                 <div className="divide-y divide-gray-200">
@@ -239,7 +239,7 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
             {selectedUsers.length > 0 && (
               <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
                 <h4 className="text-sm font-semibold text-gray-900">
-                  Permissions ({selectedUsers.length} utilisateur(s) s�lectionn�(s))
+                  Permissions ({selectedUsers.length} utilisateur(s) sélectionné(s))
                 </h4>
 
                 <label className="flex items-center text-sm text-gray-700 cursor-pointer">
@@ -250,7 +250,7 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
                     className="mr-2 rounded border-gray-300 text-green-600 focus:ring-green-500"
                   />
                   <span>
-                    <strong>Peut �diter</strong> - Modifier le titre, la description, les tags
+                    <strong>Peut éditer</strong> - Modifier le titre, la description, les tags
                   </span>
                 </label>
 
@@ -262,12 +262,12 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
                     className="mr-2 rounded border-gray-300 text-red-600 focus:ring-red-500"
                   />
                   <span>
-                    <strong>Peut supprimer</strong> - Supprimer d�finitivement le document
+                    <strong>Peut supprimer</strong> - Supprimer définitivement le document
                   </span>
                 </label>
 
                 <p className="text-xs text-gray-600 mt-2">
-                  Par d�faut, les utilisateurs peuvent consulter et t�l�charger le document
+                  Par défaut, les utilisateurs peuvent consulter et télécharger le document
                 </p>
               </div>
             )}
@@ -278,7 +278,7 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
         <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
           <p className="text-sm text-gray-600">
             {selectedUsers.length > 0 && (
-              <span>{selectedUsers.length} utilisateur(s) s�lectionn�(s)</span>
+              <span>{selectedUsers.length} utilisateur(s) sélectionné(s)</span>
             )}
           </p>
           <div className="flex gap-3">
