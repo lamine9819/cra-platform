@@ -23,10 +23,19 @@ import {
   XCircle,
   Play,
   FolderOpen,
-  Briefcase
+  Briefcase,
+  Upload
 } from 'lucide-react';
 import tasksApi, { Task} from '../../services/tasksApi';
 import { CommentSection } from '../../components/comments/CommentSection';
+import { useTaskDocuments } from '../../hooks/documents/useDocuments';
+import { UploadDocumentModal } from '../../components/documents/modals/UploadDocumentModal';
+import { DocumentPreviewModal } from '../../components/documents/modals/DocumentPreviewModal';
+import { DocumentCard } from '../../components/documents/DocumentCard';
+import { DocumentResponse } from '../../types/document.types';
+import { documentService } from '../../services/api/documentService';
+import { useUnlinkDocument } from '../../hooks/documents/useDocumentsAdvanced';
+import toast from 'react-hot-toast';
 
 // Couleurs et labels des statuts
 const statusConfig = {
@@ -84,13 +93,49 @@ const priorityConfig = {
 const TaskDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [updating, setUpdating] = useState(false);
+
+  // États pour les documents
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<DocumentResponse | null>(null);
+
+  // Charger les documents de la tâche
+  const { data: documentsData, isLoading: isLoadingDocuments } = useTaskDocuments(id!);
+  const unlinkMutation = useUnlinkDocument();
+
+  // Handlers pour les documents
+  const handleViewDocument = (document: DocumentResponse) => {
+    setSelectedDocument(document);
+    setShowPreviewModal(true);
+  };
+
+  const handleDownloadDocument = async (document: DocumentResponse) => {
+    try {
+      await documentService.downloadDocument(document.id, document.filename);
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error);
+    }
+  };
+
+  const handleUnlinkDocument = async (document: DocumentResponse) => {
+    try {
+      await unlinkMutation.mutateAsync({
+        documentId: document.id,
+        entityType: 'task',
+        entityId: id!,
+      });
+      toast.success('Document délié de la tâche');
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de la déliaison');
+    }
+  };
 
   // Charger la tâche
   const loadTask = async () => {
@@ -730,24 +775,60 @@ const TaskDetail: React.FC = () => {
         )}
 
         {activeTab === 'documents' && (
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="text-center py-8">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Documents de la tâche</h3>
-              <p className="text-gray-600 mb-4">
-                {task._count?.documents 
-                  ? `${task._count.documents} document(s) attaché(s)`
-                  : 'Aucun document attaché à cette tâche'
-                }
-              </p>
+          <div className="space-y-6">
+            {/* En-tête de l'onglet documents */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Documents de la tâche</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Gérez les documents liés à cette tâche
+                </p>
+              </div>
               <button
-                onClick={() => alert('Fonctionnalité d\'upload à venir')}
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                onClick={() => setShowUploadModal(true)}
+                className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
               >
-                <FileText className="h-4 w-4" />
+                <Upload className="h-4 w-4" />
                 Ajouter un document
               </button>
             </div>
+
+            {/* Liste des documents */}
+            {isLoadingDocuments ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-48 bg-gray-200 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : documentsData && documentsData.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {documentsData.map((document) => (
+                  <DocumentCard
+                    key={document.id}
+                    document={document}
+                    mode="contextual"
+                    onView={handleViewDocument}
+                    onDownload={handleDownloadDocument}
+                    onUnlink={handleUnlinkDocument}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-2">Aucun document</p>
+                <p className="text-sm text-gray-500 mb-4">
+                  Ajoutez des documents pour cette tâche
+                </p>
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                >
+                  <Upload className="h-4 w-4" />
+                  Ajouter un document
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -761,6 +842,28 @@ const TaskDetail: React.FC = () => {
           />
         )}
       </div>
+
+      {/* Modal d'upload de document */}
+      <UploadDocumentModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        taskId={id}
+        onSuccess={() => {
+          setShowUploadModal(false);
+        }}
+      />
+
+      {/* Modal de prévisualisation */}
+      {selectedDocument && (
+        <DocumentPreviewModal
+          isOpen={showPreviewModal}
+          onClose={() => {
+            setShowPreviewModal(false);
+            setSelectedDocument(null);
+          }}
+          document={selectedDocument}
+        />
+      )}
     </div>
   );
 };

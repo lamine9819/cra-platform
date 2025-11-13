@@ -13,6 +13,8 @@ import {
   MapPin,
   Target,
   AlertCircle,
+  FileText,
+  Upload,
 } from 'lucide-react';
 import { projectsApi } from '../../services/projectsApi';
 import { Button } from '../../components/ui/Button';
@@ -28,8 +30,16 @@ import ProjectPartnerships from '../../components/projects/ProjectPartnerships';
 import ProjectFunding from '../../components/projects/ProjectFunding';
 import ProjectAnalytics from '../../components/projects/ProjectAnalytics';
 import ConventionDetailsModal from '../../components/conventions/ConventionDetailsModal';
+import { useProjectDocuments } from '../../hooks/documents/useDocuments';
+import { UploadDocumentModal } from '../../components/documents/modals/UploadDocumentModal';
+import { DocumentPreviewModal } from '../../components/documents/modals/DocumentPreviewModal';
+import { DocumentCard } from '../../components/documents/DocumentCard';
+import { DocumentResponse } from '../../types/document.types';
+import { documentService } from '../../services/api/documentService';
+import { useUnlinkDocument } from '../../hooks/documents/useDocumentsAdvanced';
+import toast from 'react-hot-toast';
 
-type TabType = 'overview' | 'participants' | 'partnerships' | 'funding' | 'analytics';
+type TabType = 'overview' | 'participants' | 'partnerships' | 'funding' | 'analytics' | 'documents';
 
 const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,11 +48,47 @@ const ProjectDetail: React.FC = () => {
   const [selectedConventionId, setSelectedConventionId] = useState<string | null>(null);
   const [isConventionModalOpen, setIsConventionModalOpen] = useState(false);
 
+  // États pour les documents
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<DocumentResponse | null>(null);
+
   const { data: project, isLoading, isError, error } = useQuery({
     queryKey: ['project', id],
     queryFn: () => projectsApi.getProjectById(id!),
     enabled: !!id,
   });
+
+  // Charger les documents du projet
+  const { data: documentsData, isLoading: isLoadingDocuments } = useProjectDocuments(id!);
+  const unlinkMutation = useUnlinkDocument();
+
+  // Handlers pour les documents
+  const handleViewDocument = (document: DocumentResponse) => {
+    setSelectedDocument(document);
+    setShowPreviewModal(true);
+  };
+
+  const handleDownloadDocument = async (document: DocumentResponse) => {
+    try {
+      await documentService.downloadDocument(document.id, document.filename);
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error);
+    }
+  };
+
+  const handleUnlinkDocument = async (document: DocumentResponse) => {
+    try {
+      await unlinkMutation.mutateAsync({
+        documentId: document.id,
+        entityType: 'project',
+        entityId: id!,
+      });
+      toast.success('Document délié du projet');
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de la déliaison');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -74,6 +120,7 @@ const ProjectDetail: React.FC = () => {
     { id: 'partnerships' as TabType, label: 'Partenariats', icon: Handshake, count: project.partnerships?.length || 0 },
     { id: 'funding' as TabType, label: 'Financement', icon: DollarSign, count: project.fundings?.length || 0 },
     { id: 'analytics' as TabType, label: 'Analyse', icon: BarChart3 },
+    { id: 'documents' as TabType, label: 'Documents', icon: FileText, count: documentsData?.length || 0 },
   ];
 
   return (
@@ -375,8 +422,88 @@ const ProjectDetail: React.FC = () => {
           {activeTab === 'analytics' && (
             <ProjectAnalytics projectId={id!} />
           )}
+
+          {activeTab === 'documents' && (
+            <div className="space-y-6">
+              {/* En-tête de l'onglet documents */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Documents du projet</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Gérez les documents liés à ce projet
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setShowUploadModal(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Ajouter un document
+                </Button>
+              </div>
+
+              {/* Liste des documents */}
+              {isLoadingDocuments ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-48 bg-gray-200 rounded-lg animate-pulse" />
+                  ))}
+                </div>
+              ) : documentsData && documentsData.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {documentsData.map((document) => (
+                    <DocumentCard
+                      key={document.id}
+                      document={document}
+                      mode="contextual"
+                      onView={handleViewDocument}
+                      onDownload={handleDownloadDocument}
+                      onUnlink={handleUnlinkDocument}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600 mb-2">Aucun document</p>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Ajoutez des documents pour ce projet
+                  </p>
+                  <Button
+                    onClick={() => setShowUploadModal(true)}
+                    variant="outline"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Ajouter un document
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Modal d'upload de document */}
+      <UploadDocumentModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        projectId={id}
+        onSuccess={() => {
+          setShowUploadModal(false);
+        }}
+      />
+
+      {/* Modal de prévisualisation */}
+      {selectedDocument && (
+        <DocumentPreviewModal
+          isOpen={showPreviewModal}
+          onClose={() => {
+            setShowPreviewModal(false);
+            setSelectedDocument(null);
+          }}
+          document={selectedDocument}
+        />
+      )}
 
       {/* Modal des détails de la convention */}
       <ConventionDetailsModal

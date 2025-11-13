@@ -1,7 +1,7 @@
 // src/components/projects/ProjectPartnerships.tsx
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Users, Trash2, X, Calendar, Search, Eye, Edit } from 'lucide-react';
+import { Plus, Users, Trash2, X, Calendar, Search, Eye, Edit, Upload, FileText } from 'lucide-react';
 import { projectsApi } from '../../services/projectsApi';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
@@ -10,6 +10,7 @@ import { fr } from 'date-fns/locale';
 import type { ProjectPartnership, AddPartnershipRequest, UpdatePartnershipRequest } from '../../types/project.types';
 import api from '../../services/api';
 import PartnerDetailsModal from '../partners/PartnerDetailsModal';
+import { documentService } from '../../services/api/documentService';
 
 interface Partner {
   id: string;
@@ -33,6 +34,8 @@ const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, pa
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [newPartnership, setNewPartnership] = useState<AddPartnershipRequest>({
     partnerId: '',
     partnerType: '',
@@ -113,6 +116,7 @@ const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, pa
       endDate: '',
     });
     setSearchTerm('');
+    setUploadFile(null);
   };
 
   const resetEditForm = () => {
@@ -125,12 +129,34 @@ const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, pa
     });
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!newPartnership.partnerId || !newPartnership.partnerType) {
       toast.error('Veuillez sélectionner un partenaire et spécifier le type');
       return;
     }
-    addMutation.mutate(newPartnership);
+
+    try {
+      setIsUploading(true);
+
+      // Si un fichier est sélectionné, l'uploader d'abord
+      if (uploadFile) {
+        toast.loading('Upload du document en cours...');
+        await documentService.uploadDocument(uploadFile, {
+          title: `Document de partenariat - ${newPartnership.partnerType}`,
+          type: 'CONTRAT',
+          projectId: projectId,
+          isPublic: false,
+        });
+        toast.dismiss();
+      }
+
+      // Ensuite créer le partenariat
+      addMutation.mutate(newPartnership);
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de l\'upload du document');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleEdit = (partnership: ProjectPartnership) => {
@@ -377,6 +403,54 @@ const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, pa
                 />
               </div>
 
+              {/* Upload de document */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Document joint (optionnel)
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-green-500 transition-colors">
+                  <div className="flex flex-col items-center">
+                    {uploadFile ? (
+                      <div className="flex items-center gap-3 w-full">
+                        <FileText className="w-8 h-8 text-green-600" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{uploadFile.name}</p>
+                          <p className="text-xs text-gray-500">{(uploadFile.size / 1024).toFixed(2)} KB</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setUploadFile(null)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-10 h-10 text-gray-400 mb-3" />
+                        <label className="cursor-pointer">
+                          <span className="text-sm text-green-600 hover:text-green-700 font-medium">
+                            Cliquez pour sélectionner un fichier
+                          </span>
+                          <input
+                            type="file"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) setUploadFile(file);
+                            }}
+                            className="hidden"
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                          />
+                        </label>
+                        <p className="text-xs text-gray-500 mt-2">
+                          PDF, Word, Image (max 10MB)
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {/* Dates */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -404,10 +478,10 @@ const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, pa
               <Button variant="outline" onClick={() => { setShowAddModal(false); resetForm(); }}>Annuler</Button>
               <Button
                 onClick={handleAdd}
-                disabled={addMutation.isPending || !newPartnership.partnerId}
+                disabled={addMutation.isPending || isUploading || !newPartnership.partnerId}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
-                {addMutation.isPending ? 'Ajout...' : 'Ajouter'}
+                {isUploading ? 'Upload en cours...' : addMutation.isPending ? 'Ajout...' : 'Ajouter'}
               </Button>
             </div>
           </div>

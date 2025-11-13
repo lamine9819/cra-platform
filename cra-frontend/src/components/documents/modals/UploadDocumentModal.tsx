@@ -1,17 +1,20 @@
 // src/components/documents/modals/UploadDocumentModal.tsx
-import React, { useState, useCallback } from 'react';
-import { X, Upload, File, CheckCircle, AlertCircle, Trash2 } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { X, Upload, File, CheckCircle, AlertCircle, Trash2, Search, Link } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
-import { useUploadDocument, useUploadMultipleDocuments } from '../../../hooks/documents/useDocuments';
+import { useUploadDocument, useUploadMultipleDocuments, useDocuments } from '../../../hooks/documents/useDocuments';
+import { useLinkDocument } from '../../../hooks/documents/useDocumentsAdvanced';
 import {
   DocumentType,
   DOCUMENT_TYPES,
   MAX_FILE_SIZE,
   MAX_FILES_PER_UPLOAD,
   formatDocumentSize,
-  validateDocumentUpload
+  validateDocumentUpload,
+  DocumentResponse
 } from '../../../types/document.types';
 import { Button } from '../../ui/Button';
+import { getFileIcon, getFileIconColor, formatFileSize } from '../../../utils/fileHelpers';
 import toast from 'react-hot-toast';
 
 interface UploadDocumentModalProps {
@@ -58,8 +61,30 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   const [currentTab, setCurrentTab] = useState<'upload' | 'link'>('upload');
   const [isUploading, setIsUploading] = useState(false);
 
+  // États pour l'onglet "Lier existant"
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+  const [isLinking, setIsLinking] = useState(false);
+
   const uploadSingleMutation = useUploadDocument();
   const uploadMultipleMutation = useUploadMultipleDocuments();
+  const linkMutation = useLinkDocument();
+
+  // Récupérer tous les documents pour l'onglet "Lier existant"
+  const { data: documentsData, isLoading: isLoadingDocuments } = useDocuments({
+    search: searchTerm,
+    limit: 50,
+  });
+
+  // Réinitialiser les états quand le modal se ferme
+  useEffect(() => {
+    if (!isOpen) {
+      setFiles([]);
+      setSearchTerm('');
+      setSelectedDocuments([]);
+      setCurrentTab('upload');
+    }
+  }, [isOpen]);
 
   // Drag & Drop
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -108,6 +133,73 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
 
   const updateFileMeta = (fileId: string, updates: Partial<FileWithMeta>) => {
     setFiles(files.map(f => f.id === fileId ? { ...f, ...updates } : f));
+  };
+
+  // Filtrer les documents disponibles (non déjà liés à cette entité)
+  const availableDocuments = documentsData?.data?.filter((doc: DocumentResponse) => {
+    // Filtrer selon le contexte
+    if (activityId && doc.activity?.id === activityId) return false;
+    if (projectId && doc.project?.id === projectId) return false;
+    if (taskId && doc.task?.id === taskId) return false;
+    if (seminarId && doc.seminar?.id === seminarId) return false;
+    return true;
+  }) || [];
+
+  // Gérer la sélection/désélection de documents
+  const toggleDocumentSelection = (documentId: string) => {
+    setSelectedDocuments(prev =>
+      prev.includes(documentId)
+        ? prev.filter(id => id !== documentId)
+        : [...prev, documentId]
+    );
+  };
+
+  // Lier les documents sélectionnés
+  const handleLinkDocuments = async () => {
+    if (selectedDocuments.length === 0) {
+      toast.error('Veuillez sélectionner au moins un document');
+      return;
+    }
+
+    if (!activityId && !projectId && !taskId && !seminarId) {
+      toast.error('Aucune entité à lier');
+      return;
+    }
+
+    try {
+      setIsLinking(true);
+
+      // Déterminer le type et l'ID de l'entité
+      const entityType = activityId ? 'activity'
+        : projectId ? 'project'
+        : taskId ? 'task'
+        : seminarId ? 'seminar'
+        : null;
+
+      const entityId = activityId || projectId || taskId || seminarId || '';
+
+      if (!entityType) {
+        throw new Error('Type d\'entité invalide');
+      }
+
+      // Lier chaque document
+      for (const documentId of selectedDocuments) {
+        await linkMutation.mutateAsync({
+          documentId,
+          entityType: entityType as any,
+          entityId,
+        });
+      }
+
+      toast.success(`${selectedDocuments.length} document(s) lié(s) avec succès`);
+      setSelectedDocuments([]);
+      onSuccess?.();
+      onClose();
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de la liaison');
+    } finally {
+      setIsLinking(false);
+    }
   };
 
   const handleUpload = async () => {
@@ -194,6 +286,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   if (!isOpen) return null;
 
   const contextLabel = activityId ? 'activité' : projectId ? 'projet' : taskId ? 'tâche' : seminarId ? 'séminaire' : '';
+  const hasContext = !!(activityId || projectId || taskId || seminarId);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -217,30 +310,32 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200">
-          <button
-            onClick={() => setCurrentTab('upload')}
-            className={`flex-1 px-6 py-3 font-medium text-sm transition-colors ${
-              currentTab === 'upload'
-                ? 'text-green-600 border-b-2 border-green-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <Upload className="w-4 h-4 inline mr-2" />
-            Importer nouveau
-          </button>
-          <button
-            onClick={() => setCurrentTab('link')}
-            className={`flex-1 px-6 py-3 font-medium text-sm transition-colors ${
-              currentTab === 'link'
-                ? 'text-green-600 border-b-2 border-green-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <File className="w-4 h-4 inline mr-2" />
-            Lier existant
-          </button>
-        </div>
+        {hasContext && (
+          <div className="flex border-b border-gray-200">
+            <button
+              onClick={() => setCurrentTab('upload')}
+              className={`flex-1 px-6 py-3 font-medium text-sm transition-colors ${
+                currentTab === 'upload'
+                  ? 'text-green-600 border-b-2 border-green-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <Upload className="w-4 h-4 inline mr-2" />
+              Importer nouveau
+            </button>
+            <button
+              onClick={() => setCurrentTab('link')}
+              className={`flex-1 px-6 py-3 font-medium text-sm transition-colors ${
+                currentTab === 'link'
+                  ? 'text-green-600 border-b-2 border-green-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <File className="w-4 h-4 inline mr-2" />
+              Lier existant
+            </button>
+          </div>
+        )}
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
@@ -377,12 +472,103 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
               )}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <File className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 mb-2">Fonctionnalité "Lier existant" à venir</p>
-              <p className="text-sm text-gray-500">
-                Permet de lier des documents déjà uploadés à cette {contextLabel}
-              </p>
+            <div className="space-y-4">
+              {/* Barre de recherche */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Rechercher un document..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Info contexte */}
+              {contextLabel && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-sm text-blue-800">
+                    <Link className="w-4 h-4 inline mr-2" />
+                    Sélectionnez des documents à lier à cette {contextLabel}
+                  </p>
+                </div>
+              )}
+
+              {/* Liste des documents disponibles */}
+              <div className="border border-gray-200 rounded-lg max-h-96 overflow-y-auto">
+                {isLoadingDocuments ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                    <span className="ml-3 text-gray-600">Chargement...</span>
+                  </div>
+                ) : availableDocuments.length === 0 ? (
+                  <div className="text-center py-12">
+                    <File className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-2">
+                      {searchTerm ? 'Aucun document trouvé' : 'Aucun document disponible'}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {searchTerm
+                        ? 'Essayez une autre recherche'
+                        : 'Tous vos documents sont déjà liés à cette entité ou vous n\'avez pas encore de documents'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-200">
+                    {availableDocuments.map((doc: DocumentResponse) => {
+                      const IconComponent = getFileIcon(doc.mimeType);
+                      const iconColor = getFileIconColor(doc.mimeType);
+                      const isSelected = selectedDocuments.includes(doc.id);
+
+                      return (
+                        <label
+                          key={doc.id}
+                          className={`flex items-center p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+                            isSelected ? 'bg-green-50' : ''
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleDocumentSelection(doc.id)}
+                            className="mr-3 h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                          />
+                          <IconComponent className={`h-8 w-8 mr-3 flex-shrink-0 ${iconColor}`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {doc.title}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded">
+                                {doc.type}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {formatFileSize(doc.size)}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {doc.owner.firstName} {doc.owner.lastName}
+                              </span>
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <CheckCircle className="w-5 h-5 text-green-600 ml-3 flex-shrink-0" />
+                          )}
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Info sélection */}
+              {selectedDocuments.length > 0 && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <p className="text-sm text-green-800 font-medium">
+                    {selectedDocuments.length} document(s) sélectionné(s)
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -390,9 +576,14 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
         {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
           <div className="text-sm text-gray-600">
-            {files.length > 0 && currentTab === 'upload' && (
+            {currentTab === 'upload' && files.length > 0 && (
               <span>
                 {files.filter(f => f.status !== 'error').length} fichier(s) prêt(s)
+              </span>
+            )}
+            {currentTab === 'link' && selectedDocuments.length > 0 && (
+              <span>
+                {selectedDocuments.length} document(s) sélectionné(s)
               </span>
             )}
           </div>
@@ -400,12 +591,12 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
             <Button
               onClick={onClose}
               variant="outline"
-              disabled={isUploading}
+              disabled={isUploading || isLinking}
               className="border-gray-300 text-gray-700"
             >
               Annuler
             </Button>
-            {currentTab === 'upload' && (
+            {currentTab === 'upload' ? (
               <Button
                 onClick={handleUpload}
                 disabled={files.length === 0 || isUploading || files.every(f => f.status === 'error')}
@@ -420,6 +611,24 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
                   <>
                     <Upload className="w-4 h-4 mr-2" />
                     Uploader {files.length > 1 ? `${files.length} fichiers` : ''}
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleLinkDocuments}
+                disabled={selectedDocuments.length === 0 || isLinking}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                {isLinking ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                    Liaison en cours...
+                  </>
+                ) : (
+                  <>
+                    <Link className="w-4 h-4 mr-2" />
+                    Lier {selectedDocuments.length > 0 ? `${selectedDocuments.length} document(s)` : ''}
                   </>
                 )}
               </Button>

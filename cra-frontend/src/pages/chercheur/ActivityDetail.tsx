@@ -17,6 +17,7 @@ import {
   CheckCircle,
   RefreshCw,
   Download,
+  Upload,
 } from 'lucide-react';
 import { activitiesApi } from '../../services/activitiesApi';
 import { Button } from '../../components/ui/Button';
@@ -25,6 +26,13 @@ import ActivityPartnerships from '../../components/activities/ActivityPartnershi
 import ActivityFunding from '../../components/activities/ActivityFunding';
 import ActivityTasks from '../../components/activities/ActivityTasks';
 import ReconductActivityModal from '../../components/activities/ReconductActivityModal';
+import { useActivityDocuments } from '../../hooks/documents/useDocuments';
+import { UploadDocumentModal } from '../../components/documents/modals/UploadDocumentModal';
+import { DocumentPreviewModal } from '../../components/documents/modals/DocumentPreviewModal';
+import { DocumentCard } from '../../components/documents/DocumentCard';
+import { DocumentResponse } from '../../types/document.types';
+import { documentService } from '../../services/api/documentService';
+import { useUnlinkDocument } from '../../hooks/documents/useDocumentsAdvanced';
 import toast from 'react-hot-toast';
 import {
   ActivityTypeLabels,
@@ -34,13 +42,18 @@ import {
   ActivityLifecycleStatusLabels,
 } from '../../types/activity.types';
 
-type TabType = 'overview' | 'participants' | 'partnerships' | 'funding' | 'tasks';
+type TabType = 'overview' | 'participants' | 'partnerships' | 'funding' | 'tasks' | 'documents';
 
 const ActivityDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [showReconductModal, setShowReconductModal] = useState(false);
+
+  // États pour les documents
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<DocumentResponse | null>(null);
 
   // Empêcher le chargement si l'ID est "create" ou "edit" (routes réservées)
   const isValidId = id && id !== 'create' && id !== 'edit' && !id.includes('/');
@@ -66,6 +79,37 @@ const ActivityDetail: React.FC = () => {
     queryFn: () => activitiesApi.getRecurrenceHistory(id!),
     enabled: !!isValidId && !!activity?.isRecurrent,
   });
+
+  // Charger les documents de l'activité
+  const { data: documentsData, isLoading: isLoadingDocuments } = useActivityDocuments(id!);
+  const unlinkMutation = useUnlinkDocument();
+
+  // Handlers pour les documents
+  const handleViewDocument = (document: DocumentResponse) => {
+    setSelectedDocument(document);
+    setShowPreviewModal(true);
+  };
+
+  const handleDownloadDocument = async (document: DocumentResponse) => {
+    try {
+      await documentService.downloadDocument(document.id, document.filename);
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error);
+    }
+  };
+
+  const handleUnlinkDocument = async (document: DocumentResponse) => {
+    try {
+      await unlinkMutation.mutateAsync({
+        documentId: document.id,
+        entityType: 'activity',
+        entityId: id!,
+      });
+      toast.success('Document délié de l\'activité');
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de la déliaison');
+    }
+  };
 
   // Si l'ID n'est pas valide, ne rien afficher
   if (!isValidId) {
@@ -167,6 +211,7 @@ const ActivityDetail: React.FC = () => {
     { id: 'partnerships' as TabType, label: 'Partenariats', icon: TrendingUp, count: activity.partners?.length || 0 },
     { id: 'funding' as TabType, label: 'Financements', icon: Target, count: activity.fundings?.length || 0 },
     { id: 'tasks' as TabType, label: 'Tâches', icon: CheckCircle, count: activity._count?.tasks },
+    { id: 'documents' as TabType, label: 'Documents', icon: Download, count: documentsData?.length || 0 },
   ];
 
   return (
@@ -557,8 +602,88 @@ const ActivityDetail: React.FC = () => {
               )}
             />
           )}
+
+          {activeTab === 'documents' && (
+            <div className="space-y-6">
+              {/* En-tête de l'onglet documents */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Documents de l'activité</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Gérez les documents liés à cette activité
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setShowUploadModal(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Ajouter un document
+                </Button>
+              </div>
+
+              {/* Liste des documents */}
+              {isLoadingDocuments ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-48 bg-gray-200 rounded-lg animate-pulse" />
+                  ))}
+                </div>
+              ) : documentsData && documentsData.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {documentsData.map((document) => (
+                    <DocumentCard
+                      key={document.id}
+                      document={document}
+                      mode="contextual"
+                      onView={handleViewDocument}
+                      onDownload={handleDownloadDocument}
+                      onUnlink={handleUnlinkDocument}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600 mb-2">Aucun document</p>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Ajoutez des documents pour cette activité
+                  </p>
+                  <Button
+                    onClick={() => setShowUploadModal(true)}
+                    variant="outline"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Ajouter un document
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Modal d'upload de document */}
+      <UploadDocumentModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        activityId={id}
+        onSuccess={() => {
+          setShowUploadModal(false);
+        }}
+      />
+
+      {/* Modal de prévisualisation */}
+      {selectedDocument && (
+        <DocumentPreviewModal
+          isOpen={showPreviewModal}
+          onClose={() => {
+            setShowPreviewModal(false);
+            setSelectedDocument(null);
+          }}
+          document={selectedDocument}
+        />
+      )}
 
       {/* Modal de reconduction */}
       {showReconductModal && (

@@ -35,6 +35,7 @@ interface DocumentCardProps {
   onLink?: (document: DocumentResponse) => void;
   onUnlink?: (document: DocumentResponse) => void;
   onFavorite?: (document: DocumentResponse) => void;
+  onManageLinks?: (document: DocumentResponse) => void; // Nouveau: pour ouvrir le modal de gestion des liaisons
 }
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({
@@ -49,7 +50,8 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
   onDelete,
   onLink,
   onUnlink,
-  onFavorite
+  onFavorite,
+  onManageLinks
 }) => {
 
   // Récupérer l'utilisateur connecté
@@ -94,6 +96,9 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
         break;
       case 'favorite':
         onFavorite?.(document);
+        break;
+      case 'manageLinks':
+        onManageLinks?.(document);
         break;
       case 'hub':
         window.location.href = `/chercheur/documents?highlight=${document.id}`;
@@ -312,6 +317,19 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
                 title="Partager"
               >
                 <Share2 className="h-5 w-5" />
+              </button>
+            )}
+
+            {mode === 'hub' && onManageLinks && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAction('manageLinks');
+                }}
+                className="p-2 text-gray-500 hover:text-blue-600 rounded-md hover:bg-white transition-colors"
+                title="Gérer les liaisons"
+              >
+                <LinkIcon className="h-5 w-5" />
               </button>
             )}
           </div>

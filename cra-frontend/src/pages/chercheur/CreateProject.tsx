@@ -1,7 +1,7 @@
 // src/pages/chercheur/CreateProject.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, X, Save, Target, Tag } from 'lucide-react';
+import { ArrowLeft, Plus, X, Save, Target, Tag, Upload, FileText } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { projectsApi } from '../../services/projectsApi';
 import { Button } from '../../components/ui/Button';
@@ -14,6 +14,7 @@ import {
   type CreateProjectRequest,
 } from '../../types/project.types';
 import api from '../../services/api';
+import { documentService } from '../../services/api/documentService';
 
 interface Theme {
   id: string;
@@ -60,6 +61,8 @@ const CreateProject: React.FC = () => {
   });
 
   const [newKeyword, setNewKeyword] = useState('');
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Charger les programmes de recherche
   const { data: programs = [] } = useQuery({
@@ -92,8 +95,29 @@ const CreateProject: React.FC = () => {
 
   const createMutation = useMutation({
     mutationFn: (data: CreateProjectRequest) => projectsApi.createProject(data),
-    onSuccess: (project) => {
-      toast.success('Projet créé avec succès');
+    onSuccess: async (project) => {
+      // Si un fichier est sélectionné, l'uploader après la création
+      if (uploadFile) {
+        try {
+          setIsUploading(true);
+          toast.loading('Upload du document en cours...');
+          await documentService.uploadDocument(uploadFile, {
+            title: `Document du projet - ${project.title}`,
+            type: 'RAPPORT',
+            projectId: project.id,
+            isPublic: false,
+          });
+          toast.dismiss();
+          toast.success('Projet créé et document uploadé avec succès');
+        } catch (error: any) {
+          toast.error('Projet créé mais erreur lors de l\'upload du document');
+          console.error(error);
+        } finally {
+          setIsUploading(false);
+        }
+      } else {
+        toast.success('Projet créé avec succès');
+      }
       navigate(`/chercheur/projects/${project.id}`);
     },
     onError: (error: any) => {
@@ -467,23 +491,78 @@ const CreateProject: React.FC = () => {
           </div>
         </div>
 
+        {/* Upload de document */}
+        <div className="bg-white rounded-lg shadow p-6 space-y-6">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <FileText className="w-5 h-5 text-green-600" />
+            Document du projet (optionnel)
+          </h2>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Joindre un document
+            </label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-green-500 transition-colors">
+              <div className="flex flex-col items-center">
+                {uploadFile ? (
+                  <div className="flex items-center gap-3 w-full">
+                    <FileText className="w-10 h-10 text-green-600" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{uploadFile.name}</p>
+                      <p className="text-xs text-gray-500">{(uploadFile.size / 1024).toFixed(2)} KB</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setUploadFile(null)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="w-12 h-12 text-gray-400 mb-3" />
+                    <label className="cursor-pointer">
+                      <span className="text-sm text-green-600 hover:text-green-700 font-medium">
+                        Cliquez pour sélectionner un fichier
+                      </span>
+                      <input
+                        type="file"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) setUploadFile(file);
+                        }}
+                        className="hidden"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      />
+                    </label>
+                    <p className="text-xs text-gray-500 mt-2">
+                      PDF, Word, Image (max 10MB)
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Boutons de soumission */}
         <div className="flex justify-end gap-3 bg-white rounded-lg shadow p-6">
           <Button
             type="button"
             variant="outline"
             onClick={() => navigate('/chercheur/projects')}
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || isUploading}
           >
             Annuler
           </Button>
           <Button
             type="submit"
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || isUploading}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
             <Save className="w-4 h-4 mr-2" />
-            {createMutation.isPending ? 'Création...' : 'Créer le projet'}
+            {isUploading ? 'Upload en cours...' : createMutation.isPending ? 'Création...' : 'Créer le projet'}
           </Button>
         </div>
       </form>

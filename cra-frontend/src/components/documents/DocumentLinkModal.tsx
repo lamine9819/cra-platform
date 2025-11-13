@@ -1,15 +1,24 @@
-// src/components/documents/DocumentLinkModal.tsx - Version corrigée
+// src/components/documents/DocumentLinkModal.tsx - Version améliorée
 import React, { useState, useEffect } from 'react';
-import { X, Link as LinkIcon, Unlink, Search, FolderOpen, CheckSquare } from 'lucide-react';
+import { X, Link as LinkIcon, Unlink, Search, FolderOpen, CheckSquare, Trash2 } from 'lucide-react';
 import { DocumentLinkModalProps, DocumentContext } from '../../types/document.types';
 import { Project } from '../../services/projectsApi';
-import { Activity as ActivityType } from '../../services/activitiesApi'; // ← Renommé pour éviter le conflit
+import { Activity as ActivityType } from '../../services/activitiesApi';
 import projectsApi from '../../services/projectsApi';
 import activitiesApi from '../../services/activitiesApi';
+import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 
 // Icône Activity renommée pour éviter le conflit
 import { Activity as ActivityIcon } from 'lucide-react';
+
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+  priority: string;
+}
 
 export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
   document,
@@ -18,9 +27,10 @@ export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
   onLink,
   onUnlink
 }) => {
-  const [contextType, setContextType] = useState<'project' | 'activity'>('project');
+  const [contextType, setContextType] = useState<'project' | 'activity' | 'task'>('project');
   const [projects, setProjects] = useState<Project[]>([]);
   const [activities, setActivities] = useState<ActivityType[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedContext, setSelectedContext] = useState<DocumentContext | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,19 +46,24 @@ export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
   const loadContexts = async () => {
     try {
       setLoading(true);
-      
+
       if (contextType === 'project') {
         const response = await projectsApi.listProjects({
           search: searchTerm,
           limit: 20
         });
         setProjects(response.projects);
-      } else {
+      } else if (contextType === 'activity') {
         const response = await activitiesApi.listActivities({
           search: searchTerm,
           limit: 20
         });
         setActivities(response.activities);
+      } else if (contextType === 'task') {
+        const response = await api.get<{ success: boolean; data: Task[] }>('/tasks', {
+          params: { search: searchTerm, limit: 20 }
+        });
+        setTasks(response.data.data || []);
       }
     } catch (error) {
       console.error('Erreur lors du chargement:', error);
@@ -58,30 +73,36 @@ export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
     }
   };
 
-  const getCurrentContext = (): DocumentContext | null => {
+  // Récupérer toutes les liaisons actuelles du document
+  const getCurrentLinks = (): DocumentContext[] => {
+    const links: DocumentContext[] = [];
+
     if (document.project) {
-      return {
+      links.push({
         type: 'project',
         id: document.project.id,
         title: document.project.title
-      };
+      });
     }
     if (document.activity) {
-      return {
+      links.push({
         type: 'activity',
         id: document.activity.id,
         title: document.activity.title
-      };
+      });
     }
     if (document.task) {
-      return {
+      links.push({
         type: 'task',
         id: document.task.id,
         title: document.task.title
-      };
+      });
     }
-    return null;
+
+    return links;
   };
+
+  const currentLinks = getCurrentLinks();
 
   const handleLink = async () => {
     if (!selectedContext) {
@@ -100,19 +121,17 @@ export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
     }
   };
 
-  const handleUnlink = async () => {
+  const handleUnlinkSpecific = async (link: DocumentContext) => {
     try {
       setSubmitting(true);
-      await onUnlink();
-      onClose();
-    } catch (error) {
-      // L'erreur est déjà gérée par le contexte
+      await onUnlink(link);
+      toast.success(`Liaison avec ${link.type === 'project' ? 'le projet' : link.type === 'activity' ? 'l\'activité' : 'la tâche'} supprimée`);
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de la déliaison');
     } finally {
       setSubmitting(false);
     }
   };
-
-  const currentContext = getCurrentContext();
 
   if (!isOpen) return null;
 
@@ -146,31 +165,40 @@ export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
 
           {/* Content */}
           <div className="bg-white px-6 py-4">
-            {/* Contexte actuel */}
-            {currentContext && (
-              <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-                <h4 className="text-sm font-medium text-blue-900 mb-2 flex items-center">
+            {/* Liaisons actuelles */}
+            {currentLinks.length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
                   <LinkIcon className="h-4 w-4 mr-2" />
-                  Actuellement lié à
+                  Liaisons actuelles ({currentLinks.length})
                 </h4>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    {currentContext.type === 'project' && <FolderOpen className="h-5 w-5 text-blue-600" />}
-                    {currentContext.type === 'activity' && <ActivityIcon className="h-5 w-5 text-green-600" />}
-                    {currentContext.type === 'task' && <CheckSquare className="h-5 w-5 text-purple-600" />}
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{currentContext.title}</p>
-                      <p className="text-xs text-gray-500 capitalize">{currentContext.type}</p>
+                <div className="space-y-2">
+                  {currentLinks.map((link) => (
+                    <div
+                      key={`${link.type}-${link.id}`}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                    >
+                      <div className="flex items-center space-x-3">
+                        {link.type === 'project' && <FolderOpen className="h-5 w-5 text-blue-600" />}
+                        {link.type === 'activity' && <ActivityIcon className="h-5 w-5 text-green-600" />}
+                        {link.type === 'task' && <CheckSquare className="h-5 w-5 text-purple-600" />}
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{link.title}</p>
+                          <p className="text-xs text-gray-500 capitalize">
+                            {link.type === 'project' ? 'Projet' : link.type === 'activity' ? 'Activité' : 'Tâche'}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleUnlinkSpecific(link)}
+                        disabled={submitting}
+                        className="inline-flex items-center px-3 py-1.5 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 disabled:opacity-50 transition-colors"
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Délier
+                      </button>
                     </div>
-                  </div>
-                  <button
-                    onClick={handleUnlink}
-                    disabled={submitting}
-                    className="inline-flex items-center px-3 py-1.5 border border-orange-300 shadow-sm text-xs font-medium rounded text-orange-700 bg-white hover:bg-orange-50 disabled:opacity-50"
-                  >
-                    <Unlink className="h-3 w-3 mr-1" />
-                    Délier
-                  </button>
+                  ))}
                 </div>
               </div>
             )}
@@ -178,12 +206,12 @@ export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
             {/* Sélection du type de contexte */}
             <div className="mb-4">
               <h4 className="text-sm font-medium text-gray-900 mb-3">
-                {currentContext ? 'Lier à un autre élément' : 'Lier à un élément'}
+                Ajouter une nouvelle liaison
               </h4>
-              <div className="flex space-x-4">
+              <div className="flex space-x-2">
                 <button
                   onClick={() => setContextType('project')}
-                  className={`flex items-center px-4 py-2 rounded-lg border ${
+                  className={`flex items-center px-4 py-2 rounded-lg border transition-colors ${
                     contextType === 'project'
                       ? 'bg-blue-50 border-blue-200 text-blue-700'
                       : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
@@ -194,7 +222,7 @@ export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
                 </button>
                 <button
                   onClick={() => setContextType('activity')}
-                  className={`flex items-center px-4 py-2 rounded-lg border ${
+                  className={`flex items-center px-4 py-2 rounded-lg border transition-colors ${
                     contextType === 'activity'
                       ? 'bg-green-50 border-green-200 text-green-700'
                       : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
@@ -202,6 +230,17 @@ export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
                 >
                   <ActivityIcon className="h-4 w-4 mr-2" />
                   Activité
+                </button>
+                <button
+                  onClick={() => setContextType('task')}
+                  className={`flex items-center px-4 py-2 rounded-lg border transition-colors ${
+                    contextType === 'task'
+                      ? 'bg-purple-50 border-purple-200 text-purple-700'
+                      : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <CheckSquare className="h-4 w-4 mr-2" />
+                  Tâche
                 </button>
               </div>
             </div>
@@ -214,7 +253,7 @@ export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder={`Rechercher des ${contextType === 'project' ? 'projets' : 'activités'}...`}
+                  placeholder={`Rechercher des ${contextType === 'project' ? 'projets' : contextType === 'activity' ? 'activités' : 'tâches'}...`}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -267,7 +306,7 @@ export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
                         </div>
                       ))
                     )
-                  ) : (
+                  ) : contextType === 'activity' ? (
                     activities.length === 0 ? (
                       <div className="text-center py-8">
                         <ActivityIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
@@ -302,6 +341,50 @@ export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
                         </div>
                       ))
                     )
+                  ) : (
+                    tasks.length === 0 ? (
+                      <div className="text-center py-8">
+                        <CheckSquare className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-500">
+                          {searchTerm ? 'Aucune tâche trouvée' : 'Aucune tâche disponible'}
+                        </p>
+                      </div>
+                    ) : (
+                      tasks.map((task) => (
+                        <div
+                          key={task.id}
+                          className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
+                            selectedContext?.id === task.id && selectedContext?.type === 'task'
+                              ? 'bg-purple-50 border-purple-200'
+                              : 'bg-white border-gray-200 hover:bg-gray-50'
+                          }`}
+                          onClick={() => setSelectedContext({
+                            type: 'task',
+                            id: task.id,
+                            title: task.title
+                          })}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <CheckSquare className="h-5 w-5 text-purple-600" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">{task.title}</p>
+                              {task.description && (
+                                <p className="text-xs text-gray-500 line-clamp-1">{task.description}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-1">
+                            <span className={`text-xs px-2 py-0.5 rounded ${
+                              task.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
+                              task.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {task.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    )
                   )}
                 </div>
               )}
@@ -329,7 +412,7 @@ export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
               ) : (
                 <>
                   <LinkIcon className="h-4 w-4 mr-2" />
-                  Lier au {contextType}
+                  Lier {contextType === 'project' ? 'au projet' : contextType === 'activity' ? 'à l\'activité' : 'à la tâche'}
                 </>
               )}
             </button>
