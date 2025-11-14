@@ -14,6 +14,7 @@ import {
   MessageSquare,
   Activity,
   Archive,
+  GraduationCap,
 } from 'lucide-react';
 
 // Import des pages chercheur existantes
@@ -56,6 +57,9 @@ import EditSeminar from '../pages/chercheur/EditSeminar';
 import ReportsPage from '../pages/chercheur/ReportsPage';
 import DiscussionsPage from '../pages/chercheur/DiscussionsPages';
 
+// Import de la page formations
+import Formations from '../pages/chercheur/Formations';
+
 // Import du provider documents (existant)
 import { DocumentProvider } from '../contexts/DocumentContext';
 
@@ -93,6 +97,11 @@ const ChercheurLayout: React.FC = () => {
       name: 'Séminaires',
       href: '/chercheur/seminars',
       icon: Calendar,
+    },
+    {
+      name: 'Formations',
+      href: '/chercheur/formations',
+      icon: GraduationCap,
     },
     {
       name: 'Rapports',
@@ -169,16 +178,10 @@ const ChercheurLayout: React.FC = () => {
                 {/* ROUTES DES RAPPORTS ET DISCUSSIONS (existantes) */}
                 <Route path="reports" element={<ReportsPage />} />
                 <Route path="discussions" element={<DiscussionsPage />} />
-                
-                {/* AUTRES ROUTES - Pages placeholder (existantes) */}
-                <Route path="team" element={
-                  <div className="text-center py-12">
-                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Équipe</h3>
-                    <p className="text-gray-600">Cette section sera développée prochainement</p>
-                  </div>
-                } />
-                
+
+                {/* ROUTE DES FORMATIONS */}
+                <Route path="formations" element={<Formations />} />
+
                 {/* ROUTE 404 pour les sous-routes */}
                 <Route path="*" element={
                   <div className="text-center py-12">
