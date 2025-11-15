@@ -25,61 +25,66 @@ const asyncHandler = (fn: AsyncHandler) => {
 router.use(authenticate);
 
 // Routes de consultation (tous les utilisateurs authentifiés)
+// IMPORTANT: Routes spécifiques AVANT les routes avec paramètres
+
+// Route pour lister les publications
 router.get(
-  '/publications',
+  '/',
   asyncHandler(publicationController.getPublications.bind(publicationController))
 );
 
+// Routes spécifiques (doivent être avant /:id)
 router.get(
-  '/publications/stats',
+  '/stats',
   asyncHandler(publicationController.getPublicationStats.bind(publicationController))
 );
 
 router.get(
-  '/publications/me',
+  '/me',
   asyncHandler(publicationController.getMyPublications.bind(publicationController))
 );
 
+// Génération de rapport
 router.get(
-  '/publications/:id',
+  '/report/generate',
+  authorize([UserRole.COORDONATEUR_PROJET, UserRole.ADMINISTRATEUR]),
+  asyncHandler(publicationController.generateReport.bind(publicationController))
+);
+
+// Routes avec paramètres :id (doivent être après les routes spécifiques)
+router.get(
+  '/:id',
   asyncHandler(publicationController.getPublicationById.bind(publicationController))
 );
 
 // Téléchargement de document
 router.get(
-  '/publications/:id/download',
+  '/:id/download',
   asyncHandler(publicationController.downloadDocument.bind(publicationController))
-);
-
-// Génération de rapport
-router.get(
-  '/publications/report/generate',
-  authorize([UserRole.COORDONATEUR_PROJET, UserRole.ADMINISTRATEUR]),
-  asyncHandler(publicationController.generateReport.bind(publicationController))
 );
 
 // Routes de création/modification
 router.post(
-  '/publications',
+  '/',
   authorize([UserRole.CHERCHEUR, UserRole.COORDONATEUR_PROJET, UserRole.ADMINISTRATEUR]),
   asyncHandler(publicationController.createPublication.bind(publicationController))
 );
 
 router.put(
-  '/publications/:id',
+  '/:id',
   authorize([UserRole.CHERCHEUR, UserRole.COORDONATEUR_PROJET, UserRole.ADMINISTRATEUR]),
   asyncHandler(publicationController.updatePublication.bind(publicationController))
 );
 
 router.delete(
-  '/publications/:id',
+  '/:id',
   authorize([UserRole.CHERCHEUR, UserRole.COORDONATEUR_PROJET, UserRole.ADMINISTRATEUR]),
   asyncHandler(publicationController.deletePublication.bind(publicationController))
 );
 
 // Upload de document PDF
 router.post(
-  '/publications/:id/upload',
+  '/:id/upload',
   authorize([UserRole.CHERCHEUR, UserRole.COORDONATEUR_PROJET, UserRole.ADMINISTRATEUR]),
   uploadPublication.single('document'),
   asyncHandler(publicationController.uploadDocument.bind(publicationController))

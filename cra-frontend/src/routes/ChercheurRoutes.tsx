@@ -10,6 +10,9 @@ import ActivityDetail from '../pages/chercheur/ActivityDetail';
 import CreateActivity from '../pages/chercheur/CreateActivity';
 import EditActivity from '../pages/chercheur/EditActivity';
 import { DocumentsHub } from '../pages/chercheur/DocumentsHub';
+import PublicationsList from '../pages/chercheur/PublicationsList';
+import PublicationDetail from '../pages/chercheur/PublicationDetail';
+import CreatePublication from '../pages/chercheur/CreatePublication';
 
 {/* import TeamManagement from '../pages/chercheur/TeamManagement';
 import SeminarsList from '../pages/chercheur/SeminarsList';
@@ -30,6 +33,12 @@ const ChercheurRoutes: React.FC = () => {
       <Route path="activities/:id" element={<ActivityDetail />} />
       <Route path="activities/:id/edit" element={<EditActivity />} />
       <Route path="documents" element={<DocumentsHub />} />
+      <Route path="publications">
+        <Route index element={<PublicationsList />} />
+        <Route path="create" element={<CreatePublication />} />
+        <Route path=":id" element={<PublicationDetail />} />
+        <Route path=":id/edit" element={<CreatePublication />} />
+      </Route>
       {/*<Route path="tasks" element={<TasksList />} />
       <Route path="team" element={<TeamManagement />} />
       <Route path="seminars" element={<SeminarsList />} />

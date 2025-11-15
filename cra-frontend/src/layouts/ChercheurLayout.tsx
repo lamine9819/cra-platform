@@ -15,6 +15,7 @@ import {
   Activity,
   Archive,
   GraduationCap,
+  BookOpen,
 } from 'lucide-react';
 
 // Import des pages chercheur existantes
@@ -60,6 +61,11 @@ import DiscussionsPage from '../pages/chercheur/DiscussionsPages';
 // Import de la page formations
 import Formations from '../pages/chercheur/Formations';
 
+// Import des pages publications
+import PublicationsList from '../pages/chercheur/PublicationsList';
+import PublicationDetail from '../pages/chercheur/PublicationDetail';
+import CreatePublication from '../pages/chercheur/CreatePublication';
+
 // Import du provider documents (existant)
 import { DocumentProvider } from '../contexts/DocumentContext';
 
@@ -86,6 +92,11 @@ const ChercheurLayout: React.FC = () => {
       name: 'Documents',
       href: '/chercheur/documents',
       icon: FileText,
+    },
+    {
+      name: 'Publications',
+      href: '/chercheur/publications',
+      icon: BookOpen,
     },
     // Ajout des formulaires dans la navigation
     {
@@ -157,7 +168,15 @@ const ChercheurLayout: React.FC = () => {
                 
                 {/* ROUTES DES DOCUMENTS (mise à jour avec DocumentsHub) */}
                 <Route path="documents" element={<DocumentsHub />} />
-                
+
+                {/* ROUTES DES PUBLICATIONS */}
+                <Route path="publications">
+                  <Route index element={<PublicationsList />} />
+                  <Route path="create" element={<CreatePublication />} />
+                  <Route path=":id" element={<PublicationDetail />} />
+                  <Route path=":id/edit" element={<CreatePublication />} />
+                </Route>
+
                 {/* ROUTES DES FORMULAIRES (nouvelles - intégrées) */}
                 <Route path="forms">
                   <Route index element={<FormsList />} />

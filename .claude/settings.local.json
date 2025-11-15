@@ -4,7 +4,12 @@
       "Bash(sudo apt update:*)",
       "Bash(psql:*)",
       "Bash(pg_isready:*)",
-      "Bash(dpkg:*)"
+      "Bash(dpkg:*)",
+      "Bash(lsof:*)",
+      "Bash(netstat:*)",
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

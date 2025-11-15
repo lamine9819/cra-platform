@@ -1,0 +1,35 @@
+
+> cra-bakend@1.0.0 dev
+> nodemon src/server.ts
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: ts,json[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+❌ Port 3001 est déjà utilisé
+💡 Suggestions:
+   - Changer le port: PORT=3002 npm start
+   - Tuer les processus: netstat -ano | findstr :3001
+   - Ou sur Linux/Mac: lsof -ti:3001 | xargs kill -9
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
