@@ -1,5 +1,5 @@
 // src/services/auth.service.ts
-import api from './api';
+import api, { setAuthToken } from './api';
 import { LoginCredentials, AuthResponse, User } from '../types/auth.types';
 import { AxiosResponse } from 'axios';
 
@@ -19,6 +19,9 @@ export class AuthService {
         // Stocker les données d'authentification
         localStorage.setItem('cra_auth_token', token);
         localStorage.setItem('cra_user_data', JSON.stringify(user));
+
+        // Mettre à jour le header Authorization de l'instance Axios
+        setAuthToken(token);
 
         // Remember me
         if (credentials.rememberMe) {
@@ -103,8 +106,12 @@ export class AuthService {
 
   private clearAuthData(): void {
     localStorage.removeItem('cra_auth_token');
+    localStorage.removeItem('cra_refresh_token');
     localStorage.removeItem('cra_user_data');
     localStorage.removeItem('cra_remember_me');
+
+    // Supprimer le header Authorization de l'instance Axios
+    setAuthToken(null);
   }
 
   getRoleBasedRedirectPath(role: string): string {

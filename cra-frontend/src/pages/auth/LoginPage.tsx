@@ -18,6 +18,7 @@ const LoginPage: React.FC = () => {
     rememberMe: false
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const hasRedirectedRef = React.useRef(false);
 
   const { login, isAuthenticated, user, error, isLoading } = useAuth();
   const navigate = useNavigate();
@@ -25,12 +26,23 @@ const LoginPage: React.FC = () => {
 
   // Redirection automatique si déjà connecté
   useEffect(() => {
-    if (isAuthenticated && user && !isLoading) {
-      const from = (location.state as any)?.from?.pathname;
-      const defaultPath = authService.getRoleBasedRedirectPath(user.role);
-      navigate(from || defaultPath, { replace: true });
+    if (isAuthenticated && user && !isLoading && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
+
+      // Toujours rediriger vers la route basée sur le rôle de l'utilisateur
+      // Ne pas utiliser 'from' pour éviter les redirections vers des pages non autorisées
+      const roleBasedPath = authService.getRoleBasedRedirectPath(user.role);
+
+      console.log('[LoginPage] ✅ Redirection:',
+        '\n  - Authentifié:', isAuthenticated,
+        '\n  - Rôle:', user.role,
+        '\n  - Email:', user.email,
+        '\n  - Vers:', roleBasedPath
+      );
+
+      navigate(roleBasedPath, { replace: true });
     }
-  }, [isAuthenticated, user, isLoading, navigate, location]);
+  }, [isAuthenticated, user, isLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

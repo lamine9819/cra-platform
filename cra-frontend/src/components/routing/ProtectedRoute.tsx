@@ -41,6 +41,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Vérifier les rôles autorisés seulement si des rôles sont spécifiés
   if (allowedRoles && allowedRoles.length > 0 && user && !allowedRoles.includes(user.role)) {
+    console.error('[ProtectedRoute] ❌ Accès refusé:',
+      '\n  - Rôle de l\'utilisateur:', user.role,
+      '\n  - Rôles autorisés:', allowedRoles,
+      '\n  - Email:', user.email
+    );
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">

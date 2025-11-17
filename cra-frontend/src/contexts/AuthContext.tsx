@@ -6,6 +6,7 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { User, AuthState, UserRole } from '../types/auth.types';
 import { authService } from '../services/auth.service';
+import { setAuthToken } from '../services/api';
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
@@ -94,9 +95,13 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  const hasInitializedRef = React.useRef(false);
 
-  // Vérifier l'état d'authentification au chargement
+  // Vérifier l'état d'authentification au chargement initial uniquement
   useEffect(() => {
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+
     const initializeAuth = async () => {
       dispatch({ type: 'AUTH_START' });
 
@@ -105,6 +110,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const storedToken = authService.getStoredToken();
 
         if (storedUser && storedToken) {
+          // Définir le token dans l'instance Axios
+          setAuthToken(storedToken);
+
           // Vérifier la validité du token en récupérant le profil
           try {
             const currentUser = await authService.getProfile();
@@ -118,10 +126,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             dispatch({ type: 'AUTH_LOGOUT' });
           }
         } else {
+          // Pas de token stocké, nettoyer l'instance Axios
+          setAuthToken(null);
           dispatch({ type: 'AUTH_LOGOUT' });
         }
       } catch (error) {
         console.error('Erreur lors de l\'initialisation de l\'auth:', error);
+        setAuthToken(null);
         dispatch({ type: 'AUTH_LOGOUT' });
       }
     };

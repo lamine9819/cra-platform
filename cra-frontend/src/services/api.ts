@@ -29,43 +29,45 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Intercepteur pour gérer les erreurs et refresh token
+// Intercepteur pour gérer les erreurs d'authentification
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
 
+    // Si erreur 401 et que ce n'est pas déjà une tentative de retry
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      try {
-        const refreshToken = localStorage.getItem('cra_refresh_token');
-        if (refreshToken) {
-          const response = await api.post('/auth/refresh', {
-            refreshToken
-          });
+      // Ne pas déconnecter automatiquement sur les routes d'authentification
+      const isAuthRoute = originalRequest.url?.includes('/auth/login') ||
+                         originalRequest.url?.includes('/auth/register');
 
-          const { token, refreshToken: newRefreshToken } = response.data.data;
-          localStorage.setItem('cra_auth_token', token);
-          if (newRefreshToken) {
-            localStorage.setItem('cra_refresh_token', newRefreshToken);
-          }
-
-          // Retry la requête originale avec le nouveau token
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        // Échec du refresh, déconnecter l'utilisateur
+      if (!isAuthRoute) {
+        // Token invalide ou expiré, nettoyer et rediriger
         localStorage.removeItem('cra_auth_token');
         localStorage.removeItem('cra_refresh_token');
         localStorage.removeItem('cra_user_data');
-        window.location.href = '/login';
+        localStorage.removeItem('cra_remember_me');
+
+        // Éviter les redirections multiples
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
       }
     }
 
     return Promise.reject(error);
   }
 );
+
+// Fonction pour mettre à jour le token d'authentification
+export const setAuthToken = (token: string | null) => {
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common['Authorization'];
+  }
+};
 
 export default api;
