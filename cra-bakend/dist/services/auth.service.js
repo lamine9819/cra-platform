@@ -77,8 +77,13 @@ class AuthService {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 role: user.role,
+                isActive: user.isActive,
                 specialization: user.specialization,
                 department: user.department,
+                phoneNumber: user.phoneNumber,
+                profileImage: user.profileImage,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
             },
             token,
             message: 'Connexion réussie'
@@ -93,11 +98,13 @@ class AuthService {
                 firstName: true,
                 lastName: true,
                 role: true,
+                isActive: true,
                 specialization: true,
                 department: true,
                 phoneNumber: true,
                 profileImage: true,
                 createdAt: true,
+                updatedAt: true,
             }
         });
         if (!user) {

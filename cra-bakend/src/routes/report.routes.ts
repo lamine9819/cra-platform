@@ -2,10 +2,53 @@
 
 import express from 'express';
 import { reportController } from '../controllers/report.controller';
+import { FormationController } from '../controllers/formation.controller';
 import { checkReportAccess } from '../middlewares/report.middleware';
 import { authenticate } from '../middlewares/auth'; // Votre middleware existant
 
 const router = express.Router();
+const formationController = new FormationController();
+
+// =============================================
+// RAPPORTS DE FORMATION (doivent être avant les autres routes)
+// =============================================
+
+/**
+ * @route   GET /api/reports/global
+ * @desc    Récupère le rapport global de toutes les formations
+ * @access  Coordinateur de projet, Administrateur
+ */
+router.get(
+  '/global',
+  authenticate,
+  formationController.getAllUsersFormationReport
+);
+
+/**
+ * @route   GET /api/reports/download
+ * @desc    Télécharge un rapport de formation en PDF
+ * @access  Coordinateur de projet, Administrateur, Chercheur (pour son propre rapport)
+ */
+router.get(
+  '/download',
+  authenticate,
+  formationController.downloadFormationReport
+);
+
+/**
+ * @route   GET /api/reports/user/:userId?
+ * @desc    Récupère le rapport de formation d'un utilisateur ou de soi-même
+ * @access  Tous les utilisateurs authentifiés
+ */
+router.get(
+  '/user/:userId?',
+  authenticate,
+  formationController.getUserFormationReport
+);
+
+// =============================================
+// RAPPORTS TRIMESTRIELS/ANNUELS
+// =============================================
 
 /**
  * @route   POST /api/reports/generate

@@ -1,5 +1,5 @@
 // controllers/formation.controller.ts
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { FormationService } from '../services/formation.service';
 import { FormationReportService } from '../utils/formation-report.service';
 import {
@@ -8,16 +8,9 @@ import {
   createTrainingGivenSchema,
   createSupervisionSchema
 } from '../types/formation.types';
+import { AuthenticatedRequest } from '../types/auth.types';
 import { z } from 'zod';
 import puppeteer from 'puppeteer';
-
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    role: string;
-    email: string;
-  };
-}
 
 export class FormationController {
   private formationService: FormationService;
@@ -32,7 +25,7 @@ export class FormationController {
   
   createShortTrainingReceived = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.userId;
       if (!userId) {
         res.status(401).json({ error: 'Utilisateur non authentifié' });
         return;
@@ -64,7 +57,7 @@ export class FormationController {
 
   getUserShortTrainingsReceived = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.userId;
       if (!userId) {
         res.status(401).json({ error: 'Utilisateur non authentifié' });
         return;
@@ -88,7 +81,7 @@ export class FormationController {
 
   deleteShortTrainingReceived = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.userId;
       const { trainingId } = req.params;
       
       if (!userId) {
@@ -115,7 +108,7 @@ export class FormationController {
   
   createDiplomaticTrainingReceived = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.userId;
       if (!userId) {
         res.status(401).json({ error: 'Utilisateur non authentifié' });
         return;
@@ -147,7 +140,7 @@ export class FormationController {
 
   getUserDiplomaticTrainingsReceived = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.userId;
       if (!userId) {
         res.status(401).json({ error: 'Utilisateur non authentifié' });
         return;
@@ -171,7 +164,7 @@ export class FormationController {
 
   deleteDiplomaticTrainingReceived = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.userId;
       const { trainingId } = req.params;
       
       if (!userId) {
@@ -198,7 +191,7 @@ export class FormationController {
   
   createTrainingGiven = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.userId;
       if (!userId) {
         res.status(401).json({ error: 'Utilisateur non authentifié' });
         return;
@@ -230,7 +223,7 @@ export class FormationController {
 
   getUserTrainingsGiven = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.userId;
       if (!userId) {
         res.status(401).json({ error: 'Utilisateur non authentifié' });
         return;
@@ -254,7 +247,7 @@ export class FormationController {
 
   deleteTrainingGiven = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.userId;
       const { trainingId } = req.params;
       
       if (!userId) {
@@ -281,7 +274,7 @@ export class FormationController {
   
   createSupervision = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.userId;
       if (!userId) {
         res.status(401).json({ error: 'Utilisateur non authentifié' });
         return;
@@ -313,7 +306,7 @@ export class FormationController {
 
   getUserSupervisions = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.userId;
       if (!userId) {
         res.status(401).json({ error: 'Utilisateur non authentifié' });
         return;
@@ -337,7 +330,7 @@ export class FormationController {
 
   deleteSupervision = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.userId;
       const { supervisionId } = req.params;
       
       if (!userId) {
@@ -364,7 +357,7 @@ export class FormationController {
   
   getAllUsersFormationReport = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userRole = req.user?.role;
+      const userRole = req.user.role;
       if (userRole !== 'COORDONATEUR_PROJET' && userRole !== 'ADMINISTRATEUR') {
         res.status(403).json({ error: 'Accès non autorisé' });
         return;
@@ -388,8 +381,8 @@ export class FormationController {
 
   getUserFormationReport = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
-      const userRole = req.user?.role;
+      const userId = req.user.userId;
+      const userRole = req.user.role;
       const { userId: targetUserId } = req.params;
 
       if (!userId) {
@@ -432,7 +425,7 @@ export class FormationController {
 
   downloadFormationReport = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userRole = req.user?.role;
+      const userRole = req.user.role;
       const { format, userId: targetUserId } = req.query;
 
       if (userRole !== 'COORDONATEUR_PROJET' && userRole !== 'ADMINISTRATEUR') {

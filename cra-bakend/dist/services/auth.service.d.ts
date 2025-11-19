@@ -21,8 +21,13 @@ export declare class AuthService {
             firstName: string;
             lastName: string;
             role: import(".prisma/client").$Enums.UserRole;
+            isActive: true;
             specialization: string | null;
             department: string | null;
+            phoneNumber: string | null;
+            profileImage: string | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
         token: string;
         message: string;
@@ -33,11 +38,13 @@ export declare class AuthService {
         id: string;
         firstName: string;
         lastName: string;
+        isActive: boolean;
         profileImage: string | null;
         phoneNumber: string | null;
         specialization: string | null;
         department: string | null;
         createdAt: Date;
+        updatedAt: Date;
     }>;
     changePassword(userId: string, passwordData: ChangePasswordRequest): Promise<{
         message: string;

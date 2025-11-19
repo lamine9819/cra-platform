@@ -31,6 +31,8 @@ const report_routes_1 = tslib_1.__importDefault(require("./routes/report.routes"
 const dashboard_admin_routes_1 = tslib_1.__importDefault(require("./routes/admin/dashboard.admin.routes"));
 const partner_routes_1 = tslib_1.__importDefault(require("./routes/partner.routes"));
 const auditLog_routes_1 = tslib_1.__importDefault(require("./routes/auditLog.routes"));
+const training_routes_1 = tslib_1.__importDefault(require("./routes/training.routes"));
+const supervision_routes_1 = tslib_1.__importDefault(require("./routes/supervision.routes"));
 // Import des middlewares
 const errorHandler_1 = require("./middlewares/errorHandler");
 const auditMiddleware_1 = require("./middlewares/auditMiddleware");
@@ -356,7 +358,9 @@ app.get('/api', (_req, res) => {
             dashboard: '/api/dashboard',
             adminDashboard: '/api/admin/dashboard',
             audit: '/api/audit',
-            reports: '/api/reports'
+            reports: '/api/reports',
+            trainings: '/api/trainings',
+            supervisions: '/api/supervisions'
         },
         documentation: {
             health: '/health',
@@ -387,6 +391,8 @@ app.use('/api/audit', audit_routes_1.default);
 app.use('/api/reports', report_routes_1.default);
 app.use('/api/partners', partner_routes_1.default);
 app.use('/api/audit-logs', auditLog_routes_1.default);
+app.use('/api/trainings', training_routes_1.default);
+app.use('/api/supervisions', supervision_routes_1.default);
 // =============================================
 // GESTION DES ERREURS ET 404
 // =============================================

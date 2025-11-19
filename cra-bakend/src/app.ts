@@ -13,7 +13,6 @@ import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import projectRoutes from './routes/project.routes';
 import activityRoutes from './routes/activity.routes';
-import formeRoutes from './routes/form.routes';
 import conventionRoutes from './routes/convention.routes';
 import eventRoutes from './routes/event.routes';
 import KnowledgeTransferRoutes from './routes/knowledgeTransfer.routes';
@@ -29,6 +28,8 @@ import reportRoutes from './routes/report.routes';
 import adminDashboardRoutes from './routes/admin/dashboard.admin.routes';
 import partnerRoutes from './routes/partner.routes';
 import auditLogRoutes from './routes/auditLog.routes';
+import trainingRoutes from './routes/training.routes';
+import supervisionRoutes from './routes/supervision.routes';
 
 // Import des middlewares
 import { errorHandler } from './middlewares/errorHandler';
@@ -377,7 +378,6 @@ app.get('/api', (_req, res) => {
       projects: '/api/projects',
       activities: '/api/activities',
       partners: '/api/partners',
-      formes: '/api/formes',
       publications: '/api/publications',
       conventions: '/api/conventions',
       knowledgeTransfers: '/api/knowledge-transfers',
@@ -392,7 +392,9 @@ app.get('/api', (_req, res) => {
       dashboard: '/api/dashboard',
       adminDashboard: '/api/admin/dashboard',
       audit: '/api/audit',
-      reports: '/api/reports'
+      reports: '/api/reports',
+      trainings: '/api/trainings',
+      supervisions: '/api/supervisions'
     },
     documentation: {
       health: '/health',
@@ -409,7 +411,6 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/activities', activityRoutes);
-app.use('/api/formes', formeRoutes);
 app.use('/api/publications', publicationRoutes);
 app.use('/api/conventions', conventionRoutes);
 app.use('/api/knowledge-transfers', KnowledgeTransferRoutes);
@@ -425,6 +426,8 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
+app.use('/api/trainings', trainingRoutes);
+app.use('/api/supervisions', supervisionRoutes);
 
 // =============================================
 // GESTION DES ERREURS ET 404
