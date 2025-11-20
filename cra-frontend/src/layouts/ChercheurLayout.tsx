@@ -48,11 +48,8 @@ import FormDetail from '../pages/chercheur/FormDetail';
 import CreateForm from '../pages/chercheur/CreateForm';
 import FormCollectPage from '../pages/chercheur/FormCollectPage';
 
-// Import des pages séminaires
-import SeminarsList from '../pages/chercheur/SeminarsList';
-import SeminarDetail from '../pages/chercheur/SeminarDetail';
-import CreateSeminar from '../pages/chercheur/CreateSeminar';
-import EditSeminar from '../pages/chercheur/EditSeminar';
+// Import de la page calendrier (événements et séminaires)
+import CalendarPage from '../pages/chercheur/CalendarPage';
 
 // Import des pages rapports et discussions
 import ReportsPage from '../pages/chercheur/ReportsPage';
@@ -105,8 +102,8 @@ const ChercheurLayout: React.FC = () => {
       icon: Archive,
     },
     {
-      name: 'Séminaires',
-      href: '/chercheur/seminars',
+      name: 'Calendrier',
+      href: '/chercheur/calendar',
       icon: Calendar,
     },
     {
@@ -185,15 +182,10 @@ const ChercheurLayout: React.FC = () => {
                   <Route path=":id/edit" element={<CreateForm />} />
                   <Route path=":id/collect" element={<FormCollectPage />} />
                 </Route>
-                
-                {/* ROUTES DES SÉMINAIRES (existantes) */}
-                <Route path="seminars">
-                  <Route index element={<SeminarsList />} />
-                  <Route path="new" element={<CreateSeminar />} />
-                  <Route path=":id" element={<SeminarDetail />} />
-                  <Route path=":id/edit" element={<EditSeminar />} />
-                </Route>
-                
+
+                {/* ROUTE DU CALENDRIER (événements et séminaires) */}
+                <Route path="calendar" element={<CalendarPage />} />
+
                 {/* ROUTES DES RAPPORTS ET DISCUSSIONS (existantes) */}
                 <Route path="reports" element={<ReportsPage />} />
                 <Route path="discussions" element={<DiscussionsPage />} />

@@ -32,6 +32,17 @@ export const formationService = {
   },
 
   /**
+   * Modifier une formation courte reçue
+   */
+  async updateShortTrainingReceived(
+    trainingId: string,
+    data: Partial<CreateShortTrainingReceivedRequest>
+  ): Promise<ShortTrainingReceived> {
+    const response = await api.put(`/trainings/short-received/${trainingId}`, data);
+    return response.data.data;
+  },
+
+  /**
    * Supprimer une formation courte reçue
    */
   async deleteShortTrainingReceived(trainingId: string): Promise<void> {
@@ -55,6 +66,17 @@ export const formationService = {
    */
   async getUserDiplomaticTrainingsReceived(): Promise<DiplomaticTrainingReceived[]> {
     const response = await api.get('/trainings/diplomatic-received');
+    return response.data.data;
+  },
+
+  /**
+   * Modifier une formation diplômante reçue
+   */
+  async updateDiplomaticTrainingReceived(
+    trainingId: string,
+    data: Partial<CreateDiplomaticTrainingReceivedRequest>
+  ): Promise<DiplomaticTrainingReceived> {
+    const response = await api.put(`/trainings/diplomatic-received/${trainingId}`, data);
     return response.data.data;
   },
 
@@ -84,6 +106,17 @@ export const formationService = {
   },
 
   /**
+   * Modifier une formation dispensée
+   */
+  async updateTrainingGiven(
+    trainingId: string,
+    data: Partial<CreateTrainingGivenRequest>
+  ): Promise<TrainingGiven> {
+    const response = await api.put(`/trainings/given/${trainingId}`, data);
+    return response.data.data;
+  },
+
+  /**
    * Supprimer une formation dispensée
    */
   async deleteTrainingGiven(trainingId: string): Promise<void> {
@@ -105,6 +138,17 @@ export const formationService = {
    */
   async getUserSupervisions(): Promise<Supervision[]> {
     const response = await api.get('/supervisions');
+    return response.data.data;
+  },
+
+  /**
+   * Modifier un encadrement
+   */
+  async updateSupervision(
+    supervisionId: string,
+    data: Partial<CreateSupervisionRequest>
+  ): Promise<Supervision> {
+    const response = await api.put(`/supervisions/${supervisionId}`, data);
     return response.data.data;
   },
 
@@ -138,7 +182,7 @@ export const formationService = {
    * Télécharger un rapport de formation en PDF
    */
   async downloadFormationReport(userId?: string): Promise<Blob> {
-    const url = userId ? `/reports/download?userId=${userId}` : '/reports/download';
+    const url = userId ? `/reports/download?format=pdf&userId=${userId}` : '/reports/download?format=pdf';
     const response = await api.get(url, {
       responseType: 'blob',
     });

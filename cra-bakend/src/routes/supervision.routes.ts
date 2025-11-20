@@ -20,6 +20,11 @@ router.get('/',
   formationController.getUserSupervisions.bind(formationController)
 );
 
+router.put('/:supervisionId',
+  authenticate,
+  formationController.updateSupervision.bind(formationController)
+);
+
 router.delete('/:supervisionId',
   authenticate,
   formationController.deleteSupervision.bind(formationController)

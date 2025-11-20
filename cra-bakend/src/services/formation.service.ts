@@ -48,6 +48,7 @@ export class FormationService {
         endDate: data.endDate ? new Date(data.endDate) : null,
         duration: data.duration || null,
         objectives: data.objectives,
+        beneficiaries: data.beneficiaries,
         isInternal: false,
         organizer: data.organizer || null,
         activityId: data.activityId || null,
@@ -88,39 +89,6 @@ export class FormationService {
   // ============= FORMATIONS DIPLÔMANTES REÇUES =============
   
   async createDiplomaticTrainingReceived(userId: string, data: CreateDiplomaticTrainingReceivedInput): Promise<DiplomaticTrainingReceivedResponse> {
-    // Créer un utilisateur temporaire pour l'étudiant s'il n'existe pas
-    let studentUser = await prisma.user.findFirst({
-      where: { 
-        OR: [
-          { email: `${data.studentName.replace(/\s+/g, '').toLowerCase()}@temp.student` },
-          { 
-            AND: [
-              { firstName: { contains: data.studentName.split(' ')[0], mode: 'insensitive' } },
-              { lastName: { contains: data.studentName.split(' ').slice(1).join(' '), mode: 'insensitive' } }
-            ]
-          }
-        ]
-      }
-    });
-
-    if (!studentUser) {
-      const nameParts = data.studentName.split(' ');
-      const firstName = nameParts[0];
-      const lastName = nameParts.slice(1).join(' ') || firstName;
-      
-      studentUser = await prisma.user.create({
-        data: {
-          email: `${data.studentName.replace(/\s+/g, '').toLowerCase()}@temp.student`,
-          password: 'temp_password',
-          firstName,
-          lastName,
-          role: 'CHERCHEUR',
-          isActive: false,
-          specialization: data.specialty
-        }
-      });
-    }
-
     const training = await prisma.training.create({
       data: {
         title: `Formation diplômante ${data.level} en ${data.specialty}`,
@@ -128,10 +96,17 @@ export class FormationService {
         startDate: new Date(data.startDate),
         endDate: data.endDate ? new Date(data.endDate) : null,
         organizer: data.university,
+        // Nouveaux champs spécifiques aux formations diplômantes
+        level: data.level,
+        specialty: data.specialty,
+        period: data.period,
+        diplomaObtained: data.diplomaObtained,
+        studentName: data.studentName,
         activityId: data.activityId || null,
+        isInternal: false,
         participants: {
           create: {
-            userId: studentUser.id,
+            userId: userId,
             role: 'PARTICIPANT'
           }
         }
@@ -148,14 +123,14 @@ export class FormationService {
 
     return {
       id: training.id,
-      studentName: data.studentName,
-      level: data.level,
-      specialty: data.specialty,
-      university: data.university,
+      studentName: training.studentName || data.studentName,
+      level: training.level || data.level,
+      specialty: training.specialty || data.specialty,
+      university: training.organizer || data.university,
       startDate: training.startDate,
       endDate: training.endDate,
-      period: data.period,
-      diplomaObtained: data.diplomaObtained,
+      period: training.period || data.period,
+      diplomaObtained: training.diplomaObtained || data.diplomaObtained,
       createdAt: training.createdAt,
       updatedAt: training.updatedAt,
       activity: training.activity
@@ -424,7 +399,7 @@ async deleteSupervision(supervisionId: string, userId: string): Promise<void> {
       endDate: training.endDate,
       duration: training.duration,
       period: this.formatPeriod(training.startDate, training.endDate),
-      beneficiaries: [], // À implémenter si nécessaire
+      beneficiaries: training.beneficiaries || [],
       organizer: training.organizer,
       createdAt: training.createdAt,
       updatedAt: training.updatedAt,
@@ -449,43 +424,25 @@ async deleteSupervision(supervisionId: string, userId: string): Promise<void> {
             id: true,
             title: true
           }
-        },
-        participants: {
-          where: { userId },
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                specialization: true
-              }
-            }
-          }
         }
       },
       orderBy: { startDate: 'desc' }
     });
 
-    return trainings.map(training => {
-      const participant = training.participants[0];
-      const startYear = training.startDate.getFullYear();
-      const endYear = training.endDate?.getFullYear() || 'En cours';
-      
-      return {
-        id: training.id,
-        studentName: `${participant.user.firstName} ${participant.user.lastName}`,
-        level: 'Master II',
-        specialty: participant.user.specialization || '',
-        university: training.organizer || '',
-        startDate: training.startDate,
-        endDate: training.endDate,
-        period: `${startYear} - ${endYear}`,
-        diplomaObtained: training.endDate ? 'OUI' : 'EN_COURS',
-        createdAt: training.createdAt,
-        updatedAt: training.updatedAt,
-        activity: training.activity
-      };
-    });
+    return trainings.map(training => ({
+      id: training.id,
+      studentName: training.studentName || '',
+      level: training.level || '',
+      specialty: training.specialty || '',
+      university: training.organizer || '',
+      startDate: training.startDate,
+      endDate: training.endDate,
+      period: training.period || '',
+      diplomaObtained: training.diplomaObtained || 'EN_COURS',
+      createdAt: training.createdAt,
+      updatedAt: training.updatedAt,
+      activity: training.activity
+    }));
   }
 
   async getUserTrainingsGiven(userId: string): Promise<TrainingGivenResponse[]> {
@@ -609,8 +566,249 @@ async deleteSupervision(supervisionId: string, userId: string): Promise<void> {
     return reports;
   }
 
+  // ============= MÉTHODES DE MISE À JOUR =============
+
+  async updateShortTrainingReceived(trainingId: string, userId: string, data: Partial<CreateShortTrainingReceivedInput>): Promise<ShortTrainingReceivedResponse> {
+    // Vérifier que la formation appartient à l'utilisateur
+    const existingTraining = await prisma.training.findFirst({
+      where: {
+        id: trainingId,
+        participants: {
+          some: {
+            userId: userId,
+            role: 'PARTICIPANT'
+          }
+        },
+        type: 'FORMATION_COURTE'
+      }
+    });
+
+    if (!existingTraining) {
+      throw new Error('Formation courte non trouvée ou accès non autorisé');
+    }
+
+    const training = await prisma.training.update({
+      where: { id: trainingId },
+      data: {
+        ...(data.title && { title: data.title }),
+        ...(data.objectives && { objectives: data.objectives, description: data.objectives.join('; ') }),
+        ...(data.location && { location: data.location }),
+        ...(data.startDate && { startDate: new Date(data.startDate) }),
+        ...(data.endDate !== undefined && { endDate: data.endDate ? new Date(data.endDate) : null }),
+        ...(data.duration !== undefined && { duration: data.duration || null }),
+        ...(data.beneficiaries !== undefined && { beneficiaries: data.beneficiaries }),
+        ...(data.organizer !== undefined && { organizer: data.organizer || null }),
+      },
+      include: {
+        activity: {
+          select: {
+            id: true,
+            title: true
+          }
+        }
+      }
+    });
+
+    return {
+      id: training.id,
+      title: training.title,
+      objectives: training.objectives,
+      location: training.location || '',
+      startDate: training.startDate,
+      endDate: training.endDate,
+      duration: training.duration,
+      period: this.formatPeriod(training.startDate, training.endDate),
+      beneficiaries: training.beneficiaries || [],
+      organizer: training.organizer,
+      createdAt: training.createdAt,
+      updatedAt: training.updatedAt,
+      activity: training.activity
+    };
+  }
+
+  async updateDiplomaticTrainingReceived(trainingId: string, userId: string, data: Partial<CreateDiplomaticTrainingReceivedInput>): Promise<DiplomaticTrainingReceivedResponse> {
+    // Vérifier que la formation appartient à l'utilisateur
+    const existingTraining = await prisma.training.findFirst({
+      where: {
+        id: trainingId,
+        participants: {
+          some: {
+            userId: userId,
+            role: 'PARTICIPANT'
+          }
+        },
+        type: 'FORMATION_DIPLOMANTE'
+      }
+    });
+
+    if (!existingTraining) {
+      throw new Error('Formation diplômante non trouvée ou accès non autorisé');
+    }
+
+    const training = await prisma.training.update({
+      where: { id: trainingId },
+      data: {
+        ...(data.level && data.specialty && { title: `Formation diplômante ${data.level} en ${data.specialty}` }),
+        ...(data.startDate && { startDate: new Date(data.startDate) }),
+        ...(data.endDate !== undefined && { endDate: data.endDate ? new Date(data.endDate) : null }),
+        ...(data.university && { organizer: data.university }),
+        ...(data.level && { level: data.level }),
+        ...(data.specialty && { specialty: data.specialty }),
+        ...(data.period && { period: data.period }),
+        ...(data.diplomaObtained && { diplomaObtained: data.diplomaObtained }),
+        ...(data.studentName && { studentName: data.studentName }),
+      },
+      include: {
+        activity: {
+          select: {
+            id: true,
+            title: true
+          }
+        }
+      }
+    });
+
+    return {
+      id: training.id,
+      studentName: training.studentName || '',
+      level: training.level || '',
+      specialty: training.specialty || '',
+      university: training.organizer || '',
+      startDate: training.startDate,
+      endDate: training.endDate,
+      period: training.period || '',
+      diplomaObtained: training.diplomaObtained || 'EN_COURS',
+      createdAt: training.createdAt,
+      updatedAt: training.updatedAt,
+      activity: training.activity
+    };
+  }
+
+  async updateTrainingGiven(trainingId: string, userId: string, data: Partial<CreateTrainingGivenInput>): Promise<TrainingGivenResponse> {
+    // Vérifier que la formation appartient à l'utilisateur
+    const existingTraining = await prisma.training.findFirst({
+      where: {
+        id: trainingId,
+        participants: {
+          some: {
+            userId: userId,
+            role: 'FORMATEUR'
+          }
+        }
+      }
+    });
+
+    if (!existingTraining) {
+      throw new Error('Formation dispensée non trouvée ou accès non autorisé');
+    }
+
+    const training = await prisma.training.update({
+      where: { id: trainingId },
+      data: {
+        ...(data.title && { title: data.title }),
+        ...(data.description !== undefined && { description: data.description || null }),
+        ...(data.type && { type: data.type }),
+        ...(data.location !== undefined && { location: data.location || null }),
+        ...(data.startDate && { startDate: new Date(data.startDate) }),
+        ...(data.endDate !== undefined && { endDate: data.endDate ? new Date(data.endDate) : null }),
+        ...(data.duration !== undefined && { duration: data.duration || null }),
+        ...(data.objectives !== undefined && { objectives: data.objectives }),
+        ...(data.maxParticipants !== undefined && { maxParticipants: data.maxParticipants || null }),
+      },
+      include: {
+        activity: {
+          select: {
+            id: true,
+            title: true
+          }
+        }
+      }
+    });
+
+    return {
+      id: training.id,
+      title: training.title,
+      description: training.description,
+      type: training.type,
+      institution: training.organizer || '',
+      level: data.level || '',
+      department: data.department || '',
+      location: training.location,
+      startDate: training.startDate,
+      endDate: training.endDate,
+      duration: training.duration,
+      objectives: training.objectives,
+      maxParticipants: training.maxParticipants,
+      createdAt: training.createdAt,
+      updatedAt: training.updatedAt,
+      activity: training.activity
+    };
+  }
+
+  async updateSupervision(supervisionId: string, userId: string, data: Partial<CreateSupervisionInput>): Promise<SupervisionResponse> {
+    // Vérifier que l'encadrement appartient à l'utilisateur
+    const existingSupervision = await prisma.supervision.findFirst({
+      where: {
+        id: supervisionId,
+        supervisorId: userId
+      }
+    });
+
+    if (!existingSupervision) {
+      throw new Error('Encadrement non trouvé ou accès non autorisé');
+    }
+
+    const supervision = await prisma.supervision.update({
+      where: { id: supervisionId },
+      data: {
+        ...(data.title && { title: data.title }),
+        ...(data.type && { type: data.type }),
+        ...(data.specialty && { specialty: data.specialty }),
+        ...(data.university && { university: data.university }),
+        ...(data.startDate && { startDate: new Date(data.startDate) }),
+        ...(data.endDate !== undefined && { endDate: data.endDate ? new Date(data.endDate) : null }),
+        ...(data.expectedDefenseDate !== undefined && { expectedDefenseDate: data.expectedDefenseDate ? new Date(data.expectedDefenseDate) : null }),
+        ...(data.status && { status: data.status }),
+        ...(data.abstract !== undefined && { abstract: data.abstract || null }),
+        ...(data.coSupervisors !== undefined && { coSupervisors: data.coSupervisors }),
+      },
+      include: {
+        activity: {
+          select: {
+            id: true,
+            title: true
+          }
+        },
+        student: {
+          select: {
+            firstName: true,
+            lastName: true
+          }
+        }
+      }
+    });
+
+    return {
+      id: supervision.id,
+      title: supervision.title,
+      studentName: `${supervision.student.firstName} ${supervision.student.lastName}`,
+      type: supervision.type,
+      specialty: supervision.specialty,
+      university: supervision.university,
+      startDate: supervision.startDate,
+      endDate: supervision.endDate,
+      expectedDefenseDate: supervision.expectedDefenseDate || undefined,
+      status: supervision.status,
+      abstract: supervision.abstract,
+      coSupervisors: supervision.coSupervisors,
+      createdAt: supervision.createdAt,
+      updatedAt: supervision.updatedAt,
+      activity: supervision.activity
+    };
+  }
+
   // ============= MÉTHODE UTILITAIRE =============
-  
+
   async getUserInfo(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },

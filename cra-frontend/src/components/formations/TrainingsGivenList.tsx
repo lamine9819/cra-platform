@@ -1,11 +1,12 @@
 // src/components/formations/TrainingsGivenList.tsx
 import React, { useState } from 'react';
-import { Plus, Trash2, Calendar, Building2, BookOpen, Users as UsersIcon, Target, X, MapPin } from 'lucide-react';
+import { Plus, Trash2, Calendar, Building2, BookOpen, Users as UsersIcon, Target, X, MapPin, Edit } from 'lucide-react';
 import { Button } from '../ui/Button';
 import type { TrainingGiven, CreateTrainingGivenRequest } from '../../types/formation.types';
 import {
   useCreateTrainingGiven,
   useDeleteTrainingGiven,
+  useUpdateTrainingGiven,
 } from '../../hooks/formations/useFormations';
 import { TrainingGivenType, TrainingGivenTypeLabels } from '../../types/formation.types';
 import { format } from 'date-fns';
@@ -22,6 +23,8 @@ export const TrainingsGivenList: React.FC<TrainingsGivenListProps> = ({
   isLoading,
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingTraining, setEditingTraining] = useState<TrainingGiven | null>(null);
   const [objectives, setObjectives] = useState<string[]>(['']);
   const [formData, setFormData] = useState<CreateTrainingGivenRequest>({
     title: '',
@@ -39,6 +42,7 @@ export const TrainingsGivenList: React.FC<TrainingsGivenListProps> = ({
   });
 
   const createMutation = useCreateTrainingGiven();
+  const updateMutation = useUpdateTrainingGiven();
   const deleteMutation = useDeleteTrainingGiven();
 
   const resetForm = () => {
@@ -67,6 +71,47 @@ export const TrainingsGivenList: React.FC<TrainingsGivenListProps> = ({
       {
         onSuccess: () => {
           setShowAddModal(false);
+          resetForm();
+        },
+      }
+    );
+  };
+
+  const handleEdit = (training: TrainingGiven) => {
+    setEditingTraining(training);
+    setFormData({
+      title: training.title,
+      description: training.description || '',
+      type: training.type,
+      institution: training.institution,
+      level: training.level,
+      department: training.department,
+      location: training.location || '',
+      startDate: training.startDate.split('T')[0],
+      endDate: training.endDate ? training.endDate.split('T')[0] : '',
+      duration: training.duration,
+      objectives: training.objectives,
+      maxParticipants: training.maxParticipants,
+    });
+    setObjectives(training.objectives.length > 0 ? training.objectives : ['']);
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!editingTraining) return;
+
+    const filteredObjectives = objectives.filter((obj) => obj.trim() !== '');
+    updateMutation.mutate(
+      {
+        trainingId: editingTraining.id,
+        data: { ...formData, objectives: filteredObjectives },
+      },
+      {
+        onSuccess: () => {
+          setShowEditModal(false);
+          setEditingTraining(null);
           resetForm();
         },
       }
@@ -230,13 +275,22 @@ export const TrainingsGivenList: React.FC<TrainingsGivenListProps> = ({
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleDelete(training.id)}
-                  className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                  title="Supprimer"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                <div className="flex gap-2 ml-4">
+                  <button
+                    onClick={() => handleEdit(training)}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                    title="Modifier"
+                  >
+                    <Edit className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(training.id)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    title="Supprimer"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -468,6 +522,240 @@ export const TrainingsGivenList: React.FC<TrainingsGivenListProps> = ({
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   {createMutation.isPending ? 'Ajout en cours...' : 'Ajouter'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de modification */}
+      {showEditModal && editingTraining && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Modifier la formation dispensée
+              </h3>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingTraining(null);
+                  resetForm();
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdate} className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Titre *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Type *</label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) =>
+                      setFormData({ ...formData, type: e.target.value as TrainingGivenType })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  >
+                    {Object.entries(TrainingGivenTypeLabels).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Institution *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.institution}
+                    onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Niveau *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.level}
+                    onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+                    required
+                    placeholder="Ex: Licence, Master..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Département/Faculté *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.department}
+                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Lieu</label>
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Date de début *
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Date de fin
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Durée (jours)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.duration || ''}
+                    onChange={(e) =>
+                      setFormData({ ...formData, duration: Number(e.target.value) || undefined })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Max participants
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.maxParticipants || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        maxParticipants: Number(e.target.value) || undefined,
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Objectifs</label>
+                <div className="space-y-3">
+                  {objectives.map((objective, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={objective}
+                        onChange={(e) => updateObjective(index, e.target.value)}
+                        placeholder={`Objectif ${index + 1}`}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                      {objectives.length > 1 && (
+                        <Button
+                          type="button"
+                          onClick={() => removeObjective(index)}
+                          variant="outline"
+                          className="border-red-600 text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    onClick={addObjective}
+                    variant="outline"
+                    className="border-green-600 text-green-600 hover:bg-green-50"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Ajouter un objectif
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingTraining(null);
+                    resetForm();
+                  }}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={updateMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {updateMutation.isPending ? 'Modification en cours...' : 'Modifier'}
                 </Button>
               </div>
             </form>

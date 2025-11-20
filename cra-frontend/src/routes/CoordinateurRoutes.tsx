@@ -18,10 +18,7 @@ import EditTask from '../pages/chercheur/EditTask';
 import FormsList from '../pages/chercheur/FormsList';
 import CreateForm from '../pages/chercheur/CreateForm';
 import FormCollectPage from '../pages/chercheur/FormCollectPage';
-import SeminarsList from '../pages/chercheur/SeminarsList';
-import SeminarDetail from '../pages/chercheur/SeminarDetail';
-import CreateSeminar from '../pages/chercheur/CreateSeminar';
-// import DocumentsPage from '../pages/chercheur/DocumentsPage';
+import CalendarPage from '../pages/chercheur/CalendarPage';
 
 const CoordinateurRoutes: React.FC = () => {
   return (
@@ -62,12 +59,8 @@ const CoordinateurRoutes: React.FC = () => {
         <Route path="responses" element={<div>Réponses collectées</div>} />
       </Route>
 
-      {/* Séminaires */}
-      <Route path="seminars">
-        <Route index element={<SeminarsList />} />
-        <Route path="new" element={<CreateSeminar />} />
-        <Route path=":id" element={<SeminarDetail />} />
-      </Route>
+      {/* Calendrier - Événements et Séminaires */}
+      <Route path="calendar" element={<CalendarPage />} />
 
       {/* Documents */}
       <Route path="documents">

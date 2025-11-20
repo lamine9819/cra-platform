@@ -1,11 +1,12 @@
 // src/components/formations/ShortTrainingsReceivedList.tsx
 import React, { useState } from 'react';
-import { Plus, Trash2, Calendar, MapPin, Target, Users, Building2, X } from 'lucide-react';
+import { Plus, Trash2, Calendar, MapPin, Target, Users, Building2, X, Edit } from 'lucide-react';
 import { Button } from '../ui/Button';
 import type { ShortTrainingReceived, CreateShortTrainingReceivedRequest } from '../../types/formation.types';
 import {
   useCreateShortTrainingReceived,
   useDeleteShortTrainingReceived,
+  useUpdateShortTrainingReceived,
 } from '../../hooks/formations/useFormations';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -21,6 +22,8 @@ export const ShortTrainingsReceivedList: React.FC<ShortTrainingsReceivedListProp
   isLoading,
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingTraining, setEditingTraining] = useState<ShortTrainingReceived | null>(null);
   const [objectives, setObjectives] = useState<string[]>(['']);
   const [beneficiaries, setBeneficiaries] = useState<string[]>([]);
   const [newBeneficiary, setNewBeneficiary] = useState('');
@@ -37,6 +40,7 @@ export const ShortTrainingsReceivedList: React.FC<ShortTrainingsReceivedListProp
   });
 
   const createMutation = useCreateShortTrainingReceived();
+  const updateMutation = useUpdateShortTrainingReceived();
   const deleteMutation = useDeleteShortTrainingReceived();
 
   const resetForm = () => {
@@ -73,6 +77,53 @@ export const ShortTrainingsReceivedList: React.FC<ShortTrainingsReceivedListProp
       {
         onSuccess: () => {
           setShowAddModal(false);
+          resetForm();
+        },
+      }
+    );
+  };
+
+  const handleEdit = (training: ShortTrainingReceived) => {
+    setEditingTraining(training);
+    setFormData({
+      title: training.title,
+      objectives: training.objectives,
+      location: training.location,
+      startDate: training.startDate.split('T')[0],
+      endDate: training.endDate ? training.endDate.split('T')[0] : '',
+      duration: training.duration,
+      beneficiaries: training.beneficiaries,
+      organizer: training.organizer || '',
+    });
+    setObjectives(training.objectives);
+    setBeneficiaries(training.beneficiaries);
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!editingTraining) return;
+
+    const filteredObjectives = objectives.filter((obj) => obj.trim() !== '');
+    if (filteredObjectives.length === 0) {
+      toast.error('Veuillez ajouter au moins un objectif');
+      return;
+    }
+
+    updateMutation.mutate(
+      {
+        trainingId: editingTraining.id,
+        data: {
+          ...formData,
+          objectives: filteredObjectives,
+          beneficiaries,
+        },
+      },
+      {
+        onSuccess: () => {
+          setShowEditModal(false);
+          setEditingTraining(null);
           resetForm();
         },
       }
@@ -252,13 +303,22 @@ export const ShortTrainingsReceivedList: React.FC<ShortTrainingsReceivedListProp
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleDelete(training.id)}
-                  className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                  title="Supprimer"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                <div className="flex gap-2 ml-4">
+                  <button
+                    onClick={() => handleEdit(training)}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                    title="Modifier"
+                  >
+                    <Edit className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(training.id)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    title="Supprimer"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -457,6 +517,207 @@ export const ShortTrainingsReceivedList: React.FC<ShortTrainingsReceivedListProp
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   {createMutation.isPending ? 'Ajout en cours...' : 'Ajouter'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de modification */}
+      {showEditModal && editingTraining && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Modifier la formation courte reçue</h3>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingTraining(null);
+                  resetForm();
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdate} className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Intitulé de la formation *
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Objectifs de la formation *
+                </label>
+                <div className="space-y-3">
+                  {objectives.map((objective, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={objective}
+                        onChange={(e) => updateObjective(index, e.target.value)}
+                        placeholder={`Objectif ${index + 1}`}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                      {objectives.length > 1 && (
+                        <Button
+                          type="button"
+                          onClick={() => removeObjective(index)}
+                          variant="outline"
+                          className="border-red-600 text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    onClick={addObjective}
+                    variant="outline"
+                    className="border-green-600 text-green-600 hover:bg-green-50"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Ajouter un objectif
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Lieu *</label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Date de début *
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Date de fin</label>
+                  <input
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Durée (jours)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.duration || ''}
+                    onChange={(e) =>
+                      setFormData({ ...formData, duration: Number(e.target.value) || undefined })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Organisme organisateur
+                </label>
+                <input
+                  type="text"
+                  value={formData.organizer}
+                  onChange={(e) => setFormData({ ...formData, organizer: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Chercheurs bénéficiaires
+                </label>
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={newBeneficiary}
+                    onChange={(e) => setNewBeneficiary(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addBeneficiary())}
+                    placeholder="Nom du chercheur"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                  <Button
+                    type="button"
+                    onClick={addBeneficiary}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {beneficiaries.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {beneficiaries.map((beneficiary) => (
+                      <span
+                        key={beneficiary}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                      >
+                        {beneficiary}
+                        <button
+                          type="button"
+                          onClick={() => removeBeneficiary(beneficiary)}
+                          className="hover:bg-blue-200 rounded-full p-0.5"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingTraining(null);
+                    resetForm();
+                  }}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={updateMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {updateMutation.isPending ? 'Modification en cours...' : 'Modifier'}
                 </Button>
               </div>
             </form>

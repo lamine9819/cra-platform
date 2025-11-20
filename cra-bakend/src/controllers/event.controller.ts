@@ -4,19 +4,14 @@ import reportService from '../services/reportEvent.service';
 import { DocumentType } from '@prisma/client';
 import * as fs from 'fs';
 
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    role: any;
-  };
-}
+import { AuthenticatedRequest } from '../types/auth.types';
 
 export class EventController {
   // ==================== ÉVÉNEMENTS ====================
-  
-  async createEvent(req: AuthRequest, res: Response, next: NextFunction) {
+
+  async createEvent(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
+      const userId = req.user.userId;
       const eventData = req.body;
 
       const event = await eventService.createEvent(userId, eventData);
@@ -31,11 +26,11 @@ export class EventController {
     }
   }
 
-  async getEvent(req: AuthRequest, res: Response, next: NextFunction) {
+  async getEvent(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const userId = req.user!.id;
-      const userRole = req.user!.role;
+      const userId = req.user.userId;
+      const userRole = req.user.role;
 
       const event = await eventService.getEventById(id, userId, userRole);
 
@@ -48,10 +43,10 @@ export class EventController {
     }
   }
 
-  async listEvents(req: AuthRequest, res: Response, next: NextFunction) {
+  async listEvents(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
-      const userRole = req.user!.role;
+      const userId = req.user.userId;
+      const userRole = req.user.role;
       const filters = req.query;
 
       const events = await eventService.listEvents(userId, userRole, filters);
@@ -66,11 +61,11 @@ export class EventController {
     }
   }
 
-  async updateEvent(req: AuthRequest, res: Response, next: NextFunction) {
+  async updateEvent(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const userId = req.user!.id;
-      const userRole = req.user!.role;
+      const userId = req.user.userId;
+      const userRole = req.user.role;
       const updateData = req.body;
 
       const event = await eventService.updateEvent(id, userId, userRole, updateData);
@@ -85,11 +80,11 @@ export class EventController {
     }
   }
 
-  async deleteEvent(req: AuthRequest, res: Response, next: NextFunction) {
+  async deleteEvent(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const userId = req.user!.id;
-      const userRole = req.user!.role;
+      const userId = req.user.userId;
+      const userRole = req.user.role;
 
       const result = await eventService.deleteEvent(id, userId, userRole);
 
@@ -102,10 +97,10 @@ export class EventController {
     }
   }
 
-  async addDocumentToEvent(req: AuthRequest, res: Response, next: NextFunction) {
+  async addDocumentToEvent(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const userId = req.user!.id;
+      const userId = req.user.userId;
 
       if (!req.file) {
         return res.status(400).json({
@@ -136,10 +131,10 @@ export class EventController {
     }
   }
 
-  async getEventStatistics(req: AuthRequest, res: Response, next: NextFunction) {
+  async getEventStatistics(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
-      const userRole = req.user!.role;
+      const userId = req.user.userId;
+      const userRole = req.user.role;
 
       const stats = await eventService.getEventStatistics(userId, userRole);
 
@@ -154,9 +149,9 @@ export class EventController {
 
   // ==================== SÉMINAIRES ====================
   
-  async createSeminar(req: AuthRequest, res: Response, next: NextFunction) {
+  async createSeminar(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
+      const userId = req.user.userId;
       const seminarData = req.body;
 
       const seminar = await eventService.createSeminar(userId, seminarData);
@@ -171,11 +166,11 @@ export class EventController {
     }
   }
 
-  async getSeminar(req: AuthRequest, res: Response, next: NextFunction) {
+  async getSeminar(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const userId = req.user!.id;
-      const userRole = req.user!.role;
+      const userId = req.user.userId;
+      const userRole = req.user.role;
 
       const seminar = await eventService.getSeminarById(id, userId, userRole);
 
@@ -188,10 +183,10 @@ export class EventController {
     }
   }
 
-  async listSeminars(req: AuthRequest, res: Response, next: NextFunction) {
+  async listSeminars(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
-      const userRole = req.user!.role;
+      const userId = req.user.userId;
+      const userRole = req.user.role;
       const filters = req.query;
 
       const seminars = await eventService.listSeminars(userId, userRole, filters);
@@ -206,10 +201,10 @@ export class EventController {
     }
   }
 
-  async updateSeminar(req: AuthRequest, res: Response, next: NextFunction) {
+  async updateSeminar(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const userId = req.user!.id;
+      const userId = req.user.userId;
       const updateData = req.body;
 
       const seminar = await eventService.updateSeminar(id, userId, updateData);
@@ -224,10 +219,10 @@ export class EventController {
     }
   }
 
-  async deleteSeminar(req: AuthRequest, res: Response, next: NextFunction) {
+  async deleteSeminar(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const userId = req.user!.id;
+      const userId = req.user.userId;
 
       const result = await eventService.deleteSeminar(id, userId);
 
@@ -240,10 +235,10 @@ export class EventController {
     }
   }
 
-  async addDocumentToSeminar(req: AuthRequest, res: Response, next: NextFunction) {
+  async addDocumentToSeminar(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const userId = req.user!.id;
+      const userId = req.user.userId;
 
       if (!req.file) {
         return res.status(400).json({
@@ -276,10 +271,10 @@ export class EventController {
 
   // =================== RAPPORTS ===================
   
-  async generateEventReport(req: AuthRequest, res: Response, next: NextFunction) {
+  async generateEventReport(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
-      const userRole = req.user!.role;
+      const userId = req.user.userId;
+      const userRole = req.user.role;
 
       // Map and validate query parameters to EventReportDto
       const filters = {

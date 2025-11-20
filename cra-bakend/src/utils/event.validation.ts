@@ -14,7 +14,9 @@ export const createEventSchema = z.object({
     isAllDay: z.boolean().optional().default(false),
     isRecurring: z.boolean().optional().default(false),
     recurrenceRule: z.string().optional(),
-    color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Couleur invalide (format: #RRGGBB)').optional(),
+    color: z.string().optional().transform(val => val === '' ? undefined : val).refine(val => !val || /^#[0-9A-Fa-f]{6}$/.test(val), {
+      message: 'Couleur invalide (format: #RRGGBB)'
+    }),
     stationId: z.string().cuid().optional(),
     projectId: z.string().cuid().optional(),
     activityId: z.string().cuid().optional(),
@@ -41,7 +43,9 @@ export const updateEventSchema = z.object({
     isAllDay: z.boolean().optional(),
     isRecurring: z.boolean().optional(),
     recurrenceRule: z.string().optional(),
-    color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    color: z.string().optional().transform(val => val === '' ? undefined : val).refine(val => !val || /^#[0-9A-Fa-f]{6}$/.test(val), {
+      message: 'Couleur invalide (format: #RRGGBB)'
+    }),
     stationId: z.string().cuid().optional(),
     projectId: z.string().cuid().optional(),
     activityId: z.string().cuid().optional(),
@@ -100,46 +104,56 @@ export const updateSeminarSchema = z.object({
 
 export const eventFilterSchema = z.object({
   query: z.object({
-    startDate: z.string().datetime().transform(val => new Date(val)).optional(),
-    endDate: z.string().datetime().transform(val => new Date(val)).optional(),
-    type: z.nativeEnum(EventType).optional(),
-    status: z.nativeEnum(EventStatus).optional(),
-    creatorId: z.string().cuid().optional(),
-    stationId: z.string().cuid().optional(),
-    projectId: z.string().cuid().optional(),
-    activityId: z.string().cuid().optional(),
-  })
-});
+    startDate: z.string().optional().transform(val => val ? new Date(val) : undefined).catch(undefined),
+    endDate: z.string().optional().transform(val => val ? new Date(val) : undefined).catch(undefined),
+    type: z.nativeEnum(EventType).optional().catch(undefined),
+    status: z.nativeEnum(EventStatus).optional().catch(undefined),
+    creatorId: z.string().optional().catch(undefined),
+    stationId: z.string().optional().catch(undefined),
+    projectId: z.string().optional().catch(undefined),
+    activityId: z.string().optional().catch(undefined),
+  }).passthrough(),
+  params: z.object({}).optional(),
+  body: z.object({}).optional()
+}).passthrough();
 
 export const seminarFilterSchema = z.object({
   query: z.object({
-    status: z.nativeEnum(SeminarStatus).optional(),
-    organizerId: z.string().cuid().optional(),
-    startDate: z.string().datetime().transform(val => new Date(val)).optional(),
-    endDate: z.string().datetime().transform(val => new Date(val)).optional(),
-  })
-});
+    status: z.string().optional().catch(undefined),
+    organizerId: z.string().optional().catch(undefined),
+    startDate: z.string().optional().catch(undefined),
+    endDate: z.string().optional().catch(undefined),
+  }).passthrough(),
+  params: z.object({}).optional(),
+  body: z.object({}).optional()
+}).passthrough();
 
 export const eventReportSchema = z.object({
   query: z.object({
     format: z.enum(['pdf', 'docx'], {
       message: 'Format invalide. Utilisez "pdf" ou "docx"'
     }),
-    startDate: z.string().datetime().transform(val => new Date(val)).optional(),
-    endDate: z.string().datetime().transform(val => new Date(val)).optional(),
+    startDate: z.string().optional().transform(val => val ? new Date(val) : undefined),
+    endDate: z.string().optional().transform(val => val ? new Date(val) : undefined),
     type: z.nativeEnum(EventType).optional(),
-    creatorId: z.string().cuid().optional(),
-  })
-});
+    creatorId: z.string().optional(),
+  }).passthrough(),
+  params: z.object({}).optional(),
+  body: z.object({}).optional()
+}).passthrough();
 
 export const eventIdParamSchema = z.object({
   params: z.object({
     id: z.string().cuid('ID d\'événement invalide')
-  })
-});
+  }),
+  query: z.object({}).optional(),
+  body: z.object({}).optional()
+}).passthrough();
 
 export const seminarIdParamSchema = z.object({
   params: z.object({
     id: z.string().cuid('ID de séminaire invalide')
-  })
-});
+  }),
+  query: z.object({}).optional(),
+  body: z.object({}).optional()
+}).passthrough();

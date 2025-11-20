@@ -1583,16 +1583,27 @@ model Training {
   maxParticipants Int?
   isInternal    Boolean     @default(true) // Formation interne ou externe
   organizer     String?     // Organisation externe si applicable
+
+  // Champs spécifiques pour formations diplômantes reçues
+  level         String?     // Niveau: Licence, Master, Doctorat
+  specialty     String?     // Spécialité de la formation
+  period        String?     // Période au format texte (ex: "2022-2024")
+  diplomaObtained String?   // Statut: OUI, NON, EN_COURS
+  studentName   String?     // Nom de l'étudiant (pour formations diplômantes)
+
+  // Champs spécifiques pour formations courtes reçues
+  beneficiaries String[]    @default([]) // Liste des bénéficiaires
+
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-  
+
   // Relations
   activity      Activity?   @relation(fields: [activityId], references: [id])
   activityId    String?
-  
+
   participants  TrainingParticipant[]
   documents     Document[]
-  
+
   @@map("trainings")
 }
 

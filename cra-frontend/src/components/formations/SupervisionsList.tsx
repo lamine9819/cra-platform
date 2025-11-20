@@ -1,11 +1,12 @@
 // src/components/formations/SupervisionsList.tsx
 import React, { useState } from 'react';
-import { Plus, Trash2, Calendar, GraduationCap, Building2, FileText, Users, X } from 'lucide-react';
+import { Plus, Trash2, Calendar, GraduationCap, Building2, FileText, Users, X, Edit } from 'lucide-react';
 import { Button } from '../ui/Button';
 import type { Supervision, CreateSupervisionRequest } from '../../types/formation.types';
 import {
   useCreateSupervision,
   useDeleteSupervision,
+  useUpdateSupervision,
 } from '../../hooks/formations/useFormations';
 import {
   SupervisionType,
@@ -28,6 +29,8 @@ export const SupervisionsList: React.FC<SupervisionsListProps> = ({
   isLoading,
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingSupervision, setEditingSupervision] = useState<Supervision | null>(null);
   const [coSupervisors, setCoSupervisors] = useState<string[]>([]);
   const [newCoSupervisor, setNewCoSupervisor] = useState('');
 
@@ -46,6 +49,7 @@ export const SupervisionsList: React.FC<SupervisionsListProps> = ({
   });
 
   const createMutation = useCreateSupervision();
+  const updateMutation = useUpdateSupervision();
   const deleteMutation = useDeleteSupervision();
 
   const resetForm = () => {
@@ -77,6 +81,48 @@ export const SupervisionsList: React.FC<SupervisionsListProps> = ({
       {
         onSuccess: () => {
           setShowAddModal(false);
+          resetForm();
+        },
+      }
+    );
+  };
+
+  const handleEdit = (supervision: Supervision) => {
+    setEditingSupervision(supervision);
+    setFormData({
+      title: supervision.title,
+      studentName: supervision.studentName,
+      type: supervision.type,
+      specialty: supervision.specialty,
+      university: supervision.university,
+      startDate: supervision.startDate.split('T')[0],
+      endDate: supervision.endDate ? supervision.endDate.split('T')[0] : '',
+      expectedDefenseDate: supervision.expectedDefenseDate ? supervision.expectedDefenseDate.split('T')[0] : '',
+      status: supervision.status,
+      abstract: supervision.abstract || '',
+      coSupervisors: supervision.coSupervisors,
+    });
+    setCoSupervisors(supervision.coSupervisors);
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!editingSupervision) return;
+
+    updateMutation.mutate(
+      {
+        supervisionId: editingSupervision.id,
+        data: {
+          ...formData,
+          coSupervisors,
+        },
+      },
+      {
+        onSuccess: () => {
+          setShowEditModal(false);
+          setEditingSupervision(null);
           resetForm();
         },
       }
@@ -251,13 +297,22 @@ export const SupervisionsList: React.FC<SupervisionsListProps> = ({
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleDelete(supervision.id)}
-                  className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                  title="Supprimer"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                <div className="flex gap-2 ml-4">
+                  <button
+                    onClick={() => handleEdit(supervision)}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                    title="Modifier"
+                  >
+                    <Edit className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(supervision.id)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    title="Supprimer"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -485,6 +540,236 @@ export const SupervisionsList: React.FC<SupervisionsListProps> = ({
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   {createMutation.isPending ? 'Ajout en cours...' : 'Ajouter'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de modification */}
+      {showEditModal && editingSupervision && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Modifier l'encadrement</h3>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingSupervision(null);
+                  resetForm();
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdate} className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Titre du travail *
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  required
+                  placeholder="Ex: Étude de l'impact du changement climatique..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nom de l'étudiant *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.studentName}
+                    onChange={(e) => setFormData({ ...formData, studentName: e.target.value })}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Type *</label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value as SupervisionType })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  >
+                    {Object.entries(SupervisionTypeLabels).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Spécialité *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.specialty}
+                    onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Université / École *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.university}
+                    onChange={(e) => setFormData({ ...formData, university: e.target.value })}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Date de début *
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Date de fin
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Soutenance prévue
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.expectedDefenseDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, expectedDefenseDate: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Statut *</label>
+                <select
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value as SupervisionStatus })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  {Object.entries(SupervisionStatusLabels).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Résumé du travail
+                </label>
+                <textarea
+                  value={formData.abstract}
+                  onChange={(e) => setFormData({ ...formData, abstract: e.target.value })}
+                  rows={4}
+                  placeholder="Décrivez brièvement le sujet de recherche..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Co-encadrants
+                </label>
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={newCoSupervisor}
+                    onChange={(e) => setNewCoSupervisor(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCoSupervisor())}
+                    placeholder="Nom du co-encadrant"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                  <Button
+                    type="button"
+                    onClick={addCoSupervisor}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {coSupervisors.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {coSupervisors.map((supervisor) => (
+                      <span
+                        key={supervisor}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm"
+                      >
+                        {supervisor}
+                        <button
+                          type="button"
+                          onClick={() => removeCoSupervisor(supervisor)}
+                          className="hover:bg-indigo-200 rounded-full p-0.5"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingSupervision(null);
+                    resetForm();
+                  }}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={updateMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {updateMutation.isPending ? 'Modification en cours...' : 'Modifier'}
                 </Button>
               </div>
             </form>

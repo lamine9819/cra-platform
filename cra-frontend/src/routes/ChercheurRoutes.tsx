@@ -13,10 +13,7 @@ import { DocumentsHub } from '../pages/chercheur/DocumentsHub';
 import PublicationsList from '../pages/chercheur/PublicationsList';
 import PublicationDetail from '../pages/chercheur/PublicationDetail';
 import CreatePublication from '../pages/chercheur/CreatePublication';
-
-{/* import TeamManagement from '../pages/chercheur/TeamManagement';
-import SeminarsList from '../pages/chercheur/SeminarsList';
-import ReportsList from '../pages/chercheur/ReportsList'; */}
+import CalendarPage from '../pages/chercheur/CalendarPage';
 
 const ChercheurRoutes: React.FC = () => {
   return (
@@ -39,11 +36,7 @@ const ChercheurRoutes: React.FC = () => {
         <Route path=":id" element={<PublicationDetail />} />
         <Route path=":id/edit" element={<CreatePublication />} />
       </Route>
-      {/*<Route path="tasks" element={<TasksList />} />
-      <Route path="team" element={<TeamManagement />} />
-      <Route path="seminars" element={<SeminarsList />} />
-      <Route path="reports" element={<ReportsList />} />
-      <Route path="discussions" element={<div>Discussions</div>} />*/}
+      <Route path="calendar" element={<CalendarPage />} />
     </Routes>
   );
 };

@@ -19,29 +19,7 @@ const router = Router();
 // Toutes les routes nécessitent l'authentification
 router.use(authenticate);
 
-// ==================== ROUTES ÉVÉNEMENTS ====================
-
-/**
- * @route   POST /api/events
- * @desc    Créer un nouvel événement
- * @access  Chercheur, Coordinateur
- */
-router.post(
-  '/',
-  validate(createEventSchema),
-  eventController.createEvent
-);
-
-/**
- * @route   GET /api/events
- * @desc    Lister les événements (avec filtres optionnels)
- * @access  Chercheur (ses événements), Coordinateur (tous)
- */
-router.get(
-  '/',
-  validate(eventFilterSchema),
-  eventController.listEvents
-);
+// ==================== ROUTES SPÉCIFIQUES (AVANT LES ROUTES DYNAMIQUES) ====================
 
 /**
  * @route   GET /api/events/report
@@ -62,52 +40,6 @@ router.get(
 router.get(
   '/statistics',
   eventController.getEventStatistics
-);
-
-/**
- * @route   GET /api/events/:id
- * @desc    Récupérer un événement par ID
- * @access  Créateur, Coordinateur
- */
-router.get(
-  '/:id',
-  validate(eventIdParamSchema),
-  eventController.getEvent
-);
-
-/**
- * @route   PUT /api/events/:id
- * @desc    Mettre à jour un événement
- * @access  Créateur uniquement
- */
-router.put(
-  '/:id',
-  validate(eventIdParamSchema),
-  validate(updateEventSchema),
-  eventController.updateEvent
-);
-
-/**
- * @route   DELETE /api/events/:id
- * @desc    Supprimer un événement
- * @access  Créateur uniquement
- */
-router.delete(
-  '/:id',
-  validate(eventIdParamSchema),
-  eventController.deleteEvent
-);
-
-/**
- * @route   POST /api/events/:id/documents
- * @desc    Ajouter un document à un événement
- * @access  Créateur uniquement
- */
-router.post(
-  '/:id/documents',
-  validate(eventIdParamSchema),
-  upload.single('file'),
-  eventController.addDocumentToEvent
 );
 
 // ==================== ROUTES SÉMINAIRES ====================
@@ -178,6 +110,76 @@ router.post(
   validate(seminarIdParamSchema),
   upload.single('file'),
   eventController.addDocumentToSeminar
+);
+
+// ==================== ROUTES ÉVÉNEMENTS ====================
+
+/**
+ * @route   POST /api/events
+ * @desc    Créer un nouvel événement
+ * @access  Chercheur, Coordinateur
+ */
+router.post(
+  '/',
+  validate(createEventSchema),
+  eventController.createEvent
+);
+
+/**
+ * @route   GET /api/events
+ * @desc    Lister les événements (avec filtres optionnels)
+ * @access  Chercheur (ses événements), Coordinateur (tous)
+ */
+router.get(
+  '/',
+  validate(eventFilterSchema),
+  eventController.listEvents
+);
+
+/**
+ * @route   GET /api/events/:id
+ * @desc    Récupérer un événement par ID
+ * @access  Créateur, Coordinateur
+ */
+router.get(
+  '/:id',
+  validate(eventIdParamSchema),
+  eventController.getEvent
+);
+
+/**
+ * @route   PUT /api/events/:id
+ * @desc    Mettre à jour un événement
+ * @access  Créateur uniquement
+ */
+router.put(
+  '/:id',
+  validate(eventIdParamSchema),
+  validate(updateEventSchema),
+  eventController.updateEvent
+);
+
+/**
+ * @route   DELETE /api/events/:id
+ * @desc    Supprimer un événement
+ * @access  Créateur uniquement
+ */
+router.delete(
+  '/:id',
+  validate(eventIdParamSchema),
+  eventController.deleteEvent
+);
+
+/**
+ * @route   POST /api/events/:id/documents
+ * @desc    Ajouter un document à un événement
+ * @access  Créateur uniquement
+ */
+router.post(
+  '/:id/documents',
+  validate(eventIdParamSchema),
+  upload.single('file'),
+  eventController.addDocumentToEvent
 );
 
 export default router;

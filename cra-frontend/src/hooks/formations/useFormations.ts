@@ -54,6 +54,26 @@ export function useCreateShortTrainingReceived() {
 }
 
 /**
+ * Hook pour modifier une formation courte reçue
+ */
+export function useUpdateShortTrainingReceived() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ trainingId, data }: { trainingId: string; data: Partial<CreateShortTrainingReceivedRequest> }) =>
+      formationService.updateShortTrainingReceived(trainingId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: formationKeys.shortReceived() });
+      queryClient.invalidateQueries({ queryKey: formationKeys.reports() });
+      toast.success('Formation courte reçue modifiée avec succès');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Erreur lors de la modification');
+    },
+  });
+}
+
+/**
  * Hook pour supprimer une formation courte reçue
  */
 export function useDeleteShortTrainingReceived() {
@@ -100,6 +120,26 @@ export function useCreateDiplomaticTrainingReceived() {
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erreur lors de la création');
+    },
+  });
+}
+
+/**
+ * Hook pour modifier une formation diplômante reçue
+ */
+export function useUpdateDiplomaticTrainingReceived() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ trainingId, data }: { trainingId: string; data: Partial<CreateDiplomaticTrainingReceivedRequest> }) =>
+      formationService.updateDiplomaticTrainingReceived(trainingId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: formationKeys.diplomaticReceived() });
+      queryClient.invalidateQueries({ queryKey: formationKeys.reports() });
+      toast.success('Formation diplômante reçue modifiée avec succès');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Erreur lors de la modification');
     },
   });
 }
@@ -155,6 +195,26 @@ export function useCreateTrainingGiven() {
 }
 
 /**
+ * Hook pour modifier une formation dispensée
+ */
+export function useUpdateTrainingGiven() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ trainingId, data }: { trainingId: string; data: Partial<CreateTrainingGivenRequest> }) =>
+      formationService.updateTrainingGiven(trainingId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: formationKeys.given() });
+      queryClient.invalidateQueries({ queryKey: formationKeys.reports() });
+      toast.success('Formation dispensée modifiée avec succès');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Erreur lors de la modification');
+    },
+  });
+}
+
+/**
  * Hook pour supprimer une formation dispensée
  */
 export function useDeleteTrainingGiven() {
@@ -200,6 +260,26 @@ export function useCreateSupervision() {
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erreur lors de la création');
+    },
+  });
+}
+
+/**
+ * Hook pour modifier un encadrement
+ */
+export function useUpdateSupervision() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ supervisionId, data }: { supervisionId: string; data: Partial<CreateSupervisionRequest> }) =>
+      formationService.updateSupervision(supervisionId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: formationKeys.supervisions() });
+      queryClient.invalidateQueries({ queryKey: formationKeys.reports() });
+      toast.success('Encadrement modifié avec succès');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Erreur lors de la modification');
     },
   });
 }

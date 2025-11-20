@@ -6,8 +6,14 @@ export const createShortTrainingReceivedSchema = z.object({
   title: z.string().min(1, "Le titre est requis"), // Intitulé de la formation
   objectives: z.array(z.string()).min(1, "Au moins un objectif est requis"), // Objectifs de la formation
   location: z.string().min(1, "Le lieu est requis"), // Lieu
-  startDate: z.string().datetime("Date de début invalide"),
-  endDate: z.string().datetime("Date de fin invalide").optional(),
+  startDate: z.string().min(1, "Date de début requise").refine((date) => {
+    // Accepter format YYYY-MM-DD ou ISO datetime
+    return /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(date);
+  }, "Format de date invalide"),
+  endDate: z.string().optional().refine((date) => {
+    // Si la date est fournie, vérifier le format
+    return !date || /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(date);
+  }, "Format de date invalide"),
   duration: z.number().int().positive("La durée doit être positive").optional(), // Période ou durée
   beneficiaries: z.array(z.string()).default([]), // Chercheurs bénéficiaires (si plusieurs)
   organizer: z.string().optional(), // Organisme organisateur
@@ -20,8 +26,12 @@ export const createDiplomaticTrainingReceivedSchema = z.object({
   level: z.string().min(1, "Le niveau est requis"), // Niveau
   specialty: z.string().min(1, "La spécialité est requise"), // Spécialité
   university: z.string().min(1, "L'université est requise"), // Universités / Écoles
-  startDate: z.string().datetime("Date de début invalide"),
-  endDate: z.string().datetime("Date de fin invalide").optional(),
+  startDate: z.string().min(1, "Date de début requise").refine((date) => {
+    return /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(date);
+  }, "Format de date invalide"),
+  endDate: z.string().optional().refine((date) => {
+    return !date || /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(date);
+  }, "Format de date invalide"),
   period: z.string().min(1, "La période est requise"), // Période (format texte comme "2022-2024")
   diplomaObtained: z.enum(['OUI', 'NON', 'EN_COURS']).default('EN_COURS'), // Obtention du diplôme
   activityId: z.string().optional(),
@@ -36,8 +46,12 @@ export const createTrainingGivenSchema = z.object({
   level: z.string().min(1, "Le niveau est requis"),
   department: z.string().min(1, "Le département/faculté est requis"),
   location: z.string().optional(),
-  startDate: z.string().datetime("Date de début invalide"),
-  endDate: z.string().datetime("Date de fin invalide").optional(),
+  startDate: z.string().min(1, "Date de début requise").refine((date) => {
+    return /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(date);
+  }, "Format de date invalide"),
+  endDate: z.string().optional().refine((date) => {
+    return !date || /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(date);
+  }, "Format de date invalide"),
   duration: z.number().int().positive("La durée doit être positive").optional(),
   objectives: z.array(z.string()).default([]),
   maxParticipants: z.number().int().positive().optional(),
@@ -51,9 +65,15 @@ export const createSupervisionSchema = z.object({
   type: z.enum(['DOCTORAT', 'MASTER', 'LICENCE', 'INGENIEUR']),
   specialty: z.string().min(1, "La spécialité est requise"),
   university: z.string().min(1, "L'université est requise"),
-  startDate: z.string().datetime("Date de début invalide"),
-  endDate: z.string().datetime("Date de fin invalide").optional(),
-  expectedDefenseDate: z.string().datetime("Date prévue de soutenance invalide").optional(),
+  startDate: z.string().min(1, "Date de début requise").refine((date) => {
+    return /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(date);
+  }, "Format de date invalide"),
+  endDate: z.string().optional().refine((date) => {
+    return !date || /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(date);
+  }, "Format de date invalide"),
+  expectedDefenseDate: z.string().optional().refine((date) => {
+    return !date || /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(date);
+  }, "Format de date invalide"),
   status: z.enum(['EN_COURS', 'SOUTENU', 'ABANDONNE']).default('EN_COURS'),
   abstract: z.string().optional(),
   coSupervisors: z.array(z.string()).default([]),

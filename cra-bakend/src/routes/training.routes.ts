@@ -20,6 +20,11 @@ router.get('/short-received',
   formationController.getUserShortTrainingsReceived.bind(formationController)
 );
 
+router.put('/short-received/:trainingId',
+  authenticate,
+  formationController.updateShortTrainingReceived.bind(formationController)
+);
+
 router.delete('/short-received/:trainingId',
   authenticate,
   formationController.deleteShortTrainingReceived.bind(formationController)
@@ -39,6 +44,11 @@ router.get('/diplomatic-received',
   formationController.getUserDiplomaticTrainingsReceived.bind(formationController)
 );
 
+router.put('/diplomatic-received/:trainingId',
+  authenticate,
+  formationController.updateDiplomaticTrainingReceived.bind(formationController)
+);
+
 router.delete('/diplomatic-received/:trainingId',
   authenticate,
   formationController.deleteDiplomaticTrainingReceived.bind(formationController)
@@ -56,6 +66,11 @@ router.post('/given',
 router.get('/given',
   authenticate,
   formationController.getUserTrainingsGiven.bind(formationController)
+);
+
+router.put('/given/:trainingId',
+  authenticate,
+  formationController.updateTrainingGiven.bind(formationController)
 );
 
 router.delete('/given/:trainingId',
