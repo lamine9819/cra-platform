@@ -12,6 +12,7 @@ interface AuthContextType extends AuthState {
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  updateUser: (user: User) => void;
   hasRole: (roles: UserRole | UserRole[]) => boolean;
 }
 
@@ -193,9 +194,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateUser = (user: User) => {
+    dispatch({ type: 'UPDATE_USER', payload: user });
+  };
+
   const hasRole = (roles: UserRole | UserRole[]): boolean => {
     if (!state.user) return false;
-    
+
     const allowedRoles = Array.isArray(roles) ? roles : [roles];
     return allowedRoles.includes(state.user.role);
   };
@@ -205,6 +210,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     refreshProfile,
+    updateUser,
     hasRole,
   };
 

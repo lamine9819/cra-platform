@@ -943,4 +943,77 @@ export class UserService {
 
     return this.formatUserResponse(updatedUser);
   }
+
+  /**
+   * Mettre à jour la photo de profil d'un utilisateur
+   */
+  async updateProfileImage(userId: string, imageUrl: string): Promise<UserResponse> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      throw new NotFoundError('Utilisateur non trouvé');
+    }
+
+    // Supprimer l'ancienne image si elle existe
+    if (user.profileImage) {
+      const fs = require('fs');
+      const path = require('path');
+      const oldImagePath = path.join('.', user.profileImage);
+
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { profileImage: imageUrl },
+      include: {
+        supervisor: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+          }
+        },
+        individualProfile: true,
+      }
+    });
+
+    return this.formatUserResponse(updatedUser);
+  }
+
+  /**
+   * Supprimer la photo de profil d'un utilisateur
+   */
+  async deleteProfileImage(userId: string): Promise<void> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      throw new NotFoundError('Utilisateur non trouvé');
+    }
+
+    // Supprimer le fichier physique
+    if (user.profileImage) {
+      const fs = require('fs');
+      const path = require('path');
+      const imagePath = path.join('.', user.profileImage);
+
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+
+    // Mettre à jour la base de données
+    await prisma.user.update({
+      where: { id: userId },
+      data: { profileImage: null }
+    });
+  }
 }

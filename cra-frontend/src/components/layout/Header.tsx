@@ -3,14 +3,14 @@
 // =============================================
 
 // src/components/layout/Header.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Bell, 
-  Search, 
-  User, 
-  LogOut, 
-  Settings, 
+import {
+  Bell,
+  Search,
+  User,
+  LogOut,
+  Settings,
   ChevronDown,
   Menu,
   X
@@ -28,6 +28,9 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
   const { user, logout } = useAuth();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   const handleLogout = async () => {
     try {
@@ -36,6 +39,24 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
       console.error('Erreur lors de la déconnexion:', error);
     }
   };
+
+  const getProfileImageUrl = () => {
+    if (!user?.profileImage) return null;
+    if (user.profileImage.startsWith('http')) return user.profileImage;
+    const fullUrl = `${API_BASE_URL}${user.profileImage}`;
+    console.log('Header - User profileImage:', user.profileImage);
+    console.log('Header - Full URL:', fullUrl);
+    return fullUrl;
+  };
+
+  const getInitials = () => {
+    return `${user?.firstName?.[0] || ''}${user?.lastName?.[0] || ''}`.toUpperCase();
+  };
+
+  // Réinitialiser l'erreur d'image quand le user change
+  React.useEffect(() => {
+    setImageError(false);
+  }, [user?.profileImage]);
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
@@ -58,20 +79,6 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
             <p className="text-sm text-gray-500">
               {getRoleLabel(user?.role || 'CHERCHEUR' as any)}
             </p>
-          </div>
-        </div>
-
-        {/* Centre: Barre de recherche */}
-        <div className="hidden md:flex flex-1 max-w-lg mx-8">
-          <div className="relative w-full">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Rechercher..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
           </div>
         </div>
 
@@ -105,10 +112,26 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
               className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {user?.firstName?.[0]}{user?.lastName?.[0]}
-                </span>
+              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center overflow-hidden">
+                {getProfileImageUrl() && !imageError ? (
+                  <img
+                    src={getProfileImageUrl()!}
+                    alt="Photo de profil"
+                    className="w-full h-full object-cover"
+                    onError={() => {
+                      console.error('Failed to load image:', getProfileImageUrl());
+                      setImageError(true);
+                    }}
+                    onLoad={() => {
+                      console.log('Image loaded successfully:', getProfileImageUrl());
+                      setImageError(false);
+                    }}
+                  />
+                ) : (
+                  <span className="text-white text-sm font-medium">
+                    {getInitials()}
+                  </span>
+                )}
               </div>
               <div className="hidden md:block text-left">
                 <p className="text-sm font-medium text-gray-900">
@@ -123,10 +146,19 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                 <div className="p-4 border-b border-gray-200">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-medium">
-                        {user?.firstName?.[0]}{user?.lastName?.[0]}
-                      </span>
+                    <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center overflow-hidden">
+                      {getProfileImageUrl() && !imageError ? (
+                        <img
+                          src={getProfileImageUrl()!}
+                          alt="Photo de profil"
+                          className="w-full h-full object-cover"
+                          onError={() => setImageError(true)}
+                        />
+                      ) : (
+                        <span className="text-white font-medium">
+                          {getInitials()}
+                        </span>
+                      )}
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">
@@ -139,8 +171,9 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
                 
                 <div className="py-2">
                   <Link
-                    to="/profile"
+                    to={`/${user?.role?.toLowerCase().replace('_', '-')}/profile`}
                     className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setIsProfileDropdownOpen(false)}
                   >
                     <User className="w-4 h-4 mr-3" />
                     Mon profil
@@ -148,6 +181,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
                   <Link
                     to="/settings"
                     className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setIsProfileDropdownOpen(false)}
                   >
                     <Settings className="w-4 h-4 mr-3" />
                     Paramètres

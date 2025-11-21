@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { UserController } from '../controllers/user.controller';
 import { authenticate } from '../middlewares/auth';
 import { authorize } from '../middlewares/authorization';
+import { uploadProfileImage } from '../utils/profileImageUpload.config';
 
 const router = Router();
 const userController = new UserController();
@@ -20,9 +21,20 @@ router.get('/me', userController.getMyProfile);
 // Mettre à jour son propre profil
 router.patch('/me', userController.updateMyProfile);
 
+// Upload de la photo de profil
+router.post('/me/profile-image',
+  uploadProfileImage.single('profileImage'),
+  userController.uploadProfileImage
+);
+
+// Supprimer la photo de profil
+router.delete('/me/profile-image',
+  userController.deleteProfileImage
+);
+
 // Mettre à jour son propre profil individuel (chercheurs uniquement)
-router.patch('/me/individual-profile', 
-  authorize(['CHERCHEUR']), 
+router.patch('/me/individual-profile',
+  authorize(['CHERCHEUR']),
   userController.updateMyIndividualProfile
 );
 
@@ -38,7 +50,7 @@ router.get('/me/individual-profile/download',
 
 // Créer un utilisateur (avec profil individuel si chercheur)
 router.post('/', 
-  authorize(['ADMINISTRATEUR', 'CHERCHEUR']), 
+  authorize(['ADMINISTRATEUR']), 
   userController.createUser
 );
 
@@ -104,7 +116,7 @@ router.delete('/:userId',
 
 // Assigner un superviseur à un utilisateur
 router.patch('/:userId/supervisor', 
-  authorize(['ADMINISTRATEUR', 'CHERCHEUR']), 
+  authorize(['ADMINISTRATEUR']), 
   userController.assignSupervisor
 );
 
@@ -136,7 +148,7 @@ router.patch('/:userId/individual-profile',
 
 // Mettre à jour l'allocation de temps pour une année donnée
 router.patch('/:userId/time-allocation', 
-  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET', 'CHERCHEUR']), 
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']), 
   userController.updateTimeAllocation
 );
 

@@ -63,6 +63,9 @@ import PublicationsList from '../pages/chercheur/PublicationsList';
 import PublicationDetail from '../pages/chercheur/PublicationDetail';
 import CreatePublication from '../pages/chercheur/CreatePublication';
 
+// Import de la page profil complète
+import CompleteProfilePage from '../pages/chercheur/CompleteProfilePage';
+
 // Import du provider documents (existant)
 import { DocumentProvider } from '../contexts/DocumentContext';
 
@@ -74,6 +77,11 @@ const ChercheurLayout: React.FC = () => {
       name: 'Tableau de bord',
       href: '/chercheur',
       icon: BarChart3,
+    },
+    {
+      name: 'Mon Profil',
+      href: '/chercheur/profile',
+      icon: Users,
     },
     {
       name: 'Mes projets',
@@ -192,6 +200,9 @@ const ChercheurLayout: React.FC = () => {
 
                 {/* ROUTE DES FORMATIONS */}
                 <Route path="formations" element={<Formations />} />
+
+                {/* ROUTE DU PROFIL */}
+                <Route path="profile" element={<CompleteProfilePage />} />
 
                 {/* ROUTE 404 pour les sous-routes */}
                 <Route path="*" element={

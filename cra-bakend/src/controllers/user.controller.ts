@@ -474,4 +474,53 @@ export class UserController {
       next(error);
     }
   };
+
+  /**
+   * Upload d'une photo de profil
+   */
+  uploadProfileImage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const userId = authenticatedReq.user.userId;
+
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'Aucune image fournie',
+        });
+      }
+
+      const imageUrl = `/uploads/profiles/${req.file.filename}`;
+      const user = await userService.updateProfileImage(userId, imageUrl);
+
+      res.status(200).json({
+        success: true,
+        message: 'Photo de profil mise à jour avec succès',
+        data: {
+          profileImage: user.profileImage,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Supprimer la photo de profil
+   */
+  deleteProfileImage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const userId = authenticatedReq.user.userId;
+
+      await userService.deleteProfileImage(userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Photo de profil supprimée avec succès',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

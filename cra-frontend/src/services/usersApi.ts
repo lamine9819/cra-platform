@@ -189,6 +189,114 @@ class UsersApiService {
       throw new Error(error.response?.data?.message || 'Erreur lors de la suppression de l\'utilisateur');
     }
   }
+
+  // =============================================
+  // GESTION DU PROFIL PERSONNEL
+  // =============================================
+
+  // Obtenir son propre profil avec statistiques
+  async getMyProfile(): Promise<User> {
+    try {
+      const response = await api.get(`${this.baseUrl}/me`);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la récupération du profil');
+    }
+  }
+
+  // Mettre à jour son propre profil
+  async updateMyProfile(userData: Partial<User>): Promise<User> {
+    try {
+      const response = await api.patch(`${this.baseUrl}/me`, userData);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du profil');
+    }
+  }
+
+  // Upload de la photo de profil
+  async uploadProfileImage(file: File): Promise<{ profileImage: string }> {
+    try {
+      const formData = new FormData();
+      formData.append('profileImage', file);
+
+      const response = await api.post(`${this.baseUrl}/me/profile-image`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de l\'upload de la photo de profil');
+    }
+  }
+
+  // Supprimer la photo de profil
+  async deleteProfileImage(): Promise<void> {
+    try {
+      await api.delete(`${this.baseUrl}/me/profile-image`);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la suppression de la photo de profil');
+    }
+  }
+
+  // =============================================
+  // PROFIL INDIVIDUEL (CHERCHEURS)
+  // =============================================
+
+  // Mettre à jour son propre profil individuel
+  async updateMyIndividualProfile(profileData: any): Promise<any> {
+    try {
+      const response = await api.patch(`${this.baseUrl}/me/individual-profile`, profileData);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du profil individuel');
+    }
+  }
+
+  // Télécharger sa propre fiche individuelle
+  async downloadMyIndividualProfile(format: 'pdf' | 'word' = 'pdf'): Promise<Blob> {
+    try {
+      const response = await api.get(`${this.baseUrl}/me/individual-profile/download`, {
+        params: { format },
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors du téléchargement de la fiche individuelle');
+    }
+  }
+
+  // =============================================
+  // ALLOCATION DE TEMPS
+  // =============================================
+
+  // Mettre à jour l'allocation de temps
+  async updateTimeAllocation(userId: string, year: number, allocation: any): Promise<any> {
+    try {
+      const response = await api.patch(`${this.baseUrl}/${userId}/time-allocation`, {
+        year,
+        ...allocation
+      });
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour de l\'allocation de temps');
+    }
+  }
+
+  // =============================================
+  // STATISTIQUES
+  // =============================================
+
+  // Obtenir les statistiques d'un utilisateur
+  async getUserStats(userId: string): Promise<any> {
+    try {
+      const response = await api.get(`${this.baseUrl}/${userId}/stats`);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des statistiques');
+    }
+  }
 }
 
 // Export singleton

@@ -14,6 +14,8 @@ export interface User {
   phoneNumber?: string;
   specialization?: string;
   department?: string;
+  diploma?: string;
+  discipline?: string;
   supervisor?: {
     id: string;
     firstName: string;

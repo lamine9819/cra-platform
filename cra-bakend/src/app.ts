@@ -59,12 +59,13 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
+      imgSrc: ["'self'", "data:", "https:", "http://localhost:5173", "http://127.0.0.1:5173"],
       connectSrc: ["'self'", "ws:", "wss:"],
       frameAncestors: ["'self'", "http://localhost:5173", "http://127.0.0.1:5173"],
     },
   },
   crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: false, // Permettre le chargement des images depuis le frontend
   frameguard: {
     action: 'sameorigin'
   }
