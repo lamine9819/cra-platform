@@ -179,7 +179,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
                     Mon profil
                   </Link>
                   <Link
-                    to="/settings"
+                    to={`/${user?.role?.toLowerCase().replace('_', '-')}/settings`}
                     className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                     onClick={() => setIsProfileDropdownOpen(false)}
                   >

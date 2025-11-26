@@ -66,6 +66,9 @@ import CreatePublication from '../pages/chercheur/CreatePublication';
 // Import de la page profil complète
 import CompleteProfilePage from '../pages/chercheur/CompleteProfilePage';
 
+// Import de la page paramètres
+import SettingsPage from '../pages/chercheur/SettingsPage';
+
 // Import du provider documents (existant)
 import { DocumentProvider } from '../contexts/DocumentContext';
 
@@ -203,6 +206,9 @@ const ChercheurLayout: React.FC = () => {
 
                 {/* ROUTE DU PROFIL */}
                 <Route path="profile" element={<CompleteProfilePage />} />
+
+                {/* ROUTE DES PARAMÈTRES */}
+                <Route path="settings" element={<SettingsPage />} />
 
                 {/* ROUTE 404 pour les sous-routes */}
                 <Route path="*" element={

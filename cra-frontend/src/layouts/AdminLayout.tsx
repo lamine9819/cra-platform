@@ -35,6 +35,9 @@ import PartnersManagement from '../pages/admin/PartnersManagement';
 import ConventionsManagement from '../pages/admin/ConventionsManagement';
 import AuditLogsManagement from '../pages/admin/AuditLogsManagement';
 
+// Import de la page paramètres
+import SettingsPage from '../pages/chercheur/SettingsPage';
+
 const AdminLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -126,6 +129,7 @@ const AdminLayout: React.FC = () => {
               <Route path="audit-logs" element={<AuditLogsManagement />} />
               <Route path="system" element={<SystemConfig />} />
               <Route path="security" element={<SecurityManagement />} />
+              <Route path="settings" element={<SettingsPage />} />
             </Routes>
           </div>
         </main>

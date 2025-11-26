@@ -11,10 +11,13 @@ import {
   Trash2,
   Save,
   X,
-  Camera
+  Camera,
+  Lock,
+  Key
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { usersApi } from '../../services/usersApi';
+import { authService } from '../../services/auth.service';
 import { toast } from 'react-hot-toast';
 
 const ProfilePage: React.FC = () => {
@@ -34,6 +37,15 @@ const ProfilePage: React.FC = () => {
   });
   const [profileImage, setProfileImage] = useState<string | undefined>(authUser?.profileImage);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // États pour le changement de mot de passe
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -165,6 +177,47 @@ const ProfilePage: React.FC = () => {
 
   const getInitials = () => {
     return `${profileData.firstName?.[0] || ''}${profileData.lastName?.[0] || ''}`.toUpperCase();
+  };
+
+  const handlePasswordChange = (field: string, value: string) => {
+    setPasswordData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleChangePassword = async () => {
+    // Validation côté client
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      toast.error('Tous les champs sont requis');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      toast.error('Le nouveau mot de passe doit contenir au moins 8 caractères');
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error('Les mots de passe ne correspondent pas');
+      return;
+    }
+
+    try {
+      setIsChangingPassword(true);
+      await authService.changePassword(passwordData);
+
+      toast.success('Mot de passe modifié avec succès');
+
+      // Réinitialiser le formulaire
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      setShowPasswordSection(false);
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors du changement de mot de passe');
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   if (isLoading && !profileData.firstName) {
@@ -418,6 +471,121 @@ const ProfilePage: React.FC = () => {
                 </>
               )}
             </button>
+          </div>
+        )}
+      </div>
+
+      {/* Section Changement de mot de passe */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-6">
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="flex items-center">
+            <Lock className="w-5 h-5 text-green-600 mr-2" />
+            <h2 className="text-lg font-semibold text-gray-900">Sécurité</h2>
+          </div>
+          <button
+            onClick={() => setShowPasswordSection(!showPasswordSection)}
+            className="px-4 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
+          >
+            <Key className="w-4 h-4 inline mr-2" />
+            {showPasswordSection ? 'Masquer' : 'Changer le mot de passe'}
+          </button>
+        </div>
+
+        {showPasswordSection && (
+          <div className="px-6 py-6">
+            <div className="max-w-2xl">
+              <p className="text-sm text-gray-600 mb-6">
+                Pour changer votre mot de passe, veuillez saisir votre mot de passe actuel puis votre nouveau mot de passe.
+              </p>
+
+              <div className="space-y-4">
+                {/* Mot de passe actuel */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Lock className="w-4 h-4 inline mr-2" />
+                    Mot de passe actuel
+                  </label>
+                  <input
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
+                    disabled={isChangingPassword}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                    placeholder="Entrez votre mot de passe actuel"
+                  />
+                </div>
+
+                {/* Nouveau mot de passe */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Key className="w-4 h-4 inline mr-2" />
+                    Nouveau mot de passe
+                  </label>
+                  <input
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                    disabled={isChangingPassword}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                    placeholder="Entrez votre nouveau mot de passe (min. 8 caractères)"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Le mot de passe doit contenir au moins 8 caractères
+                  </p>
+                </div>
+
+                {/* Confirmation du nouveau mot de passe */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Key className="w-4 h-4 inline mr-2" />
+                    Confirmer le nouveau mot de passe
+                  </label>
+                  <input
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
+                    disabled={isChangingPassword}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                    placeholder="Confirmez votre nouveau mot de passe"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowPasswordSection(false);
+                    setPasswordData({
+                      currentPassword: '',
+                      newPassword: '',
+                      confirmPassword: ''
+                    });
+                  }}
+                  disabled={isChangingPassword}
+                  className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  <X className="w-4 h-4 inline mr-2" />
+                  Annuler
+                </button>
+                <button
+                  onClick={handleChangePassword}
+                  disabled={isChangingPassword}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                >
+                  {isChangingPassword ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline mr-2"></div>
+                      Changement en cours...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 inline mr-2" />
+                      Changer le mot de passe
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

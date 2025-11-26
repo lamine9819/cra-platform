@@ -6,6 +6,7 @@ import { AxiosResponse } from 'axios';
 export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
+  confirmPassword: string;
 }
 
 export class AuthService {
