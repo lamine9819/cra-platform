@@ -127,18 +127,15 @@ export const documentService = {
    * T�l�charger un document
    */
   async downloadDocument(id: string, filename: string): Promise<void> {
-    // Récupérer le token depuis le localStorage
-    const token = localStorage.getItem('cra_auth_token');
-
     // Construire l'URL relative pour passer par le proxy Vite
-    let downloadUrl = `/api${BASE_URL}/${id}/download`;
-    if (token) {
-      downloadUrl += `?token=${encodeURIComponent(token)}`;
-    }
+    const downloadUrl = `/api${BASE_URL}/${id}/download`;
 
     try {
-      // Utiliser fetch pour télécharger le fichier avec le token
-      const response = await fetch(downloadUrl);
+      // Utiliser fetch pour télécharger le fichier
+      // Le cookie HttpOnly sera automatiquement envoyé
+      const response = await fetch(downloadUrl, {
+        credentials: 'include' // Important pour envoyer les cookies
+      });
 
       if (!response.ok) {
         throw new Error(`Erreur HTTP: ${response.status}`);
@@ -413,17 +410,9 @@ export const documentService = {
    * Obtenir l'URL de preview (affichage dans le browser)
    */
   getPreviewUrl(documentId: string): string {
-    // Récupérer le token depuis le localStorage
-    const token = localStorage.getItem('cra_auth_token');
     // Utiliser une URL relative pour passer par le proxy Vite
-    const baseUrl = `/api${BASE_URL}/${documentId}/preview`;
-
-    // Ajouter le token en query parameter si disponible
-    if (token) {
-      return `${baseUrl}?token=${encodeURIComponent(token)}`;
-    }
-
-    return baseUrl;
+    // Le cookie HttpOnly sera automatiquement envoyé par le navigateur
+    return `/api${BASE_URL}/${documentId}/preview`;
   },
 
   /**

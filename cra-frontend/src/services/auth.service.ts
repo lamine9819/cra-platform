@@ -1,5 +1,5 @@
 // src/services/auth.service.ts
-import api, { setAuthToken } from './api';
+import api from './api';
 import { LoginCredentials, AuthResponse, User } from '../types/auth.types';
 import { AxiosResponse } from 'axios';
 
@@ -12,17 +12,14 @@ export interface ChangePasswordRequest {
 export class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      const response: AxiosResponse<{ success: boolean; data: { user: User; token: string; message: string } }> = await api.post('/auth/login', credentials);
+      // Le backend définira automatiquement le cookie HttpOnly
+      const response: AxiosResponse<{ success: boolean; data: { user: User; message: string } }> = await api.post('/auth/login', credentials);
 
       if (response.data.success) {
-        const { user, token } = response.data.data;
+        const { user } = response.data.data;
 
-        // Stocker les données d'authentification
-        localStorage.setItem('cra_auth_token', token);
+        // Stocker uniquement les données utilisateur (pas le token)
         localStorage.setItem('cra_user_data', JSON.stringify(user));
-
-        // Mettre à jour le header Authorization de l'instance Axios
-        setAuthToken(token);
 
         // Remember me
         if (credentials.rememberMe) {
@@ -36,7 +33,7 @@ export class AuthService {
         message: response.data.data.message,
         data: {
           user: response.data.data.user,
-          token: response.data.data.token
+          token: '' // Le token n'est plus exposé au frontend
         }
       };
     } catch (error: any) {
@@ -49,6 +46,7 @@ export class AuthService {
 
   async logout(): Promise<void> {
     try {
+      // Le backend supprimera automatiquement le cookie HttpOnly
       await api.post('/auth/logout');
     } catch (error) {
       console.warn('Erreur lors de la déconnexion côté serveur:', error);
@@ -80,14 +78,11 @@ export class AuthService {
     }
   }
 
-  getStoredToken(): string | null {
-    return localStorage.getItem('cra_auth_token');
-  }
-
   isAuthenticated(): boolean {
-    const token = this.getStoredToken();
+    // Vérifier uniquement si l'utilisateur est stocké
+    // Le cookie HttpOnly sera automatiquement envoyé avec les requêtes
     const user = this.getStoredUser();
-    return !!(token && user);
+    return !!user;
   }
 
   async changePassword(passwordData: ChangePasswordRequest): Promise<{ message: string }> {
@@ -106,13 +101,10 @@ export class AuthService {
   }
 
   private clearAuthData(): void {
-    localStorage.removeItem('cra_auth_token');
-    localStorage.removeItem('cra_refresh_token');
+    // Nettoyer uniquement les données utilisateur locales
+    // Le cookie HttpOnly sera supprimé par le backend
     localStorage.removeItem('cra_user_data');
     localStorage.removeItem('cra_remember_me');
-
-    // Supprimer le header Authorization de l'instance Axios
-    setAuthToken(null);
   }
 
   getRoleBasedRedirectPath(role: string): string {

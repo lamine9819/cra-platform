@@ -124,8 +124,8 @@ const ReportsPage: React.FC = () => {
     console.log('🔍 ReportsPage useEffect - Debug storage:');
     console.log('- localStorage keys:', Object.keys(localStorage));
     console.log('- cra_user_data:', localStorage.getItem('cra_user_data'));
-    console.log('- cra_auth_token:', localStorage.getItem('cra_auth_token') ? 'Present' : 'Missing');
-    
+    console.log('- Authentication: Using HttpOnly cookies');
+
     loadProjectsAndActivities();
     loadCurrentUser();
   }, []);

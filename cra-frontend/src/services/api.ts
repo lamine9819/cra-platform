@@ -7,27 +7,15 @@ import axios, {  AxiosError } from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
-// Instance Axios configurée
+// Instance Axios configurée avec support des cookies HttpOnly
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
+  withCredentials: true, // Important: envoie automatiquement les cookies
 });
-
-// Intercepteur pour ajouter le token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('cra_auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 // Intercepteur pour gérer les erreurs d'authentification
 api.interceptors.response.use(
@@ -44,9 +32,7 @@ api.interceptors.response.use(
                          originalRequest.url?.includes('/auth/register');
 
       if (!isAuthRoute) {
-        // Token invalide ou expiré, nettoyer et rediriger
-        localStorage.removeItem('cra_auth_token');
-        localStorage.removeItem('cra_refresh_token');
+        // Token invalide ou expiré dans le cookie, nettoyer les données utilisateur et rediriger
         localStorage.removeItem('cra_user_data');
         localStorage.removeItem('cra_remember_me');
 
@@ -60,14 +46,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// Fonction pour mettre à jour le token d'authentification
-export const setAuthToken = (token: string | null) => {
-  if (token) {
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    delete api.defaults.headers.common['Authorization'];
-  }
-};
 
 export default api;

@@ -6,7 +6,6 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { User, AuthState, UserRole } from '../types/auth.types';
 import { authService } from '../services/auth.service';
-import { setAuthToken } from '../services/api';
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
@@ -108,32 +107,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       try {
         const storedUser = authService.getStoredUser();
-        const storedToken = authService.getStoredToken();
 
-        if (storedUser && storedToken) {
-          // Définir le token dans l'instance Axios
-          setAuthToken(storedToken);
-
-          // Vérifier la validité du token en récupérant le profil
+        if (storedUser) {
+          // Vérifier la validité du cookie en récupérant le profil
           try {
             const currentUser = await authService.getProfile();
             dispatch({
               type: 'AUTH_SUCCESS',
-              payload: { user: currentUser, token: storedToken }
+              payload: { user: currentUser, token: '' }
             });
           } catch (error) {
-            // Token invalide, nettoyer le stockage
+            // Cookie invalide, nettoyer le stockage
             await authService.logout();
             dispatch({ type: 'AUTH_LOGOUT' });
           }
         } else {
-          // Pas de token stocké, nettoyer l'instance Axios
-          setAuthToken(null);
           dispatch({ type: 'AUTH_LOGOUT' });
         }
       } catch (error) {
         console.error('Erreur lors de l\'initialisation de l\'auth:', error);
-        setAuthToken(null);
         dispatch({ type: 'AUTH_LOGOUT' });
       }
     };

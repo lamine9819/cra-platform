@@ -32,9 +32,22 @@ export class AuthController {
       // Connexion de l'utilisateur
       const result = await authService.login(validatedData);
 
+      // Stocker le JWT dans un cookie HttpOnly
+      res.cookie('auth_token', result.token, {
+        httpOnly: true,  // Le cookie ne peut pas être lu par JavaScript
+        secure: process.env.NODE_ENV === 'production',  // HTTPS uniquement en production
+        sameSite: 'strict',  // Protection CSRF
+        maxAge: 24 * 60 * 60 * 1000,  // 24 heures
+        path: '/',
+      });
+
+      // Ne plus renvoyer le token dans la réponse
       res.status(200).json({
         success: true,
-        data: result,
+        data: {
+          user: result.user,
+          message: result.message,
+        },
       });
     } catch (error) {
       next(error);
@@ -84,10 +97,17 @@ export class AuthController {
 
   /**
    * Déconnexion de l'utilisateur
-   * Note: Côté client, il faut supprimer le token du localStorage/sessionStorage
+   * Supprime le cookie HttpOnly côté serveur
    */
   logout = async (_req: Request, res: Response) => {
-    // Côté client, supprimer le token du localStorage/sessionStorage
+    // Supprimer le cookie d'authentification
+    res.clearCookie('auth_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+    });
+
     res.status(200).json({
       success: true,
       message: 'Déconnexion réussie',

@@ -7,17 +7,11 @@ import { AuthenticatedRequest } from '../types/auth.types';
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Accès sécurisé au header authorization
-    const authHeader = req.get('authorization') || req.get('Authorization');
-    
-    if (!authHeader) {
-      throw new AuthError('Token d\'authentification manquant');
-    }
-
-    const token = authHeader.split(' ')[1]; // Bearer TOKEN
+    // Lire le token depuis le cookie HttpOnly
+    const token = req.cookies?.auth_token;
 
     if (!token) {
-      throw new AuthError('Format de token invalide');
+      throw new AuthError('Token d\'authentification manquant');
     }
 
     // Vérifier et décoder le token
@@ -47,7 +41,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
 };
 // Authentification optionnelle (pour les routes publiques avec amélioration si connecté)
 export const optionalAuth = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
+  const token = req.cookies?.auth_token;
 
   if (token) {
     try {
@@ -61,18 +55,15 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction) =>
   next();
 };
 
-// Authentification flexible : accepte le token dans le header OU en query parameter
+// Authentification flexible : accepte le token dans le cookie OU en query parameter
 // Utile pour les routes comme preview/download qui peuvent être ouvertes dans un nouvel onglet
 export const flexibleAuth = (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Essayer d'abord le header Authorization
-    const authHeader = req.get('authorization') || req.get('Authorization');
-    let token: string | undefined;
+    // Essayer d'abord le cookie
+    let token = req.cookies?.auth_token;
 
-    if (authHeader) {
-      token = authHeader.split(' ')[1]; // Bearer TOKEN
-    } else {
-      // Si pas de header, essayer le query parameter
+    // Si pas de cookie, essayer le query parameter
+    if (!token) {
       token = req.query.token as string;
     }
 
