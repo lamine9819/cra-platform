@@ -15,13 +15,10 @@ import LoginPage from '../pages/auth/LoginPage';
 import HomePage from '../pages/public/HomePage';
 import NotFoundPage from '../pages/errors/NotFoundPage';
 
-// Import de la page publique des formulaires
-import PublicFormPage from '../pages/public/PublicFormPage';
-
 // Composant pour redirection automatique basée sur le rôle
 const RoleBasedRedirect: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
-  
+
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }
@@ -41,10 +38,6 @@ const AppRoutes: React.FC = () => {
       {/* Routes publiques */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
-      
-      {/* Routes publiques des formulaires - SANS authentification */}
-      <Route path="/forms/:id/submit" element={<PublicFormPage />} />
-      <Route path="/forms/:id/preview" element={<PublicFormPage />} />
 
       {/* Routes administrateur */}
       <Route 

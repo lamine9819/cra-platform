@@ -10,10 +10,7 @@ import {
   Users,
   Calendar,
   CheckSquare,
-  Presentation,
-  MessageSquare,
   Activity,
-  Archive,
   GraduationCap,
   BookOpen,
 } from 'lucide-react';
@@ -42,18 +39,8 @@ import EditTask from '../pages/chercheur/EditTask';
 // Import des pages documents
 import { DocumentsHub } from '../pages/chercheur/DocumentsHub';
 
-// Import des pages formulaires (nouvelles)
-import FormsList from '../pages/chercheur/FormsList';
-import FormDetail from '../pages/chercheur/FormDetail';
-import CreateForm from '../pages/chercheur/CreateForm';
-import FormCollectPage from '../pages/chercheur/FormCollectPage';
-
 // Import de la page calendrier (événements et séminaires)
 import CalendarPage from '../pages/chercheur/CalendarPage';
-
-// Import des pages rapports et discussions
-import ReportsPage from '../pages/chercheur/ReportsPage';
-import DiscussionsPage from '../pages/chercheur/DiscussionsPages';
 
 // Import de la page formations
 import Formations from '../pages/chercheur/Formations';
@@ -106,12 +93,6 @@ const ChercheurLayout: React.FC = () => {
       href: '/chercheur/publications',
       icon: BookOpen,
     },
-    // Ajout des formulaires dans la navigation
-    {
-      name: 'Formulaires',
-      href: '/chercheur/forms',
-      icon: Archive,
-    },
     {
       name: 'Calendrier',
       href: '/chercheur/calendar',
@@ -121,16 +102,6 @@ const ChercheurLayout: React.FC = () => {
       name: 'Formations',
       href: '/chercheur/formations',
       icon: GraduationCap,
-    },
-    {
-      name: 'Rapports',
-      href: '/chercheur/reports',
-      icon: Presentation,
-    },
-    {
-      name: 'Discussions',
-      href: '/chercheur/discussions',
-      icon: MessageSquare,
     },
   ];
 
@@ -185,21 +156,8 @@ const ChercheurLayout: React.FC = () => {
                   <Route path=":id/edit" element={<CreatePublication />} />
                 </Route>
 
-                {/* ROUTES DES FORMULAIRES (nouvelles - intégrées) */}
-                <Route path="forms">
-                  <Route index element={<FormsList />} />
-                  <Route path="new" element={<CreateForm />} />
-                  <Route path=":id" element={<FormDetail />} />
-                  <Route path=":id/edit" element={<CreateForm />} />
-                  <Route path=":id/collect" element={<FormCollectPage />} />
-                </Route>
-
                 {/* ROUTE DU CALENDRIER (événements et séminaires) */}
                 <Route path="calendar" element={<CalendarPage />} />
-
-                {/* ROUTES DES RAPPORTS ET DISCUSSIONS (existantes) */}
-                <Route path="reports" element={<ReportsPage />} />
-                <Route path="discussions" element={<DiscussionsPage />} />
 
                 {/* ROUTE DES FORMATIONS */}
                 <Route path="formations" element={<Formations />} />

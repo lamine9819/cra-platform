@@ -9,9 +9,7 @@ import {
   FileText,
   Upload,
   CheckSquare,
-  FormInput,
   Download,
-  Database,
   FolderKanban,
   Users
 } from 'lucide-react';
@@ -29,9 +27,6 @@ import EditActivity from '../pages/chercheur/EditActivity';
 import TasksList from '../pages/chercheur/TasksList';
 import CreateTask from '../pages/chercheur/CreateTask';
 import EditTask from '../pages/chercheur/EditTask';
-import FormsList from '../pages/chercheur/FormsList';
-import CreateForm from '../pages/chercheur/CreateForm';
-import FormCollectPage from '../pages/chercheur/FormCollectPage';
 import CalendarPage from '../pages/chercheur/CalendarPage';
 import SettingsPage from '../pages/chercheur/SettingsPage';
 
@@ -59,28 +54,6 @@ const CoordinateurLayout: React.FC = () => {
       name: 'Équipes',
       href: '/coordonateur/teams',
       icon: Users,
-    },
-    {
-      name: 'Formulaires',
-      href: '/coordonateur/forms',
-      icon: FormInput,
-      children: [
-        {
-          name: 'Créer formulaire',
-          href: '/coordonateur/forms/create',
-          icon: FormInput,
-        },
-        {
-          name: 'Mes formulaires',
-          href: '/coordonateur/forms/mine',
-          icon: Clipboard,
-        },
-        {
-          name: 'Réponses collectées',
-          href: '/coordonateur/forms/responses',
-          icon: Database,
-        },
-      ],
     },
     {
       name: 'Collecte de données',
@@ -153,17 +126,6 @@ const CoordinateurLayout: React.FC = () => {
                 <Route index element={<TasksList />} />
                 <Route path="new" element={<CreateTask />} />
                 <Route path=":id/edit" element={<EditTask />} />
-              </Route>
-
-              {/* Formulaires */}
-              <Route path="forms">
-                <Route index element={<FormsList />} />
-                <Route path="new" element={<CreateForm />} />
-                <Route path=":id/edit" element={<CreateForm />} />
-                <Route path=":id/collect" element={<FormCollectPage />} />
-                <Route path="create" element={<CreateForm />} />
-                <Route path="mine" element={<FormsList />} />
-                <Route path="responses" element={<div>Réponses collectées</div>} />
               </Route>
 
               {/* Calendrier */}
