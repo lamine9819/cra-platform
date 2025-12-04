@@ -25,9 +25,10 @@ interface Partner {
 interface ProjectPartnershipsProps {
   projectId: string;
   partnerships: ProjectPartnership[];
+  canManage?: boolean;
 }
 
-const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, partnerships }) => {
+const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, partnerships, canManage = false }) => {
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -193,10 +194,12 @@ const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, pa
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Partenariats ({partnerships.length})</h3>
-        <Button onClick={() => setShowAddModal(true)} className="bg-green-600 hover:bg-green-700 text-white">
-          <Plus className="w-4 h-4 mr-2" />
-          Ajouter un partenariat
-        </Button>
+        {canManage && (
+          <Button onClick={() => setShowAddModal(true)} className="bg-green-600 hover:bg-green-700 text-white">
+            <Plus className="w-4 h-4 mr-2" />
+            Ajouter un partenariat
+          </Button>
+        )}
       </div>
 
       {partnerships.length === 0 ? (
@@ -226,20 +229,24 @@ const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, pa
                   >
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => handleEdit(partnership)}
-                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                    title="Modifier le partenariat"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleRemove(partnership.id, partnership.partner.name)}
-                    className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                    title="Retirer le partenariat"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {canManage && (
+                    <>
+                      <button
+                        onClick={() => handleEdit(partnership)}
+                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                        title="Modifier le partenariat"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleRemove(partnership.id, partnership.partner.name)}
+                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                        title="Retirer le partenariat"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 

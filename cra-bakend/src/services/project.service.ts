@@ -14,6 +14,7 @@ import {
   UpdateFundingRequest,
   ProjectStatistics
 } from '../types/project.types';
+import { getNotificationService } from './notification.service';
 
 const prisma = new PrismaClient();
 
@@ -426,6 +427,20 @@ export class ProjectService {
         role: participantData.role,
       }
     });
+
+    // Envoyer une notification au nouveau participant
+    try {
+      const notificationService = getNotificationService();
+      await notificationService.notifyProjectAddition(
+        projectId,
+        project.title,
+        participantData.userId,
+        requesterId
+      );
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi de la notification:', error);
+      // Ne pas faire échouer l'ajout du participant si la notification échoue
+    }
 
     return { message: 'Participant ajouté avec succès au projet' };
   }

@@ -84,6 +84,9 @@ const CreatePublication: React.FC = () => {
 
   const [newKeyword, setNewKeyword] = useState('');
   const [searchAuthor, setSearchAuthor] = useState('');
+  const [externalAuthorName, setExternalAuthorName] = useState('');
+  const [externalAuthorEmail, setExternalAuthorEmail] = useState('');
+  const [externalAuthorAffiliation, setExternalAuthorAffiliation] = useState('');
 
   useEffect(() => {
     loadInitialData();
@@ -236,10 +239,35 @@ const CreatePublication: React.FC = () => {
     setSearchAuthor('');
   };
 
-  const handleRemoveAuthor = (userId: string) => {
+  const handleAddExternalAuthor = () => {
+    if (!externalAuthorName.trim()) {
+      toast.error('Le nom de l\'auteur est requis');
+      return;
+    }
+
+    const newAuthor: CreatePublicationAuthorRequest = {
+      externalName: externalAuthorName.trim(),
+      externalEmail: externalAuthorEmail.trim() || undefined,
+      authorOrder: formData.authors.length + 1,
+      isCorresponding: formData.authors.length === 0,
+      affiliation: externalAuthorAffiliation.trim() || undefined
+    };
+
+    setFormData({
+      ...formData,
+      authors: [...formData.authors, newAuthor]
+    });
+
+    // Réinitialiser le formulaire
+    setExternalAuthorName('');
+    setExternalAuthorEmail('');
+    setExternalAuthorAffiliation('');
+  };
+
+  const handleRemoveAuthor = (index: number) => {
     const newAuthors = formData.authors
-      .filter(a => a.userId !== userId)
-      .map((a, index) => ({ ...a, authorOrder: index + 1 }));
+      .filter((_, i) => i !== index)
+      .map((a, idx) => ({ ...a, authorOrder: idx + 1 }));
 
     setFormData({
       ...formData,
@@ -266,10 +294,10 @@ const CreatePublication: React.FC = () => {
     });
   };
 
-  const handleToggleCorresponding = (userId: string) => {
-    const newAuthors = formData.authors.map(a => ({
+  const handleToggleCorresponding = (index: number) => {
+    const newAuthors = formData.authors.map((a, idx) => ({
       ...a,
-      isCorresponding: a.userId === userId ? !a.isCorresponding : a.isCorresponding
+      isCorresponding: idx === index ? !a.isCorresponding : a.isCorresponding
     }));
 
     setFormData({
@@ -417,19 +445,6 @@ const CreatePublication: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Journal / Conférence
-                </label>
-                <input
-                  type="text"
-                  value={formData.journal}
-                  onChange={(e) => setFormData({ ...formData, journal: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Nom du journal ou de la conférence"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Éditeur
                 </label>
                 <input
@@ -438,19 +453,6 @@ const CreatePublication: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="Nom de l'éditeur"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  DOI
-                </label>
-                <input
-                  type="text"
-                  value={formData.doi}
-                  onChange={(e) => setFormData({ ...formData, doi: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="10.xxxx/xxxxx"
                 />
               </div>
 
@@ -495,89 +497,6 @@ const CreatePublication: React.FC = () => {
                   <option value="de">Allemand</option>
                   <option value="other">Autre</option>
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Volume
-                </label>
-                <input
-                  type="text"
-                  value={formData.volume}
-                  onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Volume"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Numéro / Issue
-                </label>
-                <input
-                  type="text"
-                  value={formData.issue}
-                  onChange={(e) => setFormData({ ...formData, issue: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Numéro"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Pages
-                </label>
-                <input
-                  type="text"
-                  value={formData.pages}
-                  onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Ex: 1-10"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Impact Factor
-                </label>
-                <input
-                  type="number"
-                  step="0.001"
-                  value={formData.impactFactor || ''}
-                  onChange={(e) => setFormData({ ...formData, impactFactor: e.target.value ? parseFloat(e.target.value) : undefined })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Ex: 3.5"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Quartile
-                </label>
-                <select
-                  value={formData.quartile || ''}
-                  onChange={(e) => setFormData({ ...formData, quartile: e.target.value as Quartile || undefined })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Aucun</option>
-                  {Object.entries(QuartileLabels).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre de citations
-                </label>
-                <input
-                  type="number"
-                  value={formData.citationsCount}
-                  onChange={(e) => setFormData({ ...formData, citationsCount: parseInt(e.target.value) || 0 })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="0"
-                  min="0"
-                />
               </div>
             </div>
 
@@ -660,40 +579,80 @@ const CreatePublication: React.FC = () => {
               Auteurs <span className="text-red-500">*</span>
             </h2>
 
-            {/* Recherche d'auteur */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ajouter un auteur
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchAuthor}
-                  onChange={(e) => setSearchAuthor(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Rechercher un chercheur..."
-                />
-                {searchAuthor && filteredUsers.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                    {filteredUsers.slice(0, 10).map(user => (
-                      <button
-                        key={user.id}
-                        type="button"
-                        onClick={() => handleAddAuthor(user.id)}
-                        className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center justify-between"
-                      >
-                        <div>
-                          <div className="font-medium">{user.firstName} {user.lastName}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
-                          {user.department && (
-                            <div className="text-xs text-gray-400">{user.department}</div>
-                          )}
-                        </div>
-                        <Plus className="h-4 w-4 text-gray-400" />
-                      </button>
-                    ))}
-                  </div>
-                )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              {/* Recherche d'auteur interne */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ajouter un chercheur interne
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchAuthor}
+                    onChange={(e) => setSearchAuthor(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Rechercher un chercheur..."
+                  />
+                  {searchAuthor && filteredUsers.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {filteredUsers.slice(0, 10).map(user => (
+                        <button
+                          key={user.id}
+                          type="button"
+                          onClick={() => handleAddAuthor(user.id)}
+                          className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center justify-between"
+                        >
+                          <div>
+                            <div className="font-medium">{user.firstName} {user.lastName}</div>
+                            <div className="text-sm text-gray-500">{user.email}</div>
+                            {user.department && (
+                              <div className="text-xs text-gray-400">{user.department}</div>
+                            )}
+                          </div>
+                          <Plus className="h-4 w-4 text-gray-400" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Formulaire auteur externe */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ajouter un auteur externe
+                </label>
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={externalAuthorName}
+                    onChange={(e) => setExternalAuthorName(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Nom complet *"
+                  />
+                  <input
+                    type="email"
+                    value={externalAuthorEmail}
+                    onChange={(e) => setExternalAuthorEmail(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Email (optionnel)"
+                  />
+                  <input
+                    type="text"
+                    value={externalAuthorAffiliation}
+                    onChange={(e) => setExternalAuthorAffiliation(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Affiliation (optionnel)"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddExternalAuthor}
+                    className="w-full px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Ajouter
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -705,12 +664,16 @@ const CreatePublication: React.FC = () => {
             ) : (
               <div className="space-y-2">
                 {formData.authors.map((author, index) => {
-                  const user = getUserById(author.userId);
-                  if (!user) return null;
+                  const user = author.userId ? getUserById(author.userId) : null;
+                  const displayName = user
+                    ? `${user.firstName} ${user.lastName}`
+                    : author.externalName || 'Auteur externe';
+                  const displayEmail = user?.email || author.externalEmail;
+                  const displayAffiliation = author.affiliation || user?.department;
 
                   return (
                     <div
-                      key={author.userId}
+                      key={index}
                       className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
                     >
                       <div className="flex flex-col gap-1">
@@ -733,12 +696,19 @@ const CreatePublication: React.FC = () => {
                       </div>
 
                       <div className="flex-1">
-                        <div className="font-medium">
-                          {author.authorOrder}. {user.firstName} {user.lastName}
+                        <div className="font-medium flex items-center gap-2">
+                          {author.authorOrder}. {displayName}
+                          {!author.userId && (
+                            <span className="px-2 py-0.5 text-xs bg-orange-100 text-orange-800 rounded">
+                              Externe
+                            </span>
+                          )}
                         </div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
-                        {author.affiliation && (
-                          <div className="text-xs text-gray-400">{author.affiliation}</div>
+                        {displayEmail && (
+                          <div className="text-sm text-gray-500">{displayEmail}</div>
+                        )}
+                        {displayAffiliation && (
+                          <div className="text-xs text-gray-400">{displayAffiliation}</div>
                         )}
                       </div>
 
@@ -746,7 +716,7 @@ const CreatePublication: React.FC = () => {
                         <input
                           type="checkbox"
                           checked={author.isCorresponding}
-                          onChange={() => handleToggleCorresponding(author.userId)}
+                          onChange={() => handleToggleCorresponding(index)}
                           className="w-4 h-4 text-blue-600 rounded"
                         />
                         <span className="text-gray-700">Correspondant</span>
@@ -754,7 +724,7 @@ const CreatePublication: React.FC = () => {
 
                       <button
                         type="button"
-                        onClick={() => handleRemoveAuthor(author.userId)}
+                        onClick={() => handleRemoveAuthor(index)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded"
                       >
                         <X className="h-4 w-4" />

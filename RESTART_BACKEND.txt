@@ -1,0 +1,97 @@
+═══════════════════════════════════════════════════════════════
+    🔄 REDÉMARRAGE DU BACKEND - GUIDE RAPIDE
+═══════════════════════════════════════════════════════════════
+
+⚠️  LE BACKEND DOIT ÊTRE REDÉMARRÉ POUR PRENDRE EN COMPTE LES
+    CORRECTIONS DU TYPE "PHOTO"
+
+═══════════════════════════════════════════════════════════════
+📋 ÉTAPES À SUIVRE
+═══════════════════════════════════════════════════════════════
+
+1. ARRÊTER LE BACKEND
+
+   Dans le terminal où le backend tourne :
+   → Appuyez sur Ctrl+C
+
+2. REDÉMARRER LE BACKEND
+
+   Tapez les commandes suivantes :
+
+   cd cra-bakend
+   npm run dev
+
+3. VÉRIFIER LE DÉMARRAGE
+
+   Vous devriez voir :
+   ✅ "Server running on port 3001"
+   ✅ "Database connected"
+
+4. TESTER LA CRÉATION DE FORMULAIRE
+
+   - Aller sur http://localhost:5173
+   - Menu "Formulaires" → "Nouveau formulaire"
+   - Ajouter un champ de type "Photo"
+   - Enregistrer
+   - ✅ Ça devrait fonctionner sans erreur 400 !
+
+═══════════════════════════════════════════════════════════════
+✅ CORRECTIONS APPLIQUÉES
+═══════════════════════════════════════════════════════════════
+
+✓ Type "photo" ajouté aux types valides (ligne 481)
+✓ Validation "photo" ajoutée (ligne 121-123)
+✓ Le type "photo" est maintenant pleinement supporté
+
+═══════════════════════════════════════════════════════════════
+🎯 TEST RAPIDE (2 MINUTES)
+═══════════════════════════════════════════════════════════════
+
+1. Créer un formulaire nommé "Test Photo"
+
+2. Ajouter 3 champs :
+   - Champ 1 : Texte → "Nom du lieu"
+   - Champ 2 : Textarea → "Description"
+   - Champ 3 : Photo → "Photo du lieu" (activer GPS)
+
+3. Enregistrer le formulaire
+   → Devrait réussir avec un message de succès ✅
+
+4. Aller sur l'onglet "Collecter"
+
+5. Tester la capture de photo
+   → La caméra devrait s'ouvrir
+   → Le GPS devrait être capturé
+   → Tout devrait fonctionner ✅
+
+═══════════════════════════════════════════════════════════════
+❓ EN CAS DE PROBLÈME
+═══════════════════════════════════════════════════════════════
+
+Si vous avez encore l'erreur 400 :
+
+1. Vérifiez que le backend est bien redémarré
+   → Ctrl+C puis npm run dev
+
+2. Vérifiez qu'il n'y a pas d'erreur au démarrage
+   → Regardez les logs dans le terminal
+
+3. Videz le cache du navigateur
+   → F12 → Network → Disable cache
+   → Rechargez la page (Ctrl+F5)
+
+4. Vérifiez la console navigateur (F12)
+   → Doit montrer une requête POST /api/forms avec 200 OK
+
+═══════════════════════════════════════════════════════════════
+📚 DOCUMENTATION
+═══════════════════════════════════════════════════════════════
+
+Pour plus de détails :
+→ Voir FIX_PHOTO_TYPE_ERROR.md
+
+═══════════════════════════════════════════════════════════════
+
+✅ PRÊT À REDÉMARRER !
+
+═══════════════════════════════════════════════════════════════

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { projectsApi } from '../../services/projectsApi';
 import { Button } from '../../components/ui/Button';
+import { useAuth } from '../../hooks/useAuth';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import {
@@ -43,6 +44,7 @@ type TabType = 'overview' | 'participants' | 'partnerships' | 'funding' | 'analy
 
 const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [selectedConventionId, setSelectedConventionId] = useState<string | null>(null);
@@ -114,6 +116,9 @@ const ProjectDetail: React.FC = () => {
     );
   }
 
+  // Vérifier si l'utilisateur peut gérer le projet (créateur ou admin)
+  const canManageProject = project.creator?.id === user?.id || user?.role === 'ADMINISTRATEUR';
+
   const tabs = [
     { id: 'overview' as TabType, label: 'Vue d\'ensemble', icon: Target },
     { id: 'participants' as TabType, label: 'Participants', icon: Users, count: project.participants?.length || 0 },
@@ -142,12 +147,14 @@ const ProjectDetail: React.FC = () => {
               )}
             </div>
           </div>
-          <Link to={`/chercheur/projects/${id}/edit`}>
-            <Button className="bg-green-600 hover:bg-green-700 text-white">
-              <Edit className="w-4 h-4 mr-2" />
-              Modifier
-            </Button>
-          </Link>
+          {canManageProject && (
+            <Link to={`/chercheur/projects/${id}/edit`}>
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
+                <Edit className="w-4 h-4 mr-2" />
+                Modifier
+              </Button>
+            </Link>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -402,6 +409,7 @@ const ProjectDetail: React.FC = () => {
             <ProjectParticipants
               projectId={id!}
               participants={project.participants || []}
+              canManage={canManageProject}
             />
           )}
 
@@ -409,6 +417,7 @@ const ProjectDetail: React.FC = () => {
             <ProjectPartnerships
               projectId={id!}
               partnerships={project.partnerships || []}
+              canManage={canManageProject}
             />
           )}
 
@@ -416,6 +425,7 @@ const ProjectDetail: React.FC = () => {
             <ProjectFunding
               projectId={id!}
               fundings={project.fundings || []}
+              canManage={canManageProject}
             />
           )}
 
@@ -433,13 +443,15 @@ const ProjectDetail: React.FC = () => {
                     Gérez les documents liés à ce projet
                   </p>
                 </div>
-                <Button
-                  onClick={() => setShowUploadModal(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Ajouter un document
-                </Button>
+                {canManageProject && (
+                  <Button
+                    onClick={() => setShowUploadModal(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Ajouter un document
+                  </Button>
+                )}
               </div>
 
               {/* Liste des documents */}

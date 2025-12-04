@@ -20,11 +20,13 @@ import { documentService } from '../../services/api/documentService';
 interface ActivityFundingProps {
   activityId: string;
   fundings: ActivityFunding[];
+  canManage?: boolean;
 }
 
 const ActivityFundingComponent: React.FC<ActivityFundingProps> = ({
   activityId,
   fundings,
+  canManage = false,
 }) => {
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
@@ -208,13 +210,15 @@ const ActivityFundingComponent: React.FC<ActivityFundingProps> = ({
             </div>
           )}
         </div>
-        <Button
-          onClick={() => setShowAddModal(true)}
-          className="bg-green-600 hover:bg-green-700 text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Ajouter un financement
-        </Button>
+        {canManage && (
+          <Button
+            onClick={() => setShowAddModal(true)}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Ajouter un financement
+          </Button>
+        )}
       </div>
 
       {/* Liste des financements */}
@@ -289,20 +293,24 @@ const ActivityFundingComponent: React.FC<ActivityFundingProps> = ({
                   >
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => handleEdit(funding)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                    title="Modifier"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleRemove(funding.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                    title="Retirer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {canManage && (
+                    <>
+                      <button
+                        onClick={() => handleEdit(funding)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                        title="Modifier"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleRemove(funding.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                        title="Retirer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

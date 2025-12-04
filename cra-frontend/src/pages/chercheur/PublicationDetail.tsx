@@ -19,6 +19,7 @@ import {
   Upload
 } from 'lucide-react';
 import { publicationsApi } from '../../services/publicationsApi';
+import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import {
   PublicationTypeLabels,
@@ -32,6 +33,7 @@ import type { Publication } from '../../types/publication.types';
 const PublicationDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [publication, setPublication] = useState<Publication | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -143,6 +145,12 @@ const PublicationDetail: React.FC = () => {
     );
   }
 
+  // Vérifier si l'utilisateur peut modifier la publication
+  // L'utilisateur peut modifier s'il est l'un des auteurs OU s'il est administrateur
+  const canManagePublication =
+    publication.authors.some(author => author.userId === user?.id) ||
+    user?.role === 'ADMINISTRATEUR';
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-5xl mx-auto">
@@ -187,22 +195,24 @@ const PublicationDetail: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex gap-2 ml-4">
-              <button
-                onClick={() => navigate(`/chercheur/publications/${id}/edit`)}
-                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                title="Modifier"
-              >
-                <Edit2 className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setDeleteConfirm(true)}
-                className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                title="Supprimer"
-              >
-                <Trash2 className="h-5 w-5" />
-              </button>
-            </div>
+            {canManagePublication && (
+              <div className="flex gap-2 ml-4">
+                <button
+                  onClick={() => navigate(`/chercheur/publications/${id}/edit`)}
+                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                  title="Modifier"
+                >
+                  <Edit2 className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setDeleteConfirm(true)}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                  title="Supprimer"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -412,17 +422,28 @@ const PublicationDetail: React.FC = () => {
                       </div>
                       <div className="flex-1">
                         <div className="font-medium text-gray-900">
-                          {author.user.firstName} {author.user.lastName}
+                          {author.user ? (
+                            `${author.user.firstName} ${author.user.lastName}`
+                          ) : (
+                            <>
+                              {author.externalName || 'Auteur inconnu'}
+                              <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
+                                Externe
+                              </span>
+                            </>
+                          )}
                           {author.isCorresponding && (
                             <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">
                               Correspondant
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-600">{author.user.email}</div>
-                        {(author.affiliation || author.user.department) && (
+                        <div className="text-sm text-gray-600">
+                          {author.user ? author.user.email : author.externalEmail || 'Email non renseigné'}
+                        </div>
+                        {(author.affiliation || (author.user && author.user.department)) && (
                           <div className="text-sm text-gray-500">
-                            {author.affiliation || author.user.department}
+                            {author.affiliation || (author.user && author.user.department)}
                           </div>
                         )}
                       </div>
@@ -535,32 +556,36 @@ const PublicationDetail: React.FC = () => {
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                 <Upload className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                 <p className="text-gray-600 mb-4">Aucun document attaché</p>
-                <label
-                  htmlFor="upload-document"
-                  className={`inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer ${
-                    uploadingDocument ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {uploadingDocument ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Upload en cours...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="h-4 w-4" />
-                      Uploader un document PDF
-                    </>
-                  )}
-                </label>
-                <input
-                  id="upload-document"
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleUploadDocument}
-                  disabled={uploadingDocument}
-                  className="hidden"
-                />
+                {canManagePublication && (
+                  <>
+                    <label
+                      htmlFor="upload-document"
+                      className={`inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer ${
+                        uploadingDocument ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      {uploadingDocument ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Upload en cours...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4" />
+                          Uploader un document PDF
+                        </>
+                      )}
+                    </label>
+                    <input
+                      id="upload-document"
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleUploadDocument}
+                      disabled={uploadingDocument}
+                      className="hidden"
+                    />
+                  </>
+                )}
               </div>
             )}
           </div>

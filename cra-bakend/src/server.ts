@@ -2,6 +2,7 @@
 import { createServer } from 'http';
 import app from './app';
 import { initializeWebSocketService, getWebSocketService } from './services/websocketNotification.service';
+import { initializeChatWebSocketService } from './services/chatWebSocket.service';
 import { AutomaticNotificationService } from './services/automaticNotification.service';
 
 // Variables d'environnement
@@ -20,6 +21,11 @@ const server = createServer(app);
 console.log('🔌 Initialisation du service WebSocket...');
 const webSocketService = initializeWebSocketService(server);
 console.log('🔌 Service WebSocket initialisé');
+
+// Initialiser le service WebSocket pour le chat
+console.log('💬 Initialisation du service WebSocket Chat...');
+const chatWebSocketService = initializeChatWebSocketService(webSocketService.getIO());
+console.log('💬 Service WebSocket Chat initialisé');
 
 // Programmer les notifications automatiques et tâches récurrentes
 console.log('📅 Configuration des tâches automatiques...');

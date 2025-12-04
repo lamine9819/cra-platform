@@ -451,9 +451,15 @@ export class FormController {
         prisma.formResponse.count({ where })
       ]);
 
+      // Ajouter photosCount à chaque réponse
+      const responsesWithCount = responses.map(response => ({
+        ...response,
+        photosCount: response.photos?.length || 0
+      }));
+
       res.status(200).json({
         success: true,
-        data: responses,
+        data: responsesWithCount,
         pagination: {
           page,
           limit,
@@ -910,7 +916,16 @@ export class FormController {
   private formatResponsesForExport(responses: any[], form: any, options: any) {
     const formSchema = form.schema;
     const formFields = formSchema.fields || [];
-    
+
+    // Fonction pour résoudre le label d'une option
+    const resolveOptionLabel = (field: any, value: any): string => {
+      if (!field.options || !Array.isArray(field.options)) {
+        return value?.toString() || '';
+      }
+      const option = field.options.find((opt: any) => opt.value === value);
+      return option ? option.label : value?.toString() || '';
+    };
+
     return responses.map((response: any) => {
       const exportRow: any = {
         'ID Réponse': response.id,
@@ -930,7 +945,27 @@ export class FormController {
 
       formFields.forEach((field: any) => {
         const value = (response.data as any)[field.id];
-        exportRow[field.label] = value !== undefined && value !== null ? value : '';
+
+        // Gérer les différents types de champs
+        if (value === undefined || value === null || value === '') {
+          exportRow[field.label] = '';
+        } else if (field.type === 'select' || field.type === 'radio') {
+          // Pour select et radio, résoudre le label
+          exportRow[field.label] = resolveOptionLabel(field, value);
+        } else if (field.type === 'checkbox' && Array.isArray(value)) {
+          // Pour checkbox avec options multiples, résoudre chaque label
+          const labels = value.map((v: any) => resolveOptionLabel(field, v));
+          exportRow[field.label] = labels.join(', ');
+        } else if (Array.isArray(value)) {
+          // Pour les autres tableaux
+          exportRow[field.label] = value.join(', ');
+        } else if (typeof value === 'object') {
+          // Pour les objets (ex: photos)
+          exportRow[field.label] = JSON.stringify(value);
+        } else {
+          // Pour les valeurs simples
+          exportRow[field.label] = value.toString();
+        }
       });
 
       if (options.includePhotos && response.photos) {

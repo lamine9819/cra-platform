@@ -8,6 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
+import ChatProviderWrapper from './components/chat/ChatProviderWrapper';
 import AppRoutes from './routes/AppRoutes';
 import './index.css';
 
@@ -27,8 +28,9 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <div className="App">
-            <AppRoutes />
+          <ChatProviderWrapper>
+            <div className="App">
+              <AppRoutes />
             {/* Toaster pour les notifications */}
             {/* Configuration du Toaster pour les notifications */}
             <Toaster
@@ -58,7 +60,8 @@ const App: React.FC = () => {
                 },
               }}
             />
-          </div>
+            </div>
+          </ChatProviderWrapper>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

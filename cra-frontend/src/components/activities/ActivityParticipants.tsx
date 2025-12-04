@@ -17,6 +17,7 @@ import {
 interface ActivityParticipantsProps {
   activityId: string;
   participants: ActivityParticipant[];
+  canManage?: boolean;
 }
 
 interface User {
@@ -30,6 +31,7 @@ interface User {
 const ActivityParticipants: React.FC<ActivityParticipantsProps> = ({
   activityId,
   participants,
+  canManage = false,
 }) => {
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
@@ -155,13 +157,15 @@ const ActivityParticipants: React.FC<ActivityParticipantsProps> = ({
           <Users className="w-5 h-5 mr-2 text-green-600" />
           Participants ({participants.length})
         </h3>
-        <Button
-          onClick={() => setShowAddModal(true)}
-          className="bg-green-600 hover:bg-green-700 text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Ajouter un participant
-        </Button>
+        {canManage && (
+          <Button
+            onClick={() => setShowAddModal(true)}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Ajouter un participant
+          </Button>
+        )}
       </div>
 
       {/* Liste des participants */}
@@ -213,22 +217,24 @@ const ActivityParticipants: React.FC<ActivityParticipantsProps> = ({
                     </p>
                   )}
                 </div>
-                <div className="flex gap-2 ml-4">
-                  <button
-                    onClick={() => handleEdit(participant)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                    title="Modifier"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleRemove(participant.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                    title="Retirer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                {canManage && (
+                  <div className="flex gap-2 ml-4">
+                    <button
+                      onClick={() => handleEdit(participant)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                      title="Modifier"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleRemove(participant.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                      title="Retirer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))

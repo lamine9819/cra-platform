@@ -105,6 +105,7 @@ export interface PhotoData {
   latitude?: number;
   longitude?: number;
   takenAt?: Date;
+  fieldId?: string; // ID du champ du formulaire auquel appartient cette photo
 }
 
 export interface ResponsePhoto {

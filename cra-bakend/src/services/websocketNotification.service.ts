@@ -34,14 +34,25 @@ export class WebSocketNotificationService {
   private setupMiddleware() {
     this.io.use(async (socket: AuthenticatedSocket, next) => {
       try {
-        const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
-        
+        let token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
+
+        // Si pas de token dans auth ou headers, essayer de récupérer depuis les cookies
+        if (!token && socket.handshake.headers.cookie) {
+          const cookies = socket.handshake.headers.cookie.split(';').reduce((acc: any, cookie) => {
+            const [key, value] = cookie.trim().split('=');
+            acc[key] = value;
+            return acc;
+          }, {});
+
+          token = cookies.token; // Le nom du cookie défini dans le backend
+        }
+
         if (!token) {
-          return next(new Error('Token manquant'));
+          return next(new Error('Authentification requise'));
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-        
+
         // Vérifier que l'utilisateur existe et est actif
         const user = await prisma.user.findUnique({
           where: { id: decoded.userId }
@@ -54,13 +65,14 @@ export class WebSocketNotificationService {
         // Stocker les données utilisateur dans socket.data (recommandé par Socket.IO v4+)
         socket.data.userId = decoded.userId;
         socket.data.userRole = decoded.role;
-        
+
         // Maintenir la compatibilité avec l'ancienne approche
         socket.userId = decoded.userId;
         socket.userRole = decoded.role;
-        
+
         next();
       } catch (error) {
+        console.error('Erreur d\'authentification WebSocket:', error);
         next(new Error('Token invalide'));
       }
     });
@@ -372,6 +384,11 @@ broadcast(eventName: string, data: any) {
       totalConnections: this.getTotalConnections(),
       connectedUsers: this.getConnectedUsers()
     };
+  }
+
+  // Obtenir l'instance Socket.IO
+  getIO(): SocketIOServer {
+    return this.io;
   }
 }
 

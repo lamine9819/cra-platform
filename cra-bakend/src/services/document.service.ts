@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { ValidationError, AuthError } from '../utils/errors';
 import { UploadFileRequest, ShareDocumentRequest, DocumentListQuery, DocumentResponse } from '../types/document.types';
 import { getFileTypeFromMime, deleteFile } from '../utils/fileHelpers';
+import { getNotificationService } from './notification.service';
 
 const prisma = new PrismaClient();
 
@@ -360,6 +361,25 @@ export class DocumentService {
         });
       })
     );
+
+    // Envoyer des notifications pour chaque partage
+    try {
+      const notificationService = getNotificationService();
+      await Promise.allSettled(
+        shareData.userIds.map(userToShareId =>
+          notificationService.notifyDocumentShare(
+            documentId,
+            document.title,
+            userToShareId,
+            userId,
+            shareData.canEdit || false
+          )
+        )
+      );
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi des notifications de partage:', error);
+      // Ne pas faire échouer le partage si les notifications échouent
+    }
 
     return {
       message: 'Document partagé avec succès',

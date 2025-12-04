@@ -9,7 +9,20 @@
       "Bash(netstat:*)",
       "Bash(curl:*)",
       "Bash(cat:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(npm run dev)",
+      "Bash(npx prisma db pull:*)",
+      "Bash(node check-channels.js:*)",
+      "Bash(node create-test-channel.js:*)",
+      "Bash(node init-general-channel.js:*)",
+      "Bash(node -e:*)",
+      "Bash(node test-notification.js:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(taskkill:*)",
+      "Bash(cmd //c taskkill //F //PID 20652)",
+      "Bash(findstr:*)",
+      "Bash(cmd //c taskkill //F //PID 25108)",
+      "Bash(cmd //c taskkill //F //PID 22344)"
     ],
     "deny": [],
     "ask": []

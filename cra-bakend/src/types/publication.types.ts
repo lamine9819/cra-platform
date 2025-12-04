@@ -26,10 +26,14 @@ export const createPublicationSchema = z.object({
   abstract: z.string().optional(),
   keywords: z.array(z.string()).default([]),
   authors: z.array(z.object({
-    userId: z.string().cuid(),
+    userId: z.string().cuid().optional(),
+    externalName: z.string().optional(),
+    externalEmail: z.string().email("Email invalide").optional().or(z.literal('')),
     authorOrder: z.number().int().positive(),
     isCorresponding: z.boolean().default(false),
     affiliation: z.string().optional()
+  }).refine(data => data.userId || data.externalName, {
+    message: "Chaque auteur doit avoir soit un userId (auteur interne) soit un externalName (auteur externe)"
   })).min(1, "Au moins un auteur est requis"),
   linkedProjectIds: z.array(z.string().cuid()).default([]),
   linkedActivityIds: z.array(z.string().cuid()).default([])

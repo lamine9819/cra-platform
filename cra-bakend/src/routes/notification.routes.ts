@@ -10,9 +10,9 @@ router.use(authenticate);
 // Toutes les routes de notifications
 router.get('/', notificationController.listNotifications);
 router.get('/unread-count', notificationController.getUnreadCount);
+router.patch('/read-all', notificationController.markAllAsRead);
 router.get('/:id', notificationController.getNotificationById);
 router.patch('/:id/read', notificationController.markAsRead);
-router.patch('/mark-all-read', notificationController.markAllAsRead);
 router.delete('/:id', notificationController.deleteNotification);
 
 export default router;

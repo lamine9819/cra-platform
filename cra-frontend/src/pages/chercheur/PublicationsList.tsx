@@ -20,6 +20,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { publicationsApi } from '../../services/publicationsApi';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   PublicationType,
   PublicationStatus,
@@ -38,6 +39,7 @@ import type {
 
 const PublicationsList: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [publications, setPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -106,8 +108,23 @@ const PublicationsList: React.FC = () => {
     if (!authors || authors.length === 0) return 'Aucun auteur';
     return authors
       .sort((a, b) => a.authorOrder - b.authorOrder)
-      .map(a => `${a.user.firstName} ${a.user.lastName}`)
+      .map(a => {
+        // Auteur interne (user existe)
+        if (a.user) {
+          return `${a.user.firstName} ${a.user.lastName}`;
+        }
+        // Auteur externe (externalName existe)
+        return a.externalName || 'Auteur inconnu';
+      })
       .join(', ');
+  };
+
+  // Vérifier si l'utilisateur peut modifier une publication
+  const canManagePublication = (publication: Publication) => {
+    return (
+      publication.authors.some(author => author.userId === user?.id) ||
+      user?.role === 'ADMINISTRATEUR'
+    );
   };
 
   return (
@@ -374,13 +391,15 @@ const PublicationsList: React.FC = () => {
                     >
                       <Eye className="h-5 w-5" />
                     </button>
-                    <button
-                      onClick={() => navigate(`/chercheur/publications/${publication.id}/edit`)}
-                      className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg"
-                      title="Modifier"
-                    >
-                      <Edit2 className="h-5 w-5" />
-                    </button>
+                    {canManagePublication(publication) && (
+                      <button
+                        onClick={() => navigate(`/chercheur/publications/${publication.id}/edit`)}
+                        className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg"
+                        title="Modifier"
+                      >
+                        <Edit2 className="h-5 w-5" />
+                      </button>
+                    )}
                     {publication.document && (
                       <button
                         onClick={() => handleDownload(publication.id)}
@@ -401,13 +420,15 @@ const PublicationsList: React.FC = () => {
                         <ExternalLink className="h-5 w-5" />
                       </a>
                     )}
-                    <button
-                      onClick={() => setDeleteConfirm(publication.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
+                    {canManagePublication(publication) && (
+                      <button
+                        onClick={() => setDeleteConfirm(publication.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                        title="Supprimer"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

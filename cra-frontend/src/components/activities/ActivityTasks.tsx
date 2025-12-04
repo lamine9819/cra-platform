@@ -1,9 +1,10 @@
-// src/components/activities/ActivityTasks.tsx
+// src/components/activities/ActivityTasksImproved.tsx
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Edit, Trash2, X, CheckCircle, Clock, Users } from 'lucide-react';
+import { Plus, Edit, Trash2, X, CheckCircle, Clock, Users, PlayCircle, Pause, CheckCheck, AlertCircle, TrendingUp } from 'lucide-react';
 import { activitiesApi } from '../../services/activitiesApi';
 import { Button } from '../ui/Button';
+import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
 import {
   type ActivityTask,
@@ -24,13 +25,23 @@ interface ActivityTasksProps {
     lastName: string;
     email: string;
   }>;
+  isCreator?: boolean;
 }
 
-const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks, availableUsers = [] }) => {
+const ActivityTasksImproved: React.FC<ActivityTasksProps> = ({
+  activityId,
+  tasks,
+  availableUsers = [],
+  isCreator = false
+}) => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<ActivityTask | null>(null);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [progressTask, setProgressTask] = useState<ActivityTask | null>(null);
+  const [newProgress, setNewProgress] = useState(0);
 
   const [newTask, setNewTask] = useState<CreateActivityTaskRequest>({
     title: '',
@@ -61,7 +72,9 @@ const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks, availa
       queryClient.invalidateQueries({ queryKey: ['activity', activityId] });
       toast.success('Tâche modifiée avec succès');
       setShowEditModal(false);
+      setShowProgressModal(false);
       setSelectedTask(null);
+      setProgressTask(null);
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erreur lors de la modification');
@@ -79,6 +92,7 @@ const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks, availa
     },
   });
 
+  // Helpers
   const resetForm = () => {
     setNewTask({
       title: '',
@@ -89,6 +103,23 @@ const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks, availa
     });
   };
 
+  const isTaskCreator = (task: ActivityTask) => {
+    return task.createdBy?.id === user?.id;
+  };
+
+  const isTaskAssignee = (task: ActivityTask) => {
+    return task.assignee?.id === user?.id;
+  };
+
+  const canEditTask = (task: ActivityTask) => {
+    return isTaskCreator(task) || isCreator || user?.role === 'ADMINISTRATEUR';
+  };
+
+  const canUpdateStatus = (task: ActivityTask) => {
+    return isTaskAssignee(task) || canEditTask(task);
+  };
+
+  // Handlers
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     createMutation.mutate(newTask);
@@ -142,33 +173,55 @@ const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks, availa
     ), { duration: 5000 });
   };
 
+  // Actions rapides pour l'assigné
+  const handleQuickStatusChange = (task: ActivityTask, newStatus: TaskStatus) => {
+    updateMutation.mutate({
+      taskId: task.id,
+      data: { status: newStatus },
+    });
+  };
+
+  const handleOpenProgressModal = (task: ActivityTask) => {
+    setProgressTask(task);
+    setNewProgress(task.progress || 0);
+    setShowProgressModal(true);
+  };
+
+  const handleUpdateProgress = () => {
+    if (!progressTask) return;
+    updateMutation.mutate({
+      taskId: progressTask.id,
+      data: { progress: newProgress },
+    });
+  };
+
   const getPriorityColor = (priority: TaskPriority) => {
     switch (priority) {
       case TaskPriority.URGENTE:
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 border-red-300';
       case TaskPriority.HAUTE:
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-100 text-orange-800 border-orange-300';
       case TaskPriority.NORMALE:
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 border-blue-300';
       case TaskPriority.BASSE:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 border-gray-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
   const getStatusColor = (status: TaskStatus) => {
     switch (status) {
       case TaskStatus.TERMINEE:
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 border-green-300';
       case TaskStatus.EN_COURS:
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 border-blue-300';
       case TaskStatus.EN_REVISION:
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 text-purple-800 border-purple-300';
       case TaskStatus.ANNULEE:
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 border-red-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
@@ -200,13 +253,15 @@ const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks, availa
             </div>
           )}
         </div>
-        <Button
-          onClick={() => setShowAddModal(true)}
-          className="bg-green-600 hover:bg-green-700 text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Créer une tâche
-        </Button>
+        {(isCreator || user?.role === 'ADMINISTRATEUR') && (
+          <Button
+            onClick={() => setShowAddModal(true)}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Créer une tâche
+          </Button>
+        )}
       </div>
 
       {/* Liste des tâches */}
@@ -217,99 +272,240 @@ const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks, availa
             <p className="text-gray-600">Aucune tâche pour le moment</p>
           </div>
         ) : (
-          tasks.map((task) => (
-            <div
-              key={task.id}
-              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center mb-2">
-                    <h4 className="font-medium text-gray-900">{task.title}</h4>
-                    <span
-                      className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
-                        task.status
-                      )}`}
-                    >
-                      {TaskStatusLabels[task.status]}
-                    </span>
-                    <span
-                      className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(
-                        task.priority
-                      )}`}
-                    >
-                      {TaskPriorityLabels[task.priority]}
-                    </span>
-                  </div>
+          tasks.map((task) => {
+            const canEdit = canEditTask(task);
+            const canUpdateStatusOnly = canUpdateStatus(task);
+            const isAssignee = isTaskAssignee(task);
 
-                  {task.description && (
-                    <p className="text-sm text-gray-600 mb-2">{task.description}</p>
-                  )}
-
-                  <div className="flex flex-col gap-2 text-sm text-gray-500">
-                    <div className="flex items-center gap-4 flex-wrap">
-                      {task.createdBy && (
-                        <div className="flex items-center">
-                          <Users className="w-4 h-4 mr-1 text-purple-500" />
-                          <span className="font-medium text-purple-700">Superviseur:</span>
-                          <span className="ml-1">{task.createdBy.firstName} {task.createdBy.lastName}</span>
-                        </div>
+            return (
+              <div
+                key={task.id}
+                className={`bg-white border rounded-lg p-4 hover:shadow-md transition-shadow ${
+                  isAssignee && task.status !== TaskStatus.TERMINEE
+                    ? 'border-blue-300 bg-blue-50'
+                    : 'border-gray-200'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    {/* En-tête de la tâche */}
+                    <div className="flex items-center mb-2 flex-wrap gap-2">
+                      <h4 className="font-medium text-gray-900">{task.title}</h4>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(task.status)}`}>
+                        {TaskStatusLabels[task.status]}
+                      </span>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getPriorityColor(task.priority)}`}>
+                        {TaskPriorityLabels[task.priority]}
+                      </span>
+                      {isAssignee && task.status !== TaskStatus.TERMINEE && (
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-600 text-white">
+                          Assignée à vous
+                        </span>
                       )}
-                      {task.assignee && (
+                    </div>
+
+                    {task.description && (
+                      <p className="text-sm text-gray-600 mb-2">{task.description}</p>
+                    )}
+
+                    {/* Informations */}
+                    <div className="flex flex-col gap-2 text-sm text-gray-500">
+                      <div className="flex items-center gap-4 flex-wrap">
+                        {task.createdBy && (
+                          <div className="flex items-center">
+                            <Users className="w-4 h-4 mr-1 text-purple-500" />
+                            <span className="font-medium text-purple-700">Superviseur:</span>
+                            <span className="ml-1">{task.createdBy.firstName} {task.createdBy.lastName}</span>
+                          </div>
+                        )}
+                        {task.assignee && (
+                          <div className="flex items-center">
+                            <Users className="w-4 h-4 mr-1 text-blue-500" />
+                            <span className="font-medium text-blue-700">Assigné à:</span>
+                            <span className="ml-1">{task.assignee.firstName} {task.assignee.lastName}</span>
+                          </div>
+                        )}
+                      </div>
+                      {task.dueDate && (
                         <div className="flex items-center">
-                          <Users className="w-4 h-4 mr-1 text-blue-500" />
-                          <span className="font-medium text-blue-700">Assigné à:</span>
-                          <span className="ml-1">{task.assignee.firstName} {task.assignee.lastName}</span>
+                          <Clock className="w-4 h-4 mr-1" />
+                          <span>
+                            Échéance: {new Date(task.dueDate).toLocaleDateString('fr-FR')}
+                          </span>
                         </div>
                       )}
                     </div>
-                    {task.dueDate && (
-                      <div className="flex items-center">
-                        <Clock className="w-4 h-4 mr-1" />
-                        <span>
-                          Échéance: {new Date(task.dueDate).toLocaleDateString('fr-FR')}
-                        </span>
+
+                    {/* Barre de progression */}
+                    {task.progress !== undefined && task.progress !== null && (
+                      <div className="mt-2">
+                        <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
+                          <span>Progression</span>
+                          <div className="flex items-center gap-2">
+                            <span>{task.progress}%</span>
+                            {canUpdateStatusOnly && task.status !== TaskStatus.TERMINEE && (
+                              <button
+                                onClick={() => handleOpenProgressModal(task)}
+                                className="text-blue-600 hover:text-blue-700 text-xs underline"
+                              >
+                                Modifier
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-green-600 h-2 rounded-full transition-all"
+                            style={{ width: `${task.progress}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Actions rapides pour l'assigné */}
+                    {isAssignee && task.status !== TaskStatus.TERMINEE && (
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <p className="text-xs text-gray-600 mb-2 font-medium">Actions rapides:</p>
+                        <div className="flex gap-2 flex-wrap">
+                          {task.status === TaskStatus.A_FAIRE && (
+                            <button
+                              onClick={() => handleQuickStatusChange(task, TaskStatus.EN_COURS)}
+                              className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                            >
+                              <PlayCircle className="w-4 h-4" />
+                              Démarrer
+                            </button>
+                          )}
+                          {task.status === TaskStatus.EN_COURS && (
+                            <>
+                              <button
+                                onClick={() => handleQuickStatusChange(task, TaskStatus.EN_REVISION)}
+                                className="flex items-center gap-1 px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700"
+                              >
+                                <AlertCircle className="w-4 h-4" />
+                                En révision
+                              </button>
+                              <button
+                                onClick={() => handleQuickStatusChange(task, TaskStatus.TERMINEE)}
+                                className="flex items-center gap-1 px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+                              >
+                                <CheckCheck className="w-4 h-4" />
+                                Terminer
+                              </button>
+                            </>
+                          )}
+                          {task.status === TaskStatus.EN_REVISION && (
+                            <button
+                              onClick={() => handleQuickStatusChange(task, TaskStatus.EN_COURS)}
+                              className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                            >
+                              <PlayCircle className="w-4 h-4" />
+                              Reprendre
+                            </button>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
 
-                  {task.progress !== undefined && task.progress !== null && (
-                    <div className="mt-2">
-                      <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
-                        <span>Progression</span>
-                        <span>{task.progress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-green-600 h-2 rounded-full transition-all"
-                          style={{ width: `${task.progress}%` }}
-                        ></div>
-                      </div>
+                  {/* Boutons d'action (édition/suppression pour superviseur) */}
+                  {canEdit && (
+                    <div className="flex gap-2 ml-4">
+                      <button
+                        onClick={() => handleEdit(task)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                        title="Modifier"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(task.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                        title="Supprimer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   )}
                 </div>
-
-                <div className="flex gap-2 ml-4">
-                  <button
-                    onClick={() => handleEdit(task)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                    title="Modifier"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(task.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                    title="Supprimer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
+
+      {/* Modal de modification de progression */}
+      {showProgressModal && progressTask && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Mettre à jour la progression</h3>
+              <button
+                onClick={() => setShowProgressModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-gray-600">
+                Tâche: <span className="font-medium">{progressTask.title}</span>
+              </p>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Progression: {newProgress}%
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={newProgress}
+                  onChange={(e) => setNewProgress(parseInt(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0%</span>
+                  <span>25%</span>
+                  <span>50%</span>
+                  <span>75%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+
+              <div className="w-full bg-gray-200 rounded-full h-4">
+                <div
+                  className="bg-green-600 h-4 rounded-full transition-all flex items-center justify-center text-xs text-white font-medium"
+                  style={{ width: `${newProgress}%` }}
+                >
+                  {newProgress > 10 && `${newProgress}%`}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowProgressModal(false)}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleUpdateProgress}
+                  disabled={updateMutation.isPending}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {updateMutation.isPending ? 'Mise à jour...' : 'Confirmer'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Les autres modaux (ajout/édition) restent les mêmes que dans le fichier original */}
+      {/* Je les ajoute pour que le composant soit complet */}
 
       {/* Modal d'ajout */}
       {showAddModal && (
@@ -425,7 +621,7 @@ const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks, availa
         </div>
       )}
 
-      {/* Modal de modification */}
+      {/* Modal de modification - similaire à l'original mais avec contrôle d'accès */}
       {showEditModal && selectedTask && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -556,9 +752,6 @@ const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks, availa
                     </option>
                   ))}
                 </select>
-                <p className="text-xs text-gray-500 mt-1">
-                  Réassigner cette tâche à un autre membre de l'activité
-                </p>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
@@ -588,4 +781,4 @@ const ActivityTasks: React.FC<ActivityTasksProps> = ({ activityId, tasks, availa
   );
 };
 
-export default ActivityTasks;
+export default ActivityTasksImproved;

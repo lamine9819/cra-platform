@@ -30,6 +30,7 @@ import partnerRoutes from './routes/partner.routes';
 import auditLogRoutes from './routes/auditLog.routes';
 import trainingRoutes from './routes/training.routes';
 import supervisionRoutes from './routes/supervision.routes';
+import chatRoutes from './routes/chat.routes';
 
 // Import des middlewares
 import { errorHandler } from './middlewares/errorHandler';
@@ -420,6 +421,7 @@ app.use('/api/documents', documentRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/forms', formRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/admin/dashboard', adminDashboardRoutes);

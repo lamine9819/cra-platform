@@ -17,7 +17,7 @@ export class NotificationController {
 
       res.status(200).json({
         success: true,
-        data: result.notifications,
+        notifications: result.notifications,
         pagination: result.pagination,
         unreadCount: result.unreadCount
       });
@@ -103,7 +103,7 @@ export class NotificationController {
 
       res.status(200).json({
         success: true,
-        data: { unreadCount: count }
+        count: count
       });
     } catch (error) {
       next(error);

@@ -2,14 +2,15 @@
 import { PrismaClient, UserRole, User } from '@prisma/client';
 import { hashPassword } from '../utils/bcrypt';
 import { ValidationError, AuthError, NotFoundError } from '../utils/errors';
-import { 
-  CreateUserRequest, 
-  UpdateUserRequest, 
-  UserListQuery, 
+import {
+  CreateUserRequest,
+  UpdateUserRequest,
+  UserListQuery,
   UserResponse,
   UpdateIndividualProfileRequest,
-  UserStatsResponse 
+  UserStatsResponse
 } from '../types/user.types';
+import { addUserToGeneralChannel } from '../utils/channelHelper';
 
 const prisma = new PrismaClient();
 
@@ -103,6 +104,9 @@ export class UserService {
         individualProfile: true,
       }
     });
+
+    // Ajouter automatiquement l'utilisateur au canal général
+    await addUserToGeneralChannel(user.id);
 
     return this.formatUserResponse(user);
   }

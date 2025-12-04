@@ -17,6 +17,7 @@ import {
 interface ProjectParticipantsProps {
   projectId: string;
   participants: ProjectParticipant[];
+  canManage?: boolean;
 }
 
 interface User {
@@ -27,7 +28,7 @@ interface User {
   role: string;
 }
 
-const ProjectParticipants: React.FC<ProjectParticipantsProps> = ({ projectId, participants }) => {
+const ProjectParticipants: React.FC<ProjectParticipantsProps> = ({ projectId, participants, canManage = false }) => {
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -141,10 +142,12 @@ const ProjectParticipants: React.FC<ProjectParticipantsProps> = ({ projectId, pa
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Participants ({participants.length})</h3>
-        <Button onClick={() => setShowAddModal(true)} className="bg-green-600 hover:bg-green-700 text-white">
-          <UserPlus className="w-4 h-4 mr-2" />
-          Ajouter un participant
-        </Button>
+        {canManage && (
+          <Button onClick={() => setShowAddModal(true)} className="bg-green-600 hover:bg-green-700 text-white">
+            <UserPlus className="w-4 h-4 mr-2" />
+            Ajouter un participant
+          </Button>
+        )}
       </div>
 
       {/* Liste des participants */}
@@ -152,12 +155,14 @@ const ProjectParticipants: React.FC<ProjectParticipantsProps> = ({ projectId, pa
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <UserPlus className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">Aucun participant pour le moment</p>
-          <Button
-            onClick={() => setShowAddModal(true)}
-            className="mt-4 bg-green-600 hover:bg-green-700 text-white"
-          >
-            Ajouter le premier participant
-          </Button>
+          {canManage && (
+            <Button
+              onClick={() => setShowAddModal(true)}
+              className="mt-4 bg-green-600 hover:bg-green-700 text-white"
+            >
+              Ajouter le premier participant
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -176,28 +181,30 @@ const ProjectParticipants: React.FC<ProjectParticipantsProps> = ({ projectId, pa
                     {ParticipantRoleLabels[participant.role]}
                   </span>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setSelectedParticipant(participant);
-                      setShowEditModal(true);
-                    }}
-                    className="p-1 text-gray-600 hover:text-green-600"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleRemove(
-                        participant.id,
-                        `${participant.user.firstName} ${participant.user.lastName}`
-                      )
-                    }
-                    className="p-1 text-gray-600 hover:text-red-600"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                {canManage && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedParticipant(participant);
+                        setShowEditModal(true);
+                      }}
+                      className="p-1 text-gray-600 hover:text-green-600"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleRemove(
+                          participant.id,
+                          `${participant.user.firstName} ${participant.user.lastName}`
+                        )
+                      }
+                      className="p-1 text-gray-600 hover:text-red-600"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               {participant.timeAllocation && participant.timeAllocation > 0 && (

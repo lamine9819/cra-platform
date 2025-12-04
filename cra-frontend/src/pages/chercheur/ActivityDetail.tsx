@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { activitiesApi } from '../../services/activitiesApi';
 import { Button } from '../../components/ui/Button';
+import { useAuth } from '../../hooks/useAuth';
 import ActivityParticipants from '../../components/activities/ActivityParticipants';
 import ActivityPartnerships from '../../components/activities/ActivityPartnerships';
 import ActivityFunding from '../../components/activities/ActivityFunding';
@@ -46,6 +47,7 @@ type TabType = 'overview' | 'participants' | 'partnerships' | 'funding' | 'tasks
 
 const ActivityDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [showReconductModal, setShowReconductModal] = useState(false);
@@ -205,6 +207,9 @@ const ActivityDetail: React.FC = () => {
     );
   }
 
+  // Vérifier si l'utilisateur peut gérer l'activité (responsable ou admin)
+  const canManageActivity = activity.responsible.id === user?.id || user?.role === 'ADMINISTRATEUR';
+
   const tabs = [
     { id: 'overview' as TabType, label: 'Vue d\'ensemble', icon: FileText },
     { id: 'participants' as TabType, label: 'Participants', icon: Users, count: activity._count?.participants },
@@ -254,46 +259,47 @@ const ActivityDetail: React.FC = () => {
             )}
           </div>
 
-          {/* Actions - Responsive Design */}
-          <div className="flex flex-col sm:flex-row gap-2 lg:ml-4 min-w-fit">
-            {/* Boutons principaux */}
-            <div className="flex gap-2">
-              <Link to={`/chercheur/activities/${id}/edit`} className="flex-1 sm:flex-none">
-                <Button className="bg-green-600 hover:bg-green-700 text-white w-full">
-                  <Edit className="w-4 h-4 mr-2" />
-                  Modifier
+          {/* Actions - Visible uniquement pour le responsable et les admins */}
+          {canManageActivity && (
+            <div className="flex flex-col sm:flex-row gap-2 lg:ml-4 min-w-fit">
+              {/* Boutons principaux */}
+              <div className="flex gap-2">
+                <Link to={`/chercheur/activities/${id}/edit`} className="flex-1 sm:flex-none">
+                  <Button className="bg-green-600 hover:bg-green-700 text-white w-full">
+                    <Edit className="w-4 h-4 mr-2" />
+                    Modifier
+                  </Button>
+                </Link>
+                <Button
+                  onClick={handleDelete}
+                  variant="outline"
+                  className="border-red-600 text-red-600 hover:bg-red-50 flex-1 sm:flex-none"
+                >
+                  <Trash2 className="w-4 h-4 sm:mr-0 mr-2" />
+                  <span className="sm:hidden">Supprimer</span>
                 </Button>
-              </Link>
-              <Button
-                onClick={handleDelete}
-                variant="outline"
-                className="border-red-600 text-red-600 hover:bg-red-50 flex-1 sm:flex-none"
-              >
-                <Trash2 className="w-4 h-4 sm:mr-0 mr-2" />
-                <span className="sm:hidden">Supprimer</span>
-              </Button>
-            </div>
+              </div>
 
-            {/* Autres actions */}
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                onClick={handleGenerateReport}
-                variant="outline"
-                className="border-blue-600 text-blue-600 hover:bg-blue-50 flex-1 sm:flex-none"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Rapport</span>
-                <span className="sm:hidden">Rapport Word</span>
-              </Button>
+              {/* Autres actions */}
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  onClick={handleGenerateReport}
+                  variant="outline"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50 flex-1 sm:flex-none"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Rapport</span>
+                  <span className="sm:hidden">Rapport Word</span>
+                </Button>
 
-              <Button
-                onClick={() => setShowReconductModal(true)}
-                variant="outline"
-                className="border-purple-600 text-purple-600 hover:bg-purple-50 flex-1 sm:flex-none"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Reconduire
-              </Button>
+                <Button
+                  onClick={() => setShowReconductModal(true)}
+                  variant="outline"
+                  className="border-purple-600 text-purple-600 hover:bg-purple-50 flex-1 sm:flex-none"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Reconduire
+                </Button>
 
               <Button
                 onClick={handleDuplicate}
@@ -304,7 +310,8 @@ const ActivityDetail: React.FC = () => {
                 Dupliquer
               </Button>
             </div>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Informations clés */}
@@ -558,6 +565,7 @@ const ActivityDetail: React.FC = () => {
             <ActivityParticipants
               activityId={activity.id}
               participants={activity.participants || []}
+              canManage={canManageActivity}
             />
           )}
 
@@ -565,6 +573,7 @@ const ActivityDetail: React.FC = () => {
             <ActivityPartnerships
               activityId={activity.id}
               partnerships={activity.partners || []}
+              canManage={canManageActivity}
             />
           )}
 
@@ -572,6 +581,7 @@ const ActivityDetail: React.FC = () => {
             <ActivityFunding
               activityId={activity.id}
               fundings={activity.fundings || []}
+              canManage={canManageActivity}
             />
           )}
 
@@ -600,6 +610,7 @@ const ActivityDetail: React.FC = () => {
                 // Éliminer les doublons basés sur l'ID
                 index === self.findIndex(u => u.id === user.id)
               )}
+              isCreator={activity.responsible.id === user?.id || user?.role === 'ADMINISTRATEUR'}
             />
           )}
 
@@ -613,13 +624,15 @@ const ActivityDetail: React.FC = () => {
                     Gérez les documents liés à cette activité
                   </p>
                 </div>
-                <Button
-                  onClick={() => setShowUploadModal(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Ajouter un document
-                </Button>
+                {canManageActivity && (
+                  <Button
+                    onClick={() => setShowUploadModal(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Ajouter un document
+                  </Button>
+                )}
               </div>
 
               {/* Liste des documents */}

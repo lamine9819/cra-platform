@@ -13,6 +13,8 @@ import {
   Activity,
   GraduationCap,
   BookOpen,
+  MessageCircle,
+  ClipboardList,
 } from 'lucide-react';
 
 // Import des pages chercheur existantes
@@ -56,11 +58,22 @@ import CompleteProfilePage from '../pages/chercheur/CompleteProfilePage';
 // Import de la page paramètres
 import SettingsPage from '../pages/chercheur/SettingsPage';
 
+// Import de la page Chat
+import ChatPage from '../pages/ChatPage';
+
+// Import des pages formulaires
+import FormsPage from '../pages/chercheur/FormsPage';
+import FormCreatePage from '../pages/chercheur/FormCreatePage';
+import FormEditPage from '../pages/chercheur/FormEditPage';
+import FormDetailPage from '../pages/chercheur/FormDetailPage';
+
 // Import du provider documents (existant)
 import { DocumentProvider } from '../contexts/DocumentContext';
+import { useAuth } from '../hooks/useAuth';
 
 const ChercheurLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { user } = useAuth();
 
   const navigation: SidebarItem[] = [
     {
@@ -89,6 +102,11 @@ const ChercheurLayout: React.FC = () => {
       icon: FileText,
     },
     {
+      name: 'Formulaires',
+      href: '/chercheur/forms',
+      icon: ClipboardList,
+    },
+    {
       name: 'Publications',
       href: '/chercheur/publications',
       icon: BookOpen,
@@ -102,6 +120,11 @@ const ChercheurLayout: React.FC = () => {
       name: 'Formations',
       href: '/chercheur/formations',
       icon: GraduationCap,
+    },
+    {
+      name: 'Chat',
+      href: '/chercheur/chat',
+      icon: MessageCircle,
     },
   ];
 
@@ -156,6 +179,14 @@ const ChercheurLayout: React.FC = () => {
                   <Route path=":id/edit" element={<CreatePublication />} />
                 </Route>
 
+                {/* ROUTES DES FORMULAIRES */}
+                <Route path="forms">
+                  <Route index element={<FormsPage />} />
+                  <Route path="create" element={<FormCreatePage />} />
+                  <Route path=":id" element={<FormDetailPage />} />
+                  <Route path=":id/edit" element={<FormEditPage />} />
+                </Route>
+
                 {/* ROUTE DU CALENDRIER (événements et séminaires) */}
                 <Route path="calendar" element={<CalendarPage />} />
 
@@ -167,6 +198,14 @@ const ChercheurLayout: React.FC = () => {
 
                 {/* ROUTE DES PARAMÈTRES */}
                 <Route path="settings" element={<SettingsPage />} />
+
+                {/* ROUTE DU CHAT */}
+                <Route path="chat" element={
+                  <ChatPage
+                    currentUserId={user?.id || ''}
+                    currentUserName={user ? `${user.firstName} ${user.lastName}` : ''}
+                  />
+                } />
 
                 {/* ROUTE 404 pour les sous-routes */}
                 <Route path="*" element={

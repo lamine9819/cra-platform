@@ -85,12 +85,14 @@ export const QuartileColors: Record<Quartile, string> = {
 
 export interface PublicationAuthor {
   id: string;
-  userId: string;
+  userId?: string;
   publicationId: string;
   authorOrder: number;
   isCorresponding: boolean;
   affiliation?: string;
-  user: {
+  externalName?: string;
+  externalEmail?: string;
+  user?: {
     id: string;
     firstName: string;
     lastName: string;
@@ -166,7 +168,9 @@ export interface Publication {
 // =============================================
 
 export interface CreatePublicationAuthorRequest {
-  userId: string;
+  userId?: string; // Pour les auteurs internes (utilisateurs de la base)
+  externalName?: string; // Pour les auteurs externes
+  externalEmail?: string; // Email de l'auteur externe
   authorOrder: number;
   isCorresponding?: boolean;
   affiliation?: string;

@@ -20,6 +20,7 @@ import { documentService } from '../../services/api/documentService';
 interface ProjectFundingProps {
   projectId: string;
   fundings?: Funding[];
+  canManage?: boolean;
 }
 
 // Suggestions de sources de financement courantes
@@ -39,7 +40,7 @@ const COMMON_FUNDING_SOURCES = [
   'Autre'
 ];
 
-const ProjectFunding: React.FC<ProjectFundingProps> = ({ projectId, fundings = [] }) => {
+const ProjectFunding: React.FC<ProjectFundingProps> = ({ projectId, fundings = [], canManage = false }) => {
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -225,10 +226,12 @@ const ProjectFunding: React.FC<ProjectFundingProps> = ({ projectId, fundings = [
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Financements ({fundings.length})</h3>
-        <Button onClick={() => setShowAddModal(true)} className="bg-green-600 hover:bg-green-700 text-white">
-          <Plus className="w-4 h-4 mr-2" />
-          Ajouter un financement
-        </Button>
+        {canManage && (
+          <Button onClick={() => setShowAddModal(true)} className="bg-green-600 hover:bg-green-700 text-white">
+            <Plus className="w-4 h-4 mr-2" />
+            Ajouter un financement
+          </Button>
+        )}
       </div>
 
       {/* Résumé financier */}
@@ -278,20 +281,24 @@ const ProjectFunding: React.FC<ProjectFundingProps> = ({ projectId, fundings = [
                   >
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => handleEdit(funding)}
-                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                    title="Modifier le financement"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleRemove(funding.id, funding.fundingSource)}
-                    className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                    title="Retirer le financement"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {canManage && (
+                    <>
+                      <button
+                        onClick={() => handleEdit(funding)}
+                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                        title="Modifier le financement"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleRemove(funding.id, funding.fundingSource)}
+                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                        title="Retirer le financement"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 

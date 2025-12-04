@@ -22,9 +22,17 @@ export class FormValidationService {
 
     // Valider chaque champ défini dans le schéma
     for (const field of formSchema.fields) {
+      // Les champs photo sont validés séparément via le tableau photos[]
+      // Ils ne sont pas stockés dans responseData
+      if (field.type === 'photo') {
+        // Ignorer la validation des champs photo ici
+        // Ils sont validés via submitFormResponseSchema.photos
+        continue;
+      }
+
       const value = responseData[field.id];
       const validation = this.validateField(field, value);
-      
+
       if (!validation.isValid && validation.error) {
         errors.push(validation.error);
       } else {
@@ -119,8 +127,9 @@ export class FormValidationService {
         return this.validateCheckbox(field, value);
       
       case 'file':
+      case 'photo':
         return this.validateFile(field, value);
-      
+
       case 'text':
       case 'textarea':
         return this.validateText(field, value);
@@ -478,7 +487,7 @@ export class FormValidationService {
       errors.push(`${fieldRef}: Label requis et doit être une chaîne`);
     }
 
-    const validTypes = ['text', 'number', 'email', 'textarea', 'select', 'checkbox', 'radio', 'date', 'time', 'file'];
+    const validTypes = ['text', 'number', 'email', 'textarea', 'select', 'checkbox', 'radio', 'date', 'time', 'file', 'photo'];
     if (!field.type || !validTypes.includes(field.type)) {
       errors.push(`${fieldRef}: Type invalide. Types autorisés: ${validTypes.join(', ')}`);
     }
