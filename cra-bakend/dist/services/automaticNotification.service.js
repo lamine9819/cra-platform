@@ -31,7 +31,6 @@ class AutomaticNotificationService {
                 senderId: assignerId,
                 entityType: 'task',
                 entityId: taskId,
-                priority: 'normal',
                 actionUrl: `/tasks/${taskId}`
             });
             console.log(`✅ Notification envoyée: Tâche ${taskId} assignée à ${assigneeId}`);
@@ -82,7 +81,6 @@ class AutomaticNotificationService {
                     senderId: assigneeId,
                     entityType: 'task',
                     entityId: taskId,
-                    priority: 'normal',
                     actionUrl: `/tasks/${taskId}`
                 });
             }
@@ -115,7 +113,6 @@ class AutomaticNotificationService {
                         receiverId: task.assignee.id,
                         entityType: 'task',
                         entityId: task.id,
-                        priority: 'high',
                         actionUrl: `/tasks/${task.id}`
                     });
                 }
@@ -148,16 +145,18 @@ class AutomaticNotificationService {
                     id: { not: creatorId }
                 }
             });
-            const notifications = users.map((user) => ({
+            const notificationPromises = users.map((user) => this.notificationService.createNotification({
                 receiverId: user.id,
+                senderId: creatorId,
                 title: 'Nouveau projet créé 🚀',
                 message: `${project.creator.firstName} ${project.creator.lastName} a créé le projet "${project.title}"`,
                 type: 'project_created',
+                actionUrl: `/projects/${projectId}`,
                 entityType: 'project',
-                entityId: projectId,
+                entityId: projectId
             }));
-            await this.notificationService.createBulkNotifications({ notifications }, creatorId);
-            console.log(`✅ ${notifications.length} notifications projet créé envoyées`);
+            await Promise.allSettled(notificationPromises);
+            console.log(`✅ ${users.length} notifications projet créé envoyées`);
         }
         catch (error) {
             console.error('❌ Erreur notification projet créé:', error);
@@ -180,13 +179,50 @@ class AutomaticNotificationService {
                 senderId: adderId,
                 entityType: 'project',
                 entityId: projectId,
-                priority: 'normal',
                 actionUrl: `/projects/${projectId}`
             });
             console.log(`✅ Notification envoyée: Participant ${participantId} ajouté au projet ${projectId}`);
         }
         catch (error) {
             console.error('❌ Erreur notification participant ajouté:', error);
+        }
+    }
+    // =============================================
+    // NOTIFICATIONS D'ÉVÉNEMENTS
+    // =============================================
+    // Notification de nouvel événement
+    static async notifyEventCreated(eventId, creatorId) {
+        try {
+            const event = await prisma.calendarEvent.findUnique({
+                where: { id: eventId },
+                include: {
+                    creator: { select: { firstName: true, lastName: true } }
+                }
+            });
+            if (!event)
+                return;
+            // Notifier tous les utilisateurs actifs (sauf le créateur)
+            const users = await prisma.user.findMany({
+                where: {
+                    isActive: true,
+                    id: { not: creatorId }
+                }
+            });
+            const notificationPromises = users.map((user) => this.notificationService.createNotification({
+                receiverId: user.id,
+                senderId: creatorId,
+                title: 'Nouvel événement créé 📅',
+                message: `"${event.title}" créé par ${event.creator.firstName} ${event.creator.lastName} le ${event.startDate.toLocaleDateString()}`,
+                type: 'event_created',
+                actionUrl: `/events/${eventId}`,
+                entityType: 'event',
+                entityId: eventId
+            }));
+            await Promise.allSettled(notificationPromises);
+            console.log(`✅ ${users.length} notifications événement créé envoyées`);
+        }
+        catch (error) {
+            console.error('❌ Erreur notification événement créé:', error);
         }
     }
     // =============================================
@@ -210,16 +246,18 @@ class AutomaticNotificationService {
                     id: { not: organizerId }
                 }
             });
-            const notifications = users.map((user) => ({
+            const notificationPromises = users.map((user) => this.notificationService.createNotification({
                 receiverId: user.id,
+                senderId: organizerId,
                 title: 'Nouveau séminaire disponible 📚',
                 message: `"${seminar.title}" organisé par ${seminar.organizer.firstName} ${seminar.organizer.lastName} le ${seminar.startDate.toLocaleDateString()}`,
                 type: 'seminar_created',
+                actionUrl: `/seminars/${seminarId}`,
                 entityType: 'seminar',
-                entityId: seminarId,
+                entityId: seminarId
             }));
-            await this.notificationService.createBulkNotifications({ notifications }, organizerId);
-            console.log(`✅ ${notifications.length} notifications séminaire créé envoyées`);
+            await Promise.allSettled(notificationPromises);
+            console.log(`✅ ${users.length} notifications séminaire créé envoyées`);
         }
         catch (error) {
             console.error('❌ Erreur notification séminaire créé:', error);
@@ -240,16 +278,17 @@ class AutomaticNotificationService {
             });
             if (!seminar)
                 return;
-            const notifications = seminar.participants.map((participant) => ({
+            const notificationPromises = seminar.participants.map((participant) => this.notificationService.createNotification({
                 receiverId: participant.participant.id,
                 title: 'Rappel de séminaire 🔔',
                 message: `Le séminaire "${seminar.title}" aura lieu demain à ${seminar.startDate.toLocaleTimeString()}`,
                 type: 'seminar_reminder',
+                actionUrl: `/seminars/${seminarId}`,
                 entityType: 'seminar',
-                entityId: seminarId,
+                entityId: seminarId
             }));
-            await this.notificationService.createBulkNotifications({ notifications });
-            console.log(`✅ ${notifications.length} rappels de séminaire envoyés`);
+            await Promise.allSettled(notificationPromises);
+            console.log(`✅ ${seminar.participants.length} rappels de séminaire envoyés`);
         }
         catch (error) {
             console.error('❌ Erreur rappels séminaire:', error);
@@ -277,7 +316,6 @@ class AutomaticNotificationService {
                 senderId: participantId,
                 entityType: 'seminar',
                 entityId: seminarId,
-                priority: 'normal',
                 actionUrl: `/seminars/${seminarId}`
             });
             // Notifier le participant
@@ -289,7 +327,6 @@ class AutomaticNotificationService {
                 senderId: seminar.organizerId,
                 entityType: 'seminar',
                 entityId: seminarId,
-                priority: 'normal',
                 actionUrl: `/seminars/${seminarId}`
             });
             console.log(`✅ Notifications inscription séminaire envoyées`);
@@ -371,16 +408,18 @@ class AutomaticNotificationService {
             }
             // Créer les notifications
             if (receiversToNotify.length > 0) {
-                const notifications = receiversToNotify.map(receiverId => ({
+                const notificationPromises = receiversToNotify.map(receiverId => this.notificationService.createNotification({
                     receiverId,
+                    senderId: authorId,
                     title: 'Nouveau commentaire 💬',
                     message: `${comment.author.firstName} ${comment.author.lastName} a commenté "${targetTitle}"`,
                     type: 'comment_added',
+                    actionUrl: `/comments/${commentId}`,
                     entityType: 'comment',
-                    entityId: commentId,
+                    entityId: commentId
                 }));
-                await this.notificationService.createBulkNotifications({ notifications }, authorId);
-                console.log(`✅ ${notifications.length} notifications commentaire envoyées`);
+                await Promise.allSettled(notificationPromises);
+                console.log(`✅ ${receiversToNotify.length} notifications commentaire envoyées`);
             }
         }
         catch (error) {
@@ -401,16 +440,18 @@ class AutomaticNotificationService {
             });
             if (!document)
                 return;
-            const notifications = sharedWithIds.map(receiverId => ({
+            const notificationPromises = sharedWithIds.map(receiverId => this.notificationService.createNotification({
                 receiverId,
+                senderId: sharerId,
                 title: 'Document partagé avec vous 📄',
                 message: `${document.owner.firstName} ${document.owner.lastName} a partagé le document "${document.title}"`,
                 type: 'document_shared',
+                actionUrl: `/documents/${documentId}`,
                 entityType: 'document',
-                entityId: documentId,
+                entityId: documentId
             }));
-            await this.notificationService.createBulkNotifications({ notifications }, sharerId);
-            console.log(`✅ ${notifications.length} notifications document partagé envoyées`);
+            await Promise.allSettled(notificationPromises);
+            console.log(`✅ ${sharedWithIds.length} notifications document partagé envoyées`);
         }
         catch (error) {
             console.error('❌ Erreur notification document partagé:', error);
@@ -467,7 +508,6 @@ class AutomaticNotificationService {
                     senderId: respondentId,
                     entityType: 'form',
                     entityId: formId,
-                    priority: 'normal',
                     actionUrl: `/forms/${formId}/responses`
                 });
             }
@@ -517,16 +557,16 @@ class AutomaticNotificationService {
             const users = await prisma.user.findMany({
                 where: { isActive: true }
             });
-            const notifications = users.map((user) => ({
+            const notificationPromises = users.map((user) => this.notificationService.createNotification({
                 receiverId: user.id,
                 title: 'Maintenance système prévue 🔧',
                 message: `${message} - Prévue le ${scheduledTime.toLocaleDateString()} à ${scheduledTime.toLocaleTimeString()}`,
                 type: 'system_maintenance',
                 entityType: 'user',
-                entityId: user.id,
+                entityId: user.id
             }));
-            await this.notificationService.createBulkNotifications({ notifications });
-            console.log(`✅ ${notifications.length} notifications maintenance envoyées`);
+            await Promise.allSettled(notificationPromises);
+            console.log(`✅ ${users.length} notifications maintenance envoyées`);
         }
         catch (error) {
             console.error('❌ Erreur notification maintenance:', error);

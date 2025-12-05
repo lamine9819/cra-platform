@@ -7,6 +7,7 @@ const http_1 = require("http");
 const app_1 = tslib_1.__importDefault(require("./app"));
 exports.app = app_1.default;
 const websocketNotification_service_1 = require("./services/websocketNotification.service");
+const chatWebSocket_service_1 = require("./services/chatWebSocket.service");
 const automaticNotification_service_1 = require("./services/automaticNotification.service");
 // Variables d'environnement
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -23,6 +24,10 @@ console.log('🔌 Initialisation du service WebSocket...');
 const webSocketService = (0, websocketNotification_service_1.initializeWebSocketService)(server);
 exports.webSocketService = webSocketService;
 console.log('🔌 Service WebSocket initialisé');
+// Initialiser le service WebSocket pour le chat
+console.log('💬 Initialisation du service WebSocket Chat...');
+const chatWebSocketService = (0, chatWebSocket_service_1.initializeChatWebSocketService)(webSocketService.getIO());
+console.log('💬 Service WebSocket Chat initialisé');
 // Programmer les notifications automatiques et tâches récurrentes
 console.log('📅 Configuration des tâches automatiques...');
 automaticNotification_service_1.AutomaticNotificationService.scheduleRecurringNotifications();

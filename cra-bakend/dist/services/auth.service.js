@@ -6,6 +6,7 @@ const client_1 = require("@prisma/client");
 const bcrypt_1 = require("../utils/bcrypt");
 const jwt_1 = require("../config/jwt");
 const errors_1 = require("../utils/errors");
+const channelHelper_1 = require("../utils/channelHelper");
 const prisma = new client_1.PrismaClient();
 class AuthService {
     async register(userData) {
@@ -35,6 +36,8 @@ class AuthService {
                 createdAt: true,
             }
         });
+        // Ajouter automatiquement l'utilisateur au canal général
+        await (0, channelHelper_1.addUserToGeneralChannel)(user.id);
         // Générer le token JWT
         const token = (0, jwt_1.generateToken)({
             userId: user.id,

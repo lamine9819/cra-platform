@@ -12,24 +12,24 @@ export declare class StrategicPlanningService {
                     };
                     themes: {
                         id: string;
-                        isActive: boolean;
+                        name: string;
+                        description: string | null;
                         createdAt: Date;
                         updatedAt: Date;
-                        name: string;
+                        isActive: boolean;
                         code: string | null;
-                        description: string | null;
                         objectives: string[];
                         order: number | null;
                         programId: string;
                     }[];
                 } & {
                     id: string;
-                    isActive: boolean;
+                    name: string;
+                    description: string | null;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
+                    isActive: boolean;
                     code: string | null;
-                    description: string | null;
                     startDate: Date | null;
                     endDate: Date | null;
                     strategicSubAxisId: string;
@@ -37,31 +37,31 @@ export declare class StrategicPlanningService {
                 })[];
             } & {
                 id: string;
+                name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 code: string | null;
-                description: string | null;
                 order: number | null;
                 strategicAxisId: string;
             })[];
         } & {
             id: string;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             code: string | null;
-            description: string | null;
             order: number | null;
             strategicPlanId: string;
         })[];
     } & {
         id: string;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
         description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
         startYear: number;
         endYear: number;
     }>;
@@ -90,24 +90,24 @@ export declare class StrategicPlanningService {
                         };
                         themes: {
                             id: string;
-                            isActive: boolean;
+                            name: string;
+                            description: string | null;
                             createdAt: Date;
                             updatedAt: Date;
-                            name: string;
+                            isActive: boolean;
                             code: string | null;
-                            description: string | null;
                             objectives: string[];
                             order: number | null;
                             programId: string;
                         }[];
                     } & {
                         id: string;
-                        isActive: boolean;
+                        name: string;
+                        description: string | null;
                         createdAt: Date;
                         updatedAt: Date;
-                        name: string;
+                        isActive: boolean;
                         code: string | null;
-                        description: string | null;
                         startDate: Date | null;
                         endDate: Date | null;
                         strategicSubAxisId: string;
@@ -115,31 +115,31 @@ export declare class StrategicPlanningService {
                     })[];
                 } & {
                     id: string;
+                    name: string;
+                    description: string | null;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
                     code: string | null;
-                    description: string | null;
                     order: number | null;
                     strategicAxisId: string;
                 })[];
             } & {
                 id: string;
+                name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 code: string | null;
-                description: string | null;
                 order: number | null;
                 strategicPlanId: string;
             })[];
         } & {
             id: string;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
             name: string;
             description: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
             startYear: number;
             endYear: number;
         })[];
@@ -170,24 +170,24 @@ export declare class StrategicPlanningService {
                         };
                     } & {
                         id: string;
-                        isActive: boolean;
+                        name: string;
+                        description: string | null;
                         createdAt: Date;
                         updatedAt: Date;
-                        name: string;
+                        isActive: boolean;
                         code: string | null;
-                        description: string | null;
                         objectives: string[];
                         order: number | null;
                         programId: string;
                     })[];
                 } & {
                     id: string;
-                    isActive: boolean;
+                    name: string;
+                    description: string | null;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
+                    isActive: boolean;
                     code: string | null;
-                    description: string | null;
                     startDate: Date | null;
                     endDate: Date | null;
                     strategicSubAxisId: string;
@@ -195,31 +195,31 @@ export declare class StrategicPlanningService {
                 })[];
             } & {
                 id: string;
+                name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 code: string | null;
-                description: string | null;
                 order: number | null;
                 strategicAxisId: string;
             })[];
         } & {
             id: string;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             code: string | null;
-            description: string | null;
             order: number | null;
             strategicPlanId: string;
         })[];
     } & {
         id: string;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
         description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
         startYear: number;
         endYear: number;
     }>;
@@ -235,12 +235,12 @@ export declare class StrategicPlanningService {
                     };
                 } & {
                     id: string;
-                    isActive: boolean;
+                    name: string;
+                    description: string | null;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
+                    isActive: boolean;
                     code: string | null;
-                    description: string | null;
                     startDate: Date | null;
                     endDate: Date | null;
                     strategicSubAxisId: string;
@@ -248,31 +248,31 @@ export declare class StrategicPlanningService {
                 })[];
             } & {
                 id: string;
+                name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 code: string | null;
-                description: string | null;
                 order: number | null;
                 strategicAxisId: string;
             })[];
         } & {
             id: string;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             code: string | null;
-            description: string | null;
             order: number | null;
             strategicPlanId: string;
         })[];
     } & {
         id: string;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
         description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
         startYear: number;
         endYear: number;
     }>;
@@ -294,12 +294,12 @@ export declare class StrategicPlanningService {
                 };
             } & {
                 id: string;
-                isActive: boolean;
+                name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
+                isActive: boolean;
                 code: string | null;
-                description: string | null;
                 startDate: Date | null;
                 endDate: Date | null;
                 strategicSubAxisId: string;
@@ -307,21 +307,21 @@ export declare class StrategicPlanningService {
             })[];
         } & {
             id: string;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             code: string | null;
-            description: string | null;
             order: number | null;
             strategicAxisId: string;
         })[];
     } & {
         id: string;
+        name: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         code: string | null;
-        description: string | null;
         order: number | null;
         strategicPlanId: string;
     }>;
@@ -351,12 +351,12 @@ export declare class StrategicPlanningService {
                     };
                 } & {
                     id: string;
-                    isActive: boolean;
+                    name: string;
+                    description: string | null;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
+                    isActive: boolean;
                     code: string | null;
-                    description: string | null;
                     startDate: Date | null;
                     endDate: Date | null;
                     strategicSubAxisId: string;
@@ -364,21 +364,21 @@ export declare class StrategicPlanningService {
                 })[];
             } & {
                 id: string;
+                name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 code: string | null;
-                description: string | null;
                 order: number | null;
                 strategicAxisId: string;
             })[];
         } & {
             id: string;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             code: string | null;
-            description: string | null;
             order: number | null;
             strategicPlanId: string;
         })[];
@@ -407,24 +407,24 @@ export declare class StrategicPlanningService {
                 };
                 themes: {
                     id: string;
-                    isActive: boolean;
+                    name: string;
+                    description: string | null;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
+                    isActive: boolean;
                     code: string | null;
-                    description: string | null;
                     objectives: string[];
                     order: number | null;
                     programId: string;
                 }[];
             } & {
                 id: string;
-                isActive: boolean;
+                name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
+                isActive: boolean;
                 code: string | null;
-                description: string | null;
                 startDate: Date | null;
                 endDate: Date | null;
                 strategicSubAxisId: string;
@@ -432,21 +432,21 @@ export declare class StrategicPlanningService {
             })[];
         } & {
             id: string;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             code: string | null;
-            description: string | null;
             order: number | null;
             strategicAxisId: string;
         })[];
     } & {
         id: string;
+        name: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         code: string | null;
-        description: string | null;
         order: number | null;
         strategicPlanId: string;
     }>;
@@ -465,12 +465,12 @@ export declare class StrategicPlanningService {
                 };
             } & {
                 id: string;
-                isActive: boolean;
+                name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
+                isActive: boolean;
                 code: string | null;
-                description: string | null;
                 startDate: Date | null;
                 endDate: Date | null;
                 strategicSubAxisId: string;
@@ -478,21 +478,21 @@ export declare class StrategicPlanningService {
             })[];
         } & {
             id: string;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             code: string | null;
-            description: string | null;
             order: number | null;
             strategicAxisId: string;
         })[];
     } & {
         id: string;
+        name: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         code: string | null;
-        description: string | null;
         order: number | null;
         strategicPlanId: string;
     }>;
@@ -517,24 +517,24 @@ export declare class StrategicPlanningService {
             };
             themes: {
                 id: string;
-                isActive: boolean;
+                name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
+                isActive: boolean;
                 code: string | null;
-                description: string | null;
                 objectives: string[];
                 order: number | null;
                 programId: string;
             }[];
         } & {
             id: string;
-            isActive: boolean;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            isActive: boolean;
             code: string | null;
-            description: string | null;
             startDate: Date | null;
             endDate: Date | null;
             strategicSubAxisId: string;
@@ -542,11 +542,11 @@ export declare class StrategicPlanningService {
         })[];
     } & {
         id: string;
+        name: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         code: string | null;
-        description: string | null;
         order: number | null;
         strategicAxisId: string;
     }>;
@@ -569,8 +569,8 @@ export declare class StrategicPlanningService {
             };
             programs: ({
                 _count: {
-                    themes: number;
                     projects: number;
+                    themes: number;
                 };
                 coordinator: {
                     email: string;
@@ -580,12 +580,12 @@ export declare class StrategicPlanningService {
                 };
             } & {
                 id: string;
-                isActive: boolean;
+                name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
+                isActive: boolean;
                 code: string | null;
-                description: string | null;
                 startDate: Date | null;
                 endDate: Date | null;
                 strategicSubAxisId: string;
@@ -593,11 +593,11 @@ export declare class StrategicPlanningService {
             })[];
         } & {
             id: string;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             code: string | null;
-            description: string | null;
             order: number | null;
             strategicAxisId: string;
         })[];
@@ -629,24 +629,24 @@ export declare class StrategicPlanningService {
             };
             themes: {
                 id: string;
-                isActive: boolean;
+                name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
+                isActive: boolean;
                 code: string | null;
-                description: string | null;
                 objectives: string[];
                 order: number | null;
                 programId: string;
             }[];
         } & {
             id: string;
-            isActive: boolean;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            isActive: boolean;
             code: string | null;
-            description: string | null;
             startDate: Date | null;
             endDate: Date | null;
             strategicSubAxisId: string;
@@ -654,11 +654,11 @@ export declare class StrategicPlanningService {
         })[];
     } & {
         id: string;
+        name: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         code: string | null;
-        description: string | null;
         order: number | null;
         strategicAxisId: string;
     }>;
@@ -680,12 +680,12 @@ export declare class StrategicPlanningService {
             };
         } & {
             id: string;
-            isActive: boolean;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            isActive: boolean;
             code: string | null;
-            description: string | null;
             startDate: Date | null;
             endDate: Date | null;
             strategicSubAxisId: string;
@@ -693,11 +693,11 @@ export declare class StrategicPlanningService {
         })[];
     } & {
         id: string;
+        name: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         code: string | null;
-        description: string | null;
         order: number | null;
         strategicAxisId: string;
     }>;
@@ -705,6 +705,12 @@ export declare class StrategicPlanningService {
         message: string;
     }>;
     createResearchProgram(data: CreateResearchProgramRequest, userId: string): Promise<{
+        coordinator: {
+            email: string;
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
         strategicSubAxis: {
             id: string;
             name: string;
@@ -717,32 +723,26 @@ export declare class StrategicPlanningService {
                 };
             };
         };
-        coordinator: {
-            email: string;
-            id: string;
-            firstName: string;
-            lastName: string;
-        };
         themes: {
             id: string;
-            isActive: boolean;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            isActive: boolean;
             code: string | null;
-            description: string | null;
             objectives: string[];
             order: number | null;
             programId: string;
         }[];
     } & {
         id: string;
-        isActive: boolean;
+        name: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
+        isActive: boolean;
         code: string | null;
-        description: string | null;
         startDate: Date | null;
         endDate: Date | null;
         strategicSubAxisId: string;
@@ -762,6 +762,12 @@ export declare class StrategicPlanningService {
             _count: {
                 projects: number;
             };
+            coordinator: {
+                email: string;
+                id: string;
+                firstName: string;
+                lastName: string;
+            };
             strategicSubAxis: {
                 id: string;
                 name: string;
@@ -774,32 +780,26 @@ export declare class StrategicPlanningService {
                     };
                 };
             };
-            coordinator: {
-                email: string;
-                id: string;
-                firstName: string;
-                lastName: string;
-            };
             themes: {
                 id: string;
-                isActive: boolean;
+                name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
+                isActive: boolean;
                 code: string | null;
-                description: string | null;
                 objectives: string[];
                 order: number | null;
                 programId: string;
             }[];
         } & {
             id: string;
-            isActive: boolean;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            isActive: boolean;
             code: string | null;
-            description: string | null;
             startDate: Date | null;
             endDate: Date | null;
             strategicSubAxisId: string;
@@ -816,6 +816,12 @@ export declare class StrategicPlanningService {
         _count: {
             projects: number;
         };
+        coordinator: {
+            email: string;
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
         strategicSubAxis: {
             id: string;
             name: string;
@@ -827,12 +833,6 @@ export declare class StrategicPlanningService {
                     name: string;
                 };
             };
-        };
-        coordinator: {
-            email: string;
-            id: string;
-            firstName: string;
-            lastName: string;
         };
         themes: ({
             _count: {
@@ -841,30 +841,36 @@ export declare class StrategicPlanningService {
             };
         } & {
             id: string;
-            isActive: boolean;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            isActive: boolean;
             code: string | null;
-            description: string | null;
             objectives: string[];
             order: number | null;
             programId: string;
         })[];
     } & {
         id: string;
-        isActive: boolean;
+        name: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
+        isActive: boolean;
         code: string | null;
-        description: string | null;
         startDate: Date | null;
         endDate: Date | null;
         strategicSubAxisId: string;
         coordinatorId: string;
     }>;
     updateResearchProgram(id: string, data: UpdateResearchProgramRequest, userId: string): Promise<{
+        coordinator: {
+            email: string;
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
         strategicSubAxis: {
             id: string;
             name: string;
@@ -877,32 +883,26 @@ export declare class StrategicPlanningService {
                 };
             };
         };
-        coordinator: {
-            email: string;
-            id: string;
-            firstName: string;
-            lastName: string;
-        };
         themes: {
             id: string;
-            isActive: boolean;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            isActive: boolean;
             code: string | null;
-            description: string | null;
             objectives: string[];
             order: number | null;
             programId: string;
         }[];
     } & {
         id: string;
-        isActive: boolean;
+        name: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
+        isActive: boolean;
         code: string | null;
-        description: string | null;
         startDate: Date | null;
         endDate: Date | null;
         strategicSubAxisId: string;
@@ -934,12 +934,12 @@ export declare class StrategicPlanningService {
         };
     } & {
         id: string;
-        isActive: boolean;
+        name: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
+        isActive: boolean;
         code: string | null;
-        description: string | null;
         objectives: string[];
         order: number | null;
         programId: string;
@@ -976,12 +976,12 @@ export declare class StrategicPlanningService {
             };
         } & {
             id: string;
-            isActive: boolean;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            isActive: boolean;
             code: string | null;
-            description: string | null;
             objectives: string[];
             order: number | null;
             programId: string;
@@ -1026,12 +1026,12 @@ export declare class StrategicPlanningService {
         }[];
     } & {
         id: string;
-        isActive: boolean;
+        name: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
+        isActive: boolean;
         code: string | null;
-        description: string | null;
         objectives: string[];
         order: number | null;
         programId: string;
@@ -1059,12 +1059,12 @@ export declare class StrategicPlanningService {
         };
     } & {
         id: string;
-        isActive: boolean;
+        name: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
+        isActive: boolean;
         code: string | null;
-        description: string | null;
         objectives: string[];
         order: number | null;
         programId: string;
@@ -1079,11 +1079,11 @@ export declare class StrategicPlanningService {
         };
     } & {
         id: string;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
         description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
         location: string;
         surface: number | null;
     }>;
@@ -1102,11 +1102,11 @@ export declare class StrategicPlanningService {
             };
         } & {
             id: string;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
             name: string;
             description: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
             location: string;
             surface: number | null;
         })[];
@@ -1124,11 +1124,11 @@ export declare class StrategicPlanningService {
         };
     } & {
         id: string;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
         description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
         location: string;
         surface: number | null;
     }>;
@@ -1153,24 +1153,24 @@ export declare class StrategicPlanningService {
                         };
                     } & {
                         id: string;
-                        isActive: boolean;
+                        name: string;
+                        description: string | null;
                         createdAt: Date;
                         updatedAt: Date;
-                        name: string;
+                        isActive: boolean;
                         code: string | null;
-                        description: string | null;
                         objectives: string[];
                         order: number | null;
                         programId: string;
                     })[];
                 } & {
                     id: string;
-                    isActive: boolean;
+                    name: string;
+                    description: string | null;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
+                    isActive: boolean;
                     code: string | null;
-                    description: string | null;
                     startDate: Date | null;
                     endDate: Date | null;
                     strategicSubAxisId: string;
@@ -1178,31 +1178,31 @@ export declare class StrategicPlanningService {
                 })[];
             } & {
                 id: string;
+                name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 code: string | null;
-                description: string | null;
                 order: number | null;
                 strategicAxisId: string;
             })[];
         } & {
             id: string;
+            name: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             code: string | null;
-            description: string | null;
             order: number | null;
             strategicPlanId: string;
         })[];
     } & {
         id: string;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
         description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
         startYear: number;
         endYear: number;
     })[]>;
@@ -1218,13 +1218,13 @@ export declare class StrategicPlanningService {
     getEligibleCoordinators(): Promise<{
         email: string;
         id: string;
+        _count: {
+            coordinatedPrograms: number;
+        };
         firstName: string;
         lastName: string;
         specialization: string | null;
         department: string | null;
-        _count: {
-            coordinatedPrograms: number;
-        };
     }[]>;
 }
 //# sourceMappingURL=strategic-planning.service.d.ts.map

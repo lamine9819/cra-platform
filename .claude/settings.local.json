@@ -23,7 +23,8 @@
       "Bash(findstr:*)",
       "Bash(cmd //c taskkill //F //PID 25108)",
       "Bash(cmd //c taskkill //F //PID 22344)",
-      "Bash(cmd //c taskkill //F //PID 24600)"
+      "Bash(cmd //c taskkill //F //PID 24600)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

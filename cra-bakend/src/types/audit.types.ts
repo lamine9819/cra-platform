@@ -91,13 +91,14 @@ export type AuditAction =
 
 export type AuditLevel = 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
 
-export type EntityType = 
+export type EntityType =
   | 'user'
-  | 'project' 
+  | 'project'
   | 'activity'
   | 'task'
   | 'document'
   | 'form'
+  | 'event'
   | 'seminar'
   | 'comment'
   | 'notification'

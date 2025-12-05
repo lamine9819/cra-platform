@@ -10,7 +10,7 @@ class EventController {
     // ==================== ÉVÉNEMENTS ====================
     async createEvent(req, res, next) {
         try {
-            const userId = req.user.id;
+            const userId = req.user.userId;
             const eventData = req.body;
             const event = await event_service_1.default.createEvent(userId, eventData);
             res.status(201).json({
@@ -26,7 +26,7 @@ class EventController {
     async getEvent(req, res, next) {
         try {
             const { id } = req.params;
-            const userId = req.user.id;
+            const userId = req.user.userId;
             const userRole = req.user.role;
             const event = await event_service_1.default.getEventById(id, userId, userRole);
             res.status(200).json({
@@ -40,7 +40,7 @@ class EventController {
     }
     async listEvents(req, res, next) {
         try {
-            const userId = req.user.id;
+            const userId = req.user.userId;
             const userRole = req.user.role;
             const filters = req.query;
             const events = await event_service_1.default.listEvents(userId, userRole, filters);
@@ -57,7 +57,7 @@ class EventController {
     async updateEvent(req, res, next) {
         try {
             const { id } = req.params;
-            const userId = req.user.id;
+            const userId = req.user.userId;
             const userRole = req.user.role;
             const updateData = req.body;
             const event = await event_service_1.default.updateEvent(id, userId, userRole, updateData);
@@ -74,7 +74,7 @@ class EventController {
     async deleteEvent(req, res, next) {
         try {
             const { id } = req.params;
-            const userId = req.user.id;
+            const userId = req.user.userId;
             const userRole = req.user.role;
             const result = await event_service_1.default.deleteEvent(id, userId, userRole);
             res.status(200).json({
@@ -89,7 +89,7 @@ class EventController {
     async addDocumentToEvent(req, res, next) {
         try {
             const { id } = req.params;
-            const userId = req.user.id;
+            const userId = req.user.userId;
             if (!req.file) {
                 return res.status(400).json({
                     success: false,
@@ -118,7 +118,7 @@ class EventController {
     }
     async getEventStatistics(req, res, next) {
         try {
-            const userId = req.user.id;
+            const userId = req.user.userId;
             const userRole = req.user.role;
             const stats = await event_service_1.default.getEventStatistics(userId, userRole);
             res.status(200).json({
@@ -133,7 +133,7 @@ class EventController {
     // ==================== SÉMINAIRES ====================
     async createSeminar(req, res, next) {
         try {
-            const userId = req.user.id;
+            const userId = req.user.userId;
             const seminarData = req.body;
             const seminar = await event_service_1.default.createSeminar(userId, seminarData);
             res.status(201).json({
@@ -149,7 +149,7 @@ class EventController {
     async getSeminar(req, res, next) {
         try {
             const { id } = req.params;
-            const userId = req.user.id;
+            const userId = req.user.userId;
             const userRole = req.user.role;
             const seminar = await event_service_1.default.getSeminarById(id, userId, userRole);
             res.status(200).json({
@@ -163,7 +163,7 @@ class EventController {
     }
     async listSeminars(req, res, next) {
         try {
-            const userId = req.user.id;
+            const userId = req.user.userId;
             const userRole = req.user.role;
             const filters = req.query;
             const seminars = await event_service_1.default.listSeminars(userId, userRole, filters);
@@ -180,7 +180,7 @@ class EventController {
     async updateSeminar(req, res, next) {
         try {
             const { id } = req.params;
-            const userId = req.user.id;
+            const userId = req.user.userId;
             const updateData = req.body;
             const seminar = await event_service_1.default.updateSeminar(id, userId, updateData);
             res.status(200).json({
@@ -196,7 +196,7 @@ class EventController {
     async deleteSeminar(req, res, next) {
         try {
             const { id } = req.params;
-            const userId = req.user.id;
+            const userId = req.user.userId;
             const result = await event_service_1.default.deleteSeminar(id, userId);
             res.status(200).json({
                 success: true,
@@ -210,7 +210,7 @@ class EventController {
     async addDocumentToSeminar(req, res, next) {
         try {
             const { id } = req.params;
-            const userId = req.user.id;
+            const userId = req.user.userId;
             if (!req.file) {
                 return res.status(400).json({
                     success: false,
@@ -240,7 +240,7 @@ class EventController {
     // =================== RAPPORTS ===================
     async generateEventReport(req, res, next) {
         try {
-            const userId = req.user.id;
+            const userId = req.user.userId;
             const userRole = req.user.role;
             // Map and validate query parameters to EventReportDto
             const filters = {

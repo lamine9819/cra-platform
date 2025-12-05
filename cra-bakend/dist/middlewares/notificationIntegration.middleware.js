@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.notifyFormResponseSubmitted = exports.notifyDocumentShared = exports.notifyCommentAdded = exports.notifySeminarRegistration = exports.notifySeminarCreated = exports.notifyParticipantAdded = exports.notifyProjectCreated = exports.notifyTaskCompleted = exports.notifyTaskAssigned = exports.triggerNotifications = void 0;
+exports.notifyFormResponseSubmitted = exports.notifyDocumentShared = exports.notifyCommentAdded = exports.notifySeminarRegistration = exports.notifySeminarCreated = exports.notifyEventCreated = exports.notifyParticipantAdded = exports.notifyProjectCreated = exports.notifyTaskCompleted = exports.notifyTaskAssigned = exports.triggerNotifications = void 0;
 const automaticNotification_service_1 = require("../services/automaticNotification.service");
 // Middleware pour déclencher automatiquement les notifications
 const triggerNotifications = (actionType) => {
@@ -34,6 +34,11 @@ const triggerNotifications = (actionType) => {
                                 case 'participant_added':
                                     if (data.data?.projectId && data.data?.userId) {
                                         await automaticNotification_service_1.AutomaticNotificationService.notifyParticipantAdded(data.data.projectId, data.data.userId, userId);
+                                    }
+                                    break;
+                                case 'event_created':
+                                    if (data.data?.id) {
+                                        await automaticNotification_service_1.AutomaticNotificationService.notifyEventCreated(data.data.id, userId);
                                     }
                                     break;
                                 case 'seminar_created':
@@ -86,6 +91,7 @@ exports.notifyTaskAssigned = (0, exports.triggerNotifications)('task_assigned');
 exports.notifyTaskCompleted = (0, exports.triggerNotifications)('task_completed');
 exports.notifyProjectCreated = (0, exports.triggerNotifications)('project_created');
 exports.notifyParticipantAdded = (0, exports.triggerNotifications)('participant_added');
+exports.notifyEventCreated = (0, exports.triggerNotifications)('event_created');
 exports.notifySeminarCreated = (0, exports.triggerNotifications)('seminar_created');
 exports.notifySeminarRegistration = (0, exports.triggerNotifications)('seminar_registration');
 exports.notifyCommentAdded = (0, exports.triggerNotifications)('comment_added');

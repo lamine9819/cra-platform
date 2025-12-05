@@ -15,14 +15,13 @@ const auth_routes_1 = tslib_1.__importDefault(require("./routes/auth.routes"));
 const user_routes_1 = tslib_1.__importDefault(require("./routes/user.routes"));
 const project_routes_1 = tslib_1.__importDefault(require("./routes/project.routes"));
 const activity_routes_1 = tslib_1.__importDefault(require("./routes/activity.routes"));
-const form_routes_1 = tslib_1.__importDefault(require("./routes/form.routes"));
 const convention_routes_1 = tslib_1.__importDefault(require("./routes/convention.routes"));
 const event_routes_1 = tslib_1.__importDefault(require("./routes/event.routes"));
 const knowledgeTransfer_routes_1 = tslib_1.__importDefault(require("./routes/knowledgeTransfer.routes"));
 const publication_routes_1 = tslib_1.__importDefault(require("./routes/publication.routes"));
 const strategic_planning_routes_1 = tslib_1.__importDefault(require("./routes/strategic-planning.routes"));
 const document_routes_1 = tslib_1.__importDefault(require("./routes/document.routes"));
-const form_routes_2 = tslib_1.__importDefault(require("./routes/form.routes"));
+const form_routes_1 = tslib_1.__importDefault(require("./routes/form.routes"));
 const comment_routes_1 = tslib_1.__importDefault(require("./routes/comment.routes"));
 const notification_routes_1 = tslib_1.__importDefault(require("./routes/notification.routes"));
 const dashboard_routes_1 = tslib_1.__importDefault(require("./routes/dashboard.routes"));
@@ -33,6 +32,7 @@ const partner_routes_1 = tslib_1.__importDefault(require("./routes/partner.route
 const auditLog_routes_1 = tslib_1.__importDefault(require("./routes/auditLog.routes"));
 const training_routes_1 = tslib_1.__importDefault(require("./routes/training.routes"));
 const supervision_routes_1 = tslib_1.__importDefault(require("./routes/supervision.routes"));
+const chat_routes_1 = tslib_1.__importDefault(require("./routes/chat.routes"));
 // Import des middlewares
 const errorHandler_1 = require("./middlewares/errorHandler");
 const auditMiddleware_1 = require("./middlewares/auditMiddleware");
@@ -56,12 +56,13 @@ app.use((0, helmet_1.default)({
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             scriptSrc: ["'self'"],
-            imgSrc: ["'self'", "data:", "https:"],
+            imgSrc: ["'self'", "data:", "https:", "http://localhost:5173", "http://127.0.0.1:5173"],
             connectSrc: ["'self'", "ws:", "wss:"],
             frameAncestors: ["'self'", "http://localhost:5173", "http://127.0.0.1:5173"],
         },
     },
     crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: false, // Permettre le chargement des images depuis le frontend
     frameguard: {
         action: 'sameorigin'
     }
@@ -343,7 +344,6 @@ app.get('/api', (_req, res) => {
             projects: '/api/projects',
             activities: '/api/activities',
             partners: '/api/partners',
-            formes: '/api/formes',
             publications: '/api/publications',
             conventions: '/api/conventions',
             knowledgeTransfers: '/api/knowledge-transfers',
@@ -375,15 +375,15 @@ app.use('/api/auth', authLimiter, auth_routes_1.default);
 app.use('/api/users', user_routes_1.default);
 app.use('/api/projects', project_routes_1.default);
 app.use('/api/activities', activity_routes_1.default);
-app.use('/api/formes', form_routes_1.default);
 app.use('/api/publications', publication_routes_1.default);
 app.use('/api/conventions', convention_routes_1.default);
 app.use('/api/knowledge-transfers', knowledgeTransfer_routes_1.default);
 app.use('/api/strategic-planning', strategic_planning_routes_1.default);
 app.use('/api/documents', document_routes_1.default);
 app.use('/api/events', event_routes_1.default);
-app.use('/api/forms', form_routes_2.default);
+app.use('/api/forms', form_routes_1.default);
 app.use('/api/comments', comment_routes_1.default);
+app.use('/api/chat', chat_routes_1.default);
 app.use('/api/notifications', notification_routes_1.default);
 app.use('/api/dashboard', dashboard_routes_1.default);
 app.use('/api/admin/dashboard', dashboard_admin_routes_1.default);

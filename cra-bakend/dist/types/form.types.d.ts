@@ -86,6 +86,7 @@ export interface PhotoData {
     latitude?: number;
     longitude?: number;
     takenAt?: Date;
+    fieldId?: string;
 }
 export interface ResponsePhoto {
     id: string;

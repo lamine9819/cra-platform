@@ -117,19 +117,13 @@ class EventService {
         });
         if (!event)
             throw new Error('Événement non trouvé');
-        const canView = userRole === client_1.UserRole.COORDONATEUR_PROJET ||
-            userRole === client_1.UserRole.ADMINISTRATEUR ||
-            event.creatorId === userId;
-        if (!canView) {
-            throw new Error('Vous n\'avez pas les permissions pour voir cet événement');
-        }
+        // Tous les utilisateurs peuvent voir les événements
         return event;
     }
     async listEvents(userId, userRole, filters) {
         const whereClause = {};
-        if (userRole === client_1.UserRole.CHERCHEUR) {
-            whereClause.creatorId = userId;
-        }
+        // Tous les utilisateurs peuvent voir tous les événements
+        // Seul le coordinateur peut filtrer par creatorId spécifique
         if (userRole === client_1.UserRole.COORDONATEUR_PROJET && filters.creatorId) {
             whereClause.creatorId = filters.creatorId;
         }
@@ -338,19 +332,13 @@ class EventService {
         });
         if (!seminar)
             throw new Error('Séminaire non trouvé');
-        const canView = userRole === client_1.UserRole.COORDONATEUR_PROJET ||
-            userRole === client_1.UserRole.ADMINISTRATEUR ||
-            seminar.organizerId === userId;
-        if (!canView) {
-            throw new Error('Vous n\'avez pas les permissions pour voir ce séminaire');
-        }
+        // Tous les utilisateurs peuvent voir les séminaires
         return seminar;
     }
     async listSeminars(userId, userRole, filters) {
         const whereClause = {};
-        if (userRole === client_1.UserRole.CHERCHEUR) {
-            whereClause.organizerId = userId;
-        }
+        // Tous les utilisateurs peuvent voir tous les séminaires
+        // Seul le coordinateur peut filtrer par organizerId spécifique
         if (userRole === client_1.UserRole.COORDONATEUR_PROJET && filters.organizerId) {
             whereClause.organizerId = filters.organizerId;
         }
@@ -480,9 +468,7 @@ class EventService {
     }
     async getEventStatistics(userId, userRole) {
         const whereClause = {};
-        if (userRole === client_1.UserRole.CHERCHEUR) {
-            whereClause.creatorId = userId;
-        }
+        // Tous les utilisateurs voient les statistiques de tous les événements
         const [total, byType, byStatus, upcoming] = await Promise.all([
             prisma.calendarEvent.count({ where: whereClause }),
             prisma.calendarEvent.groupBy({

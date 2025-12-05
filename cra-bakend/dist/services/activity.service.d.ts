@@ -47,9 +47,9 @@ export declare class ActivityService {
         userId: string;
         role: import(".prisma/client").$Enums.ParticipantRole;
         id: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        isActive: boolean;
         startDate: Date;
         endDate: Date | null;
         timeAllocation: number | null;
@@ -68,9 +68,9 @@ export declare class ActivityService {
         userId: string;
         role: import(".prisma/client").$Enums.ParticipantRole;
         id: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        isActive: boolean;
         startDate: Date;
         endDate: Date | null;
         timeAllocation: number | null;
@@ -91,9 +91,9 @@ export declare class ActivityService {
         userId: string;
         role: import(".prisma/client").$Enums.ParticipantRole;
         id: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        isActive: boolean;
         startDate: Date;
         endDate: Date | null;
         timeAllocation: number | null;
@@ -188,11 +188,11 @@ export declare class ActivityService {
         partner: {
             email: string | null;
             id: string;
+            name: string;
+            description: string | null;
+            type: import(".prisma/client").$Enums.PartnerType;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
-            type: import(".prisma/client").$Enums.PartnerType;
-            description: string | null;
             expertise: string[];
             category: string | null;
             address: string | null;
@@ -206,9 +206,9 @@ export declare class ActivityService {
         };
     } & {
         id: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        isActive: boolean;
         startDate: Date;
         endDate: Date | null;
         activityId: string;
@@ -221,11 +221,11 @@ export declare class ActivityService {
         partner: {
             email: string | null;
             id: string;
+            name: string;
+            description: string | null;
+            type: import(".prisma/client").$Enums.PartnerType;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
-            type: import(".prisma/client").$Enums.PartnerType;
-            description: string | null;
             expertise: string[];
             category: string | null;
             address: string | null;
@@ -239,9 +239,9 @@ export declare class ActivityService {
         };
     } & {
         id: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        isActive: boolean;
         startDate: Date;
         endDate: Date | null;
         activityId: string;
@@ -255,11 +255,11 @@ export declare class ActivityService {
         partner: {
             email: string | null;
             id: string;
+            name: string;
+            description: string | null;
+            type: import(".prisma/client").$Enums.PartnerType;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
-            type: import(".prisma/client").$Enums.PartnerType;
-            description: string | null;
             expertise: string[];
             category: string | null;
             address: string | null;
@@ -273,9 +273,9 @@ export declare class ActivityService {
         };
     } & {
         id: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        isActive: boolean;
         startDate: Date;
         endDate: Date | null;
         activityId: string;
@@ -284,6 +284,14 @@ export declare class ActivityService {
         benefits: string | null;
         partnerId: string;
     })[]>;
+    /**
+     * Enregistrer un historique de modification de tâche
+     */
+    private logTaskHistory;
+    /**
+     * Envoyer une notification pour un changement de tâche
+     */
+    private notifyTaskChange;
     createTask(activityId: string, taskData: CreateTaskInput, userId: string, userRole: string): Promise<{
         creator: {
             id: string;
@@ -298,14 +306,14 @@ export declare class ActivityService {
         } | null;
     } & {
         id: string;
+        description: string | null;
+        projectId: string | null;
+        creatorId: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.TaskStatus;
-        creatorId: string;
         priority: import(".prisma/client").$Enums.TaskPriority;
-        projectId: string | null;
         activityId: string | null;
         dueDate: Date | null;
         assigneeId: string | null;
@@ -326,14 +334,14 @@ export declare class ActivityService {
         } | null;
     } & {
         id: string;
+        description: string | null;
+        projectId: string | null;
+        creatorId: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.TaskStatus;
-        creatorId: string;
         priority: import(".prisma/client").$Enums.TaskPriority;
-        projectId: string | null;
         activityId: string | null;
         dueDate: Date | null;
         assigneeId: string | null;
@@ -342,14 +350,14 @@ export declare class ActivityService {
     }>;
     deleteTask(activityId: string, taskId: string, userId: string, userRole: string): Promise<void>;
     listTasks(activityId: string, userId: string, userRole: string): Promise<({
-        _count: {
-            documents: number;
-            comments: number;
-        };
         creator: {
             id: string;
             firstName: string;
             lastName: string;
+        };
+        _count: {
+            comments: number;
+            documents: number;
         };
         assignee: {
             email: string;
@@ -359,14 +367,14 @@ export declare class ActivityService {
         } | null;
     } & {
         id: string;
+        description: string | null;
+        projectId: string | null;
+        creatorId: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.TaskStatus;
-        creatorId: string;
         priority: import(".prisma/client").$Enums.TaskPriority;
-        projectId: string | null;
         activityId: string | null;
         dueDate: Date | null;
         assigneeId: string | null;
@@ -374,44 +382,11 @@ export declare class ActivityService {
         completedAt: Date | null;
     })[]>;
     getTaskById(activityId: string, taskId: string, userId: string, userRole: string): Promise<{
-        documents: ({
-            owner: {
-                id: string;
-                firstName: string;
-                lastName: string;
-            };
-        } & {
+        creator: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            type: import(".prisma/client").$Enums.DocumentType;
-            version: number;
-            title: string;
-            description: string | null;
-            projectId: string | null;
-            activityId: string | null;
-            size: bigint;
-            isPublic: boolean;
-            filename: string;
-            filepath: string;
-            mimeType: string;
-            tags: string[];
-            deletedAt: Date | null;
-            deletedBy: string | null;
-            favoritedBy: string[];
-            viewCount: number;
-            downloadCount: number;
-            lastViewedAt: Date | null;
-            previousVersionId: string | null;
-            ownerId: string;
-            taskId: string | null;
-            seminarId: string | null;
-            trainingId: string | null;
-            internshipId: string | null;
-            supervisionId: string | null;
-            knowledgeTransferId: string | null;
-            eventId: string | null;
-        })[];
+            firstName: string;
+            lastName: string;
+        };
         comments: ({
             author: {
                 id: string;
@@ -420,20 +395,53 @@ export declare class ActivityService {
             };
         } & {
             id: string;
+            projectId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            projectId: string | null;
             activityId: string | null;
             formId: string | null;
             content: string;
             taskId: string | null;
             authorId: string;
         })[];
-        creator: {
+        documents: ({
+            owner: {
+                id: string;
+                firstName: string;
+                lastName: string;
+            };
+        } & {
             id: string;
-            firstName: string;
-            lastName: string;
-        };
+            description: string | null;
+            type: import(".prisma/client").$Enums.DocumentType;
+            projectId: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            version: number;
+            title: string;
+            activityId: string | null;
+            size: bigint;
+            isPublic: boolean;
+            filename: string;
+            filepath: string;
+            mimeType: string;
+            tags: string[];
+            ownerId: string;
+            taskId: string | null;
+            seminarId: string | null;
+            trainingId: string | null;
+            internshipId: string | null;
+            supervisionId: string | null;
+            knowledgeTransferId: string | null;
+            eventId: string | null;
+            deletedAt: Date | null;
+            deletedBy: string | null;
+            downloadCount: number;
+            favoritedBy: string[];
+            lastViewedAt: Date | null;
+            previousVersionId: string | null;
+            viewCount: number;
+        })[];
         assignee: {
             email: string;
             id: string;
@@ -442,14 +450,14 @@ export declare class ActivityService {
         } | null;
     } & {
         id: string;
+        description: string | null;
+        projectId: string | null;
+        creatorId: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.TaskStatus;
-        creatorId: string;
         priority: import(".prisma/client").$Enums.TaskPriority;
-        projectId: string | null;
         activityId: string | null;
         dueDate: Date | null;
         assigneeId: string | null;
@@ -475,14 +483,14 @@ export declare class ActivityService {
         } | null;
     } & {
         id: string;
+        description: string | null;
+        projectId: string | null;
+        creatorId: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.TaskStatus;
-        creatorId: string;
         priority: import(".prisma/client").$Enums.TaskPriority;
-        projectId: string | null;
         activityId: string | null;
         dueDate: Date | null;
         assigneeId: string | null;
@@ -490,14 +498,14 @@ export declare class ActivityService {
         completedAt: Date | null;
     }>;
     listCreatedTasks(activityId: string, userId: string, userRole: string): Promise<({
-        _count: {
-            documents: number;
-            comments: number;
-        };
         creator: {
             id: string;
             firstName: string;
             lastName: string;
+        };
+        _count: {
+            comments: number;
+            documents: number;
         };
         assignee: {
             email: string;
@@ -507,14 +515,14 @@ export declare class ActivityService {
         } | null;
     } & {
         id: string;
+        description: string | null;
+        projectId: string | null;
+        creatorId: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.TaskStatus;
-        creatorId: string;
         priority: import(".prisma/client").$Enums.TaskPriority;
-        projectId: string | null;
         activityId: string | null;
         dueDate: Date | null;
         assigneeId: string | null;
@@ -522,14 +530,14 @@ export declare class ActivityService {
         completedAt: Date | null;
     })[]>;
     listAssignedTasks(activityId: string, userId: string, userRole: string): Promise<({
-        _count: {
-            documents: number;
-            comments: number;
-        };
         creator: {
             id: string;
             firstName: string;
             lastName: string;
+        };
+        _count: {
+            comments: number;
+            documents: number;
         };
         assignee: {
             email: string;
@@ -539,14 +547,14 @@ export declare class ActivityService {
         } | null;
     } & {
         id: string;
+        description: string | null;
+        projectId: string | null;
+        creatorId: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.TaskStatus;
-        creatorId: string;
         priority: import(".prisma/client").$Enums.TaskPriority;
-        projectId: string | null;
         activityId: string | null;
         dueDate: Date | null;
         assigneeId: string | null;
@@ -562,9 +570,9 @@ export declare class ActivityService {
         };
     } & {
         id: string;
+        projectId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        projectId: string | null;
         activityId: string | null;
         formId: string | null;
         content: string;
@@ -580,9 +588,9 @@ export declare class ActivityService {
         };
     } & {
         id: string;
+        projectId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        projectId: string | null;
         activityId: string | null;
         formId: string | null;
         content: string;
@@ -600,9 +608,9 @@ export declare class ActivityService {
         };
     } & {
         id: string;
+        projectId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        projectId: string | null;
         activityId: string | null;
         formId: string | null;
         content: string;
@@ -627,12 +635,12 @@ export declare class ActivityService {
         };
     } & {
         id: string;
+        description: string | null;
+        type: import(".prisma/client").$Enums.TransferType;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.TransferType;
         date: Date;
         title: string;
-        description: string | null;
         participants: number | null;
         location: string | null;
         activityId: string | null;

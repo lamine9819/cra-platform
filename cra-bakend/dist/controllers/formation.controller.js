@@ -12,7 +12,7 @@ class FormationController {
         // ============= FORMATIONS COURTES REÇUES =============
         this.createShortTrainingReceived = async (req, res) => {
             try {
-                const userId = req.user?.id;
+                const userId = req.user.userId;
                 if (!userId) {
                     res.status(401).json({ error: 'Utilisateur non authentifié' });
                     return;
@@ -43,7 +43,7 @@ class FormationController {
         };
         this.getUserShortTrainingsReceived = async (req, res) => {
             try {
-                const userId = req.user?.id;
+                const userId = req.user.userId;
                 if (!userId) {
                     res.status(401).json({ error: 'Utilisateur non authentifié' });
                     return;
@@ -63,9 +63,41 @@ class FormationController {
                 });
             }
         };
+        this.updateShortTrainingReceived = async (req, res) => {
+            try {
+                const userId = req.user.userId;
+                const { trainingId } = req.params;
+                if (!userId) {
+                    res.status(401).json({ error: 'Utilisateur non authentifié' });
+                    return;
+                }
+                const validatedData = formation_types_1.createShortTrainingReceivedSchema.partial().parse(req.body);
+                const training = await this.formationService.updateShortTrainingReceived(trainingId, userId, validatedData);
+                res.status(200).json({
+                    success: true,
+                    data: training,
+                    message: 'Formation courte reçue modifiée avec succès'
+                });
+            }
+            catch (error) {
+                if (error instanceof zod_1.z.ZodError) {
+                    res.status(400).json({
+                        error: 'Données invalides',
+                        details: error.issues
+                    });
+                }
+                else {
+                    console.error('Erreur lors de la modification de la formation courte reçue:', error);
+                    res.status(500).json({
+                        error: 'Erreur interne du serveur',
+                        message: error instanceof Error ? error.message : 'Erreur inconnue'
+                    });
+                }
+            }
+        };
         this.deleteShortTrainingReceived = async (req, res) => {
             try {
-                const userId = req.user?.id;
+                const userId = req.user.userId;
                 const { trainingId } = req.params;
                 if (!userId) {
                     res.status(401).json({ error: 'Utilisateur non authentifié' });
@@ -88,7 +120,7 @@ class FormationController {
         // ============= FORMATIONS DIPLÔMANTES REÇUES =============
         this.createDiplomaticTrainingReceived = async (req, res) => {
             try {
-                const userId = req.user?.id;
+                const userId = req.user.userId;
                 if (!userId) {
                     res.status(401).json({ error: 'Utilisateur non authentifié' });
                     return;
@@ -119,7 +151,7 @@ class FormationController {
         };
         this.getUserDiplomaticTrainingsReceived = async (req, res) => {
             try {
-                const userId = req.user?.id;
+                const userId = req.user.userId;
                 if (!userId) {
                     res.status(401).json({ error: 'Utilisateur non authentifié' });
                     return;
@@ -139,9 +171,41 @@ class FormationController {
                 });
             }
         };
+        this.updateDiplomaticTrainingReceived = async (req, res) => {
+            try {
+                const userId = req.user.userId;
+                const { trainingId } = req.params;
+                if (!userId) {
+                    res.status(401).json({ error: 'Utilisateur non authentifié' });
+                    return;
+                }
+                const validatedData = formation_types_1.createDiplomaticTrainingReceivedSchema.partial().parse(req.body);
+                const training = await this.formationService.updateDiplomaticTrainingReceived(trainingId, userId, validatedData);
+                res.status(200).json({
+                    success: true,
+                    data: training,
+                    message: 'Formation diplômante reçue modifiée avec succès'
+                });
+            }
+            catch (error) {
+                if (error instanceof zod_1.z.ZodError) {
+                    res.status(400).json({
+                        error: 'Données invalides',
+                        details: error.issues
+                    });
+                }
+                else {
+                    console.error('Erreur lors de la modification de la formation diplômante reçue:', error);
+                    res.status(500).json({
+                        error: 'Erreur interne du serveur',
+                        message: error instanceof Error ? error.message : 'Erreur inconnue'
+                    });
+                }
+            }
+        };
         this.deleteDiplomaticTrainingReceived = async (req, res) => {
             try {
-                const userId = req.user?.id;
+                const userId = req.user.userId;
                 const { trainingId } = req.params;
                 if (!userId) {
                     res.status(401).json({ error: 'Utilisateur non authentifié' });
@@ -164,7 +228,7 @@ class FormationController {
         // ============= FORMATIONS DISPENSÉES =============
         this.createTrainingGiven = async (req, res) => {
             try {
-                const userId = req.user?.id;
+                const userId = req.user.userId;
                 if (!userId) {
                     res.status(401).json({ error: 'Utilisateur non authentifié' });
                     return;
@@ -195,7 +259,7 @@ class FormationController {
         };
         this.getUserTrainingsGiven = async (req, res) => {
             try {
-                const userId = req.user?.id;
+                const userId = req.user.userId;
                 if (!userId) {
                     res.status(401).json({ error: 'Utilisateur non authentifié' });
                     return;
@@ -215,9 +279,41 @@ class FormationController {
                 });
             }
         };
+        this.updateTrainingGiven = async (req, res) => {
+            try {
+                const userId = req.user.userId;
+                const { trainingId } = req.params;
+                if (!userId) {
+                    res.status(401).json({ error: 'Utilisateur non authentifié' });
+                    return;
+                }
+                const validatedData = formation_types_1.createTrainingGivenSchema.partial().parse(req.body);
+                const training = await this.formationService.updateTrainingGiven(trainingId, userId, validatedData);
+                res.status(200).json({
+                    success: true,
+                    data: training,
+                    message: 'Formation dispensée modifiée avec succès'
+                });
+            }
+            catch (error) {
+                if (error instanceof zod_1.z.ZodError) {
+                    res.status(400).json({
+                        error: 'Données invalides',
+                        details: error.issues
+                    });
+                }
+                else {
+                    console.error('Erreur lors de la modification de la formation dispensée:', error);
+                    res.status(500).json({
+                        error: 'Erreur interne du serveur',
+                        message: error instanceof Error ? error.message : 'Erreur inconnue'
+                    });
+                }
+            }
+        };
         this.deleteTrainingGiven = async (req, res) => {
             try {
-                const userId = req.user?.id;
+                const userId = req.user.userId;
                 const { trainingId } = req.params;
                 if (!userId) {
                     res.status(401).json({ error: 'Utilisateur non authentifié' });
@@ -240,7 +336,7 @@ class FormationController {
         // ============= ENCADREMENTS =============
         this.createSupervision = async (req, res) => {
             try {
-                const userId = req.user?.id;
+                const userId = req.user.userId;
                 if (!userId) {
                     res.status(401).json({ error: 'Utilisateur non authentifié' });
                     return;
@@ -271,7 +367,7 @@ class FormationController {
         };
         this.getUserSupervisions = async (req, res) => {
             try {
-                const userId = req.user?.id;
+                const userId = req.user.userId;
                 if (!userId) {
                     res.status(401).json({ error: 'Utilisateur non authentifié' });
                     return;
@@ -291,9 +387,41 @@ class FormationController {
                 });
             }
         };
+        this.updateSupervision = async (req, res) => {
+            try {
+                const userId = req.user.userId;
+                const { supervisionId } = req.params;
+                if (!userId) {
+                    res.status(401).json({ error: 'Utilisateur non authentifié' });
+                    return;
+                }
+                const validatedData = formation_types_1.createSupervisionSchema.partial().parse(req.body);
+                const supervision = await this.formationService.updateSupervision(supervisionId, userId, validatedData);
+                res.status(200).json({
+                    success: true,
+                    data: supervision,
+                    message: 'Encadrement modifié avec succès'
+                });
+            }
+            catch (error) {
+                if (error instanceof zod_1.z.ZodError) {
+                    res.status(400).json({
+                        error: 'Données invalides',
+                        details: error.issues
+                    });
+                }
+                else {
+                    console.error('Erreur lors de la modification de l\'encadrement:', error);
+                    res.status(500).json({
+                        error: 'Erreur interne du serveur',
+                        message: error instanceof Error ? error.message : 'Erreur inconnue'
+                    });
+                }
+            }
+        };
         this.deleteSupervision = async (req, res) => {
             try {
-                const userId = req.user?.id;
+                const userId = req.user.userId;
                 const { supervisionId } = req.params;
                 if (!userId) {
                     res.status(401).json({ error: 'Utilisateur non authentifié' });
@@ -316,7 +444,7 @@ class FormationController {
         // ============= RAPPORTS (COORDINATEUR/ADMIN) =============
         this.getAllUsersFormationReport = async (req, res) => {
             try {
-                const userRole = req.user?.role;
+                const userRole = req.user.role;
                 if (userRole !== 'COORDONATEUR_PROJET' && userRole !== 'ADMINISTRATEUR') {
                     res.status(403).json({ error: 'Accès non autorisé' });
                     return;
@@ -338,8 +466,8 @@ class FormationController {
         };
         this.getUserFormationReport = async (req, res) => {
             try {
-                const userId = req.user?.id;
-                const userRole = req.user?.role;
+                const userId = req.user.userId;
+                const userRole = req.user.role;
                 const { userId: targetUserId } = req.params;
                 if (!userId) {
                     res.status(401).json({ error: 'Utilisateur non authentifié' });
@@ -377,10 +505,16 @@ class FormationController {
         };
         this.downloadFormationReport = async (req, res) => {
             try {
-                const userRole = req.user?.role;
+                const userRole = req.user.role;
+                const currentUserId = req.user.userId;
                 const { format, userId: targetUserId } = req.query;
-                if (userRole !== 'COORDONATEUR_PROJET' && userRole !== 'ADMINISTRATEUR') {
-                    res.status(403).json({ error: 'Accès non autorisé' });
+                // Vérification des permissions
+                const isAdminOrCoordinator = userRole === 'COORDONATEUR_PROJET' || userRole === 'ADMINISTRATEUR';
+                const isOwnReport = !targetUserId || targetUserId === currentUserId;
+                // Un chercheur peut télécharger uniquement son propre rapport
+                // Un admin/coordinateur peut télécharger n'importe quel rapport
+                if (!isAdminOrCoordinator && !isOwnReport) {
+                    res.status(403).json({ error: 'Vous ne pouvez télécharger que votre propre rapport' });
                     return;
                 }
                 if (!format || format !== 'pdf') {
@@ -390,8 +524,18 @@ class FormationController {
                 let reportData;
                 let htmlContent;
                 let filename;
-                if (targetUserId) {
-                    const userId = targetUserId;
+                // Déterminer quel userId utiliser
+                const effectiveUserId = targetUserId || currentUserId;
+                const isGlobalReport = !targetUserId && isAdminOrCoordinator;
+                if (isGlobalReport) {
+                    // Rapport global pour admin/coordinateur
+                    reportData = await this.formationService.getAllUsersFormationReport();
+                    htmlContent = this.reportService.generateGlobalHTMLContent(reportData);
+                    filename = this.reportService.generateFilename(reportData, 'pdf');
+                }
+                else {
+                    // Rapport individuel
+                    const userId = effectiveUserId;
                     const shortTrainings = await this.formationService.getUserShortTrainingsReceived(userId);
                     const diplomaticTrainings = await this.formationService.getUserDiplomaticTrainingsReceived(userId);
                     const trainingsGiven = await this.formationService.getUserTrainingsGiven(userId);
@@ -405,11 +549,6 @@ class FormationController {
                         supervisions
                     };
                     htmlContent = this.reportService.generateHTMLContent(reportData);
-                    filename = this.reportService.generateFilename(reportData, 'pdf');
-                }
-                else {
-                    reportData = await this.formationService.getAllUsersFormationReport();
-                    htmlContent = this.reportService.generateGlobalHTMLContent(reportData);
                     filename = this.reportService.generateFilename(reportData, 'pdf');
                 }
                 await this.generatePDFReport(res, htmlContent, filename);

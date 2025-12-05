@@ -1,3 +1,5 @@
+export { EntityType } from './audit.types';
+
 export interface CreateNotificationRequest {
   title: string;
   message: string;
@@ -54,5 +56,7 @@ export enum NotificationType {
   FUNDING_APPROVED = 'funding_approved',
   DEADLINE_APPROACHING = 'deadline_approaching',
   PROJECT_UPDATE = 'project_update',
-  SYSTEM_ALERT = 'system_alert'
+  SYSTEM_ALERT = 'system_alert',
+  EVENT_CREATED = 'event_created',
+  SEMINAR_CREATED = 'seminar_created'
 }

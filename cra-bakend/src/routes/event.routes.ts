@@ -3,6 +3,7 @@ import eventController from '../controllers/event.controller';
 import { authenticate } from '../middlewares/auth';
 import { validate } from '../middlewares/validation.middleware';
 import { upload } from '../middlewares/upload.middleware';
+import { notifyEventCreated, notifySeminarCreated } from '../middlewares/notificationIntegration.middleware';
 import {
   createEventSchema,
   updateEventSchema,
@@ -51,6 +52,7 @@ router.get(
  */
 router.post(
   '/seminars',
+  notifySeminarCreated,
   validate(createSeminarSchema),
   eventController.createSeminar
 );
@@ -121,6 +123,7 @@ router.post(
  */
 router.post(
   '/',
+  notifyEventCreated,
   validate(createEventSchema),
   eventController.createEvent
 );

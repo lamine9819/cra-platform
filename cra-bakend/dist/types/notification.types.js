@@ -15,5 +15,7 @@ var NotificationType;
     NotificationType["DEADLINE_APPROACHING"] = "deadline_approaching";
     NotificationType["PROJECT_UPDATE"] = "project_update";
     NotificationType["SYSTEM_ALERT"] = "system_alert";
+    NotificationType["EVENT_CREATED"] = "event_created";
+    NotificationType["SEMINAR_CREATED"] = "seminar_created";
 })(NotificationType || (exports.NotificationType = NotificationType = {}));
 //# sourceMappingURL=notification.types.js.map

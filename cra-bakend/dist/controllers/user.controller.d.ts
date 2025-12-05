@@ -80,5 +80,13 @@ export declare class UserController {
      * Mettre à jour son propre profil individuel
      */
     updateMyIndividualProfile: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    /**
+     * Upload d'une photo de profil
+     */
+    uploadProfileImage: (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
+    /**
+     * Supprimer la photo de profil
+     */
+    deleteProfileImage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 }
 //# sourceMappingURL=user.controller.d.ts.map

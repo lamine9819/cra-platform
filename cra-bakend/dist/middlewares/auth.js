@@ -7,14 +7,10 @@ const errors_1 = require("../utils/errors");
 const jsonwebtoken_1 = tslib_1.__importDefault(require("jsonwebtoken"));
 const authenticate = (req, res, next) => {
     try {
-        // Accès sécurisé au header authorization
-        const authHeader = req.get('authorization') || req.get('Authorization');
-        if (!authHeader) {
-            throw new errors_1.AuthError('Token d\'authentification manquant');
-        }
-        const token = authHeader.split(' ')[1]; // Bearer TOKEN
+        // Lire le token depuis le cookie HttpOnly
+        const token = req.cookies?.auth_token;
         if (!token) {
-            throw new errors_1.AuthError('Format de token invalide');
+            throw new errors_1.AuthError('Token d\'authentification manquant');
         }
         // Vérifier et décoder le token
         const decoded = (0, jwt_1.verifyToken)(token);
@@ -41,7 +37,7 @@ const authenticate = (req, res, next) => {
 exports.authenticate = authenticate;
 // Authentification optionnelle (pour les routes publiques avec amélioration si connecté)
 const optionalAuth = (req, res, next) => {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.cookies?.auth_token;
     if (token) {
         try {
             const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
@@ -54,18 +50,14 @@ const optionalAuth = (req, res, next) => {
     next();
 };
 exports.optionalAuth = optionalAuth;
-// Authentification flexible : accepte le token dans le header OU en query parameter
+// Authentification flexible : accepte le token dans le cookie OU en query parameter
 // Utile pour les routes comme preview/download qui peuvent être ouvertes dans un nouvel onglet
 const flexibleAuth = (req, res, next) => {
     try {
-        // Essayer d'abord le header Authorization
-        const authHeader = req.get('authorization') || req.get('Authorization');
-        let token;
-        if (authHeader) {
-            token = authHeader.split(' ')[1]; // Bearer TOKEN
-        }
-        else {
-            // Si pas de header, essayer le query parameter
+        // Essayer d'abord le cookie
+        let token = req.cookies?.auth_token;
+        // Si pas de cookie, essayer le query parameter
+        if (!token) {
             token = req.query.token;
         }
         if (!token) {

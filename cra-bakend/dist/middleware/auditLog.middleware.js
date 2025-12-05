@@ -83,7 +83,6 @@ const auditLogMiddleware = async (req, res, next) => {
                     entityType,
                     entityId,
                     details,
-                    metadata,
                     changes: req.method !== 'DELETE' ? {
                         after: body?.data || body,
                     } : undefined,
@@ -115,7 +114,7 @@ const auditErrorMiddleware = (err, req, res, next) => {
     // Logger l'erreur de manière asynchrone
     setImmediate(async () => {
         try {
-            await auditLog_service_1.default.logError(err, userId, undefined, undefined, metadata);
+            await auditLog_service_1.default.logError(err, userId, undefined, undefined);
         }
         catch (logError) {
             console.error('Error logging error to audit:', logError);

@@ -25,9 +25,18 @@ class WebSocketNotificationService {
     setupMiddleware() {
         this.io.use(async (socket, next) => {
             try {
-                const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
+                let token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
+                // Si pas de token dans auth ou headers, essayer de récupérer depuis les cookies
+                if (!token && socket.handshake.headers.cookie) {
+                    const cookies = socket.handshake.headers.cookie.split(';').reduce((acc, cookie) => {
+                        const [key, value] = cookie.trim().split('=');
+                        acc[key] = value;
+                        return acc;
+                    }, {});
+                    token = cookies.token; // Le nom du cookie défini dans le backend
+                }
                 if (!token) {
-                    return next(new Error('Token manquant'));
+                    return next(new Error('Authentification requise'));
                 }
                 const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
                 // Vérifier que l'utilisateur existe et est actif
@@ -46,6 +55,7 @@ class WebSocketNotificationService {
                 next();
             }
             catch (error) {
+                console.error('Erreur d\'authentification WebSocket:', error);
                 next(new Error('Token invalide'));
             }
         });
@@ -327,6 +337,10 @@ class WebSocketNotificationService {
             totalConnections: this.getTotalConnections(),
             connectedUsers: this.getConnectedUsers()
         };
+    }
+    // Obtenir l'instance Socket.IO
+    getIO() {
+        return this.io;
     }
 }
 exports.WebSocketNotificationService = WebSocketNotificationService;

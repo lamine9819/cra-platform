@@ -9,7 +9,7 @@ export declare class AuthController {
     changePassword: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     /**
      * Déconnexion de l'utilisateur
-     * Note: Côté client, il faut supprimer le token du localStorage/sessionStorage
+     * Supprime le cookie HttpOnly côté serveur
      */
     logout: (_req: Request, res: Response) => Promise<void>;
 }

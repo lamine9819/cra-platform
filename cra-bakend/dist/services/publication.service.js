@@ -10,7 +10,7 @@ class PublicationService {
     // Créer une publication
     async createPublication(data, userId) {
         const { authors, linkedProjectIds, linkedActivityIds, ...publicationData } = data;
-        // Vérifier que l'utilisateur créateur est dans la liste des auteurs
+        // Vérifier que l'utilisateur créateur est dans la liste des auteurs (uniquement pour les auteurs internes)
         const isAuthor = authors.some(author => author.userId === userId);
         if (!isAuthor) {
             throw new Error("Vous devez être l'un des auteurs de la publication");
@@ -22,6 +22,12 @@ class PublicationService {
                 throw new Error("L'ordre des auteurs doit être consécutif à partir de 1");
             }
         }
+        // Vérifier que chaque auteur a soit un userId, soit un externalName
+        for (const author of authors) {
+            if (!author.userId && !author.externalName) {
+                throw new Error("Chaque auteur doit avoir un userId (auteur interne) ou un externalName (auteur externe)");
+            }
+        }
         // Créer la publication avec ses relations
         const publication = await prisma.publication.create({
             data: {
@@ -31,9 +37,11 @@ class PublicationService {
                 publicationDate: publicationData.publicationDate ? new Date(publicationData.publicationDate) : undefined,
                 authors: {
                     create: authors.map(author => ({
-                        userId: author.userId,
+                        userId: author.userId || undefined,
+                        externalName: author.externalName || undefined,
+                        externalEmail: author.externalEmail || undefined,
                         authorOrder: author.authorOrder,
-                        isCorresponding: author.isCorresponding,
+                        isCorresponding: author.isCorresponding || false,
                         affiliation: author.affiliation
                     }))
                 },
@@ -252,6 +260,12 @@ class PublicationService {
         };
         // Mettre à jour les auteurs si fournis
         if (authors) {
+            // Vérifier que chaque auteur a soit un userId, soit un externalName
+            for (const author of authors) {
+                if (!author.userId && !author.externalName) {
+                    throw new Error("Chaque auteur doit avoir un userId (auteur interne) ou un externalName (auteur externe)");
+                }
+            }
             // Supprimer les anciens auteurs
             await prisma.publicationAuthor.deleteMany({
                 where: { publicationId: id }
@@ -259,9 +273,11 @@ class PublicationService {
             // Créer les nouveaux auteurs
             updateData.authors = {
                 create: authors.map(author => ({
-                    userId: author.userId,
+                    userId: author.userId || undefined,
+                    externalName: author.externalName || undefined,
+                    externalEmail: author.externalEmail || undefined,
                     authorOrder: author.authorOrder,
-                    isCorresponding: author.isCorresponding,
+                    isCorresponding: author.isCorresponding || false,
                     affiliation: author.affiliation
                 }))
             };

@@ -17,12 +17,12 @@ export declare class FormService {
             };
         } & {
             id: string;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
-            title: string;
             description: string | null;
             creatorId: string;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
+            title: string;
             activityId: string | null;
             schema: import("@prisma/client/runtime/library").JsonValue;
             isPublic: boolean;

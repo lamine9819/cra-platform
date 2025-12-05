@@ -14,6 +14,10 @@ export declare class FormationService {
     getUserTrainingsGiven(userId: string): Promise<TrainingGivenResponse[]>;
     getUserSupervisions(userId: string): Promise<SupervisionResponse[]>;
     getAllUsersFormationReport(): Promise<FormationReport[]>;
+    updateShortTrainingReceived(trainingId: string, userId: string, data: Partial<CreateShortTrainingReceivedInput>): Promise<ShortTrainingReceivedResponse>;
+    updateDiplomaticTrainingReceived(trainingId: string, userId: string, data: Partial<CreateDiplomaticTrainingReceivedInput>): Promise<DiplomaticTrainingReceivedResponse>;
+    updateTrainingGiven(trainingId: string, userId: string, data: Partial<CreateTrainingGivenInput>): Promise<TrainingGivenResponse>;
+    updateSupervision(supervisionId: string, userId: string, data: Partial<CreateSupervisionInput>): Promise<SupervisionResponse>;
     getUserInfo(userId: string): Promise<{
         email: string;
         firstName: string;

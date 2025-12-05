@@ -7,6 +7,7 @@ const fs_1 = tslib_1.__importDefault(require("fs"));
 const client_1 = require("@prisma/client");
 const errors_1 = require("../utils/errors");
 const fileHelpers_1 = require("../utils/fileHelpers");
+const notification_service_1 = require("./notification.service");
 const prisma = new client_1.PrismaClient();
 class DocumentService {
     // Créer un document après upload
@@ -221,6 +222,15 @@ class DocumentService {
                 }
             });
         }));
+        // Envoyer des notifications pour chaque partage
+        try {
+            const notificationService = (0, notification_service_1.getNotificationService)();
+            await Promise.allSettled(shareData.userIds.map(userToShareId => notificationService.notifyDocumentShare(documentId, document.title, userToShareId, userId, shareData.canEdit || false)));
+        }
+        catch (error) {
+            console.error('Erreur lors de l\'envoi des notifications de partage:', error);
+            // Ne pas faire échouer le partage si les notifications échouent
+        }
         return {
             message: 'Document partagé avec succès',
             shares: shares.map((share) => ({

@@ -16,7 +16,9 @@ exports.createEventSchema = zod_1.z.object({
         isAllDay: zod_1.z.boolean().optional().default(false),
         isRecurring: zod_1.z.boolean().optional().default(false),
         recurrenceRule: zod_1.z.string().optional(),
-        color: zod_1.z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Couleur invalide (format: #RRGGBB)').optional(),
+        color: zod_1.z.string().optional().transform(val => val === '' ? undefined : val).refine(val => !val || /^#[0-9A-Fa-f]{6}$/.test(val), {
+            message: 'Couleur invalide (format: #RRGGBB)'
+        }),
         stationId: zod_1.z.string().cuid().optional(),
         projectId: zod_1.z.string().cuid().optional(),
         activityId: zod_1.z.string().cuid().optional(),
@@ -42,7 +44,9 @@ exports.updateEventSchema = zod_1.z.object({
         isAllDay: zod_1.z.boolean().optional(),
         isRecurring: zod_1.z.boolean().optional(),
         recurrenceRule: zod_1.z.string().optional(),
-        color: zod_1.z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+        color: zod_1.z.string().optional().transform(val => val === '' ? undefined : val).refine(val => !val || /^#[0-9A-Fa-f]{6}$/.test(val), {
+            message: 'Couleur invalide (format: #RRGGBB)'
+        }),
         stationId: zod_1.z.string().cuid().optional(),
         projectId: zod_1.z.string().cuid().optional(),
         activityId: zod_1.z.string().cuid().optional(),
@@ -98,43 +102,53 @@ exports.updateSeminarSchema = zod_1.z.object({
 });
 exports.eventFilterSchema = zod_1.z.object({
     query: zod_1.z.object({
-        startDate: zod_1.z.string().datetime().transform(val => new Date(val)).optional(),
-        endDate: zod_1.z.string().datetime().transform(val => new Date(val)).optional(),
-        type: zod_1.z.nativeEnum(client_1.EventType).optional(),
-        status: zod_1.z.nativeEnum(client_1.EventStatus).optional(),
-        creatorId: zod_1.z.string().cuid().optional(),
-        stationId: zod_1.z.string().cuid().optional(),
-        projectId: zod_1.z.string().cuid().optional(),
-        activityId: zod_1.z.string().cuid().optional(),
-    })
-});
+        startDate: zod_1.z.string().optional().transform(val => val ? new Date(val) : undefined).catch(undefined),
+        endDate: zod_1.z.string().optional().transform(val => val ? new Date(val) : undefined).catch(undefined),
+        type: zod_1.z.nativeEnum(client_1.EventType).optional().catch(undefined),
+        status: zod_1.z.nativeEnum(client_1.EventStatus).optional().catch(undefined),
+        creatorId: zod_1.z.string().optional().catch(undefined),
+        stationId: zod_1.z.string().optional().catch(undefined),
+        projectId: zod_1.z.string().optional().catch(undefined),
+        activityId: zod_1.z.string().optional().catch(undefined),
+    }).passthrough(),
+    params: zod_1.z.object({}).optional(),
+    body: zod_1.z.object({}).optional()
+}).passthrough();
 exports.seminarFilterSchema = zod_1.z.object({
     query: zod_1.z.object({
-        status: zod_1.z.nativeEnum(client_1.SeminarStatus).optional(),
-        organizerId: zod_1.z.string().cuid().optional(),
-        startDate: zod_1.z.string().datetime().transform(val => new Date(val)).optional(),
-        endDate: zod_1.z.string().datetime().transform(val => new Date(val)).optional(),
-    })
-});
+        status: zod_1.z.string().optional().catch(undefined),
+        organizerId: zod_1.z.string().optional().catch(undefined),
+        startDate: zod_1.z.string().optional().catch(undefined),
+        endDate: zod_1.z.string().optional().catch(undefined),
+    }).passthrough(),
+    params: zod_1.z.object({}).optional(),
+    body: zod_1.z.object({}).optional()
+}).passthrough();
 exports.eventReportSchema = zod_1.z.object({
     query: zod_1.z.object({
         format: zod_1.z.enum(['pdf', 'docx'], {
             message: 'Format invalide. Utilisez "pdf" ou "docx"'
         }),
-        startDate: zod_1.z.string().datetime().transform(val => new Date(val)).optional(),
-        endDate: zod_1.z.string().datetime().transform(val => new Date(val)).optional(),
+        startDate: zod_1.z.string().optional().transform(val => val ? new Date(val) : undefined),
+        endDate: zod_1.z.string().optional().transform(val => val ? new Date(val) : undefined),
         type: zod_1.z.nativeEnum(client_1.EventType).optional(),
-        creatorId: zod_1.z.string().cuid().optional(),
-    })
-});
+        creatorId: zod_1.z.string().optional(),
+    }).passthrough(),
+    params: zod_1.z.object({}).optional(),
+    body: zod_1.z.object({}).optional()
+}).passthrough();
 exports.eventIdParamSchema = zod_1.z.object({
     params: zod_1.z.object({
         id: zod_1.z.string().cuid('ID d\'événement invalide')
-    })
-});
+    }),
+    query: zod_1.z.object({}).optional(),
+    body: zod_1.z.object({}).optional()
+}).passthrough();
 exports.seminarIdParamSchema = zod_1.z.object({
     params: zod_1.z.object({
         id: zod_1.z.string().cuid('ID de séminaire invalide')
-    })
-});
+    }),
+    query: zod_1.z.object({}).optional(),
+    body: zod_1.z.object({}).optional()
+}).passthrough();
 //# sourceMappingURL=event.validation.js.map

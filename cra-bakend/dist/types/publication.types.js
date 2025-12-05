@@ -28,10 +28,14 @@ exports.createPublicationSchema = zod_1.z.object({
     abstract: zod_1.z.string().optional(),
     keywords: zod_1.z.array(zod_1.z.string()).default([]),
     authors: zod_1.z.array(zod_1.z.object({
-        userId: zod_1.z.string().cuid(),
+        userId: zod_1.z.string().cuid().optional(),
+        externalName: zod_1.z.string().optional(),
+        externalEmail: zod_1.z.string().email("Email invalide").optional().or(zod_1.z.literal('')),
         authorOrder: zod_1.z.number().int().positive(),
         isCorresponding: zod_1.z.boolean().default(false),
         affiliation: zod_1.z.string().optional()
+    }).refine(data => data.userId || data.externalName, {
+        message: "Chaque auteur doit avoir soit un userId (auteur interne) soit un externalName (auteur externe)"
     })).min(1, "Au moins un auteur est requis"),
     linkedProjectIds: zod_1.z.array(zod_1.z.string().cuid()).default([]),
     linkedActivityIds: zod_1.z.array(zod_1.z.string().cuid()).default([])

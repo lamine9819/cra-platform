@@ -4,13 +4,13 @@ export declare class PublicationService {
     createPublication(data: CreatePublicationInput, userId: string): Promise<{
         document: {
             id: string;
+            description: string | null;
+            type: import(".prisma/client").$Enums.DocumentType;
+            projectId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            type: import(".prisma/client").$Enums.DocumentType;
             version: number;
             title: string;
-            description: string | null;
-            projectId: string | null;
             activityId: string | null;
             size: bigint;
             isPublic: boolean;
@@ -18,13 +18,6 @@ export declare class PublicationService {
             filepath: string;
             mimeType: string;
             tags: string[];
-            deletedAt: Date | null;
-            deletedBy: string | null;
-            favoritedBy: string[];
-            viewCount: number;
-            downloadCount: number;
-            lastViewedAt: Date | null;
-            previousVersionId: string | null;
             ownerId: string;
             taskId: string | null;
             seminarId: string | null;
@@ -33,6 +26,13 @@ export declare class PublicationService {
             supervisionId: string | null;
             knowledgeTransferId: string | null;
             eventId: string | null;
+            deletedAt: Date | null;
+            deletedBy: string | null;
+            downloadCount: number;
+            favoritedBy: string[];
+            lastViewedAt: Date | null;
+            previousVersionId: string | null;
+            viewCount: number;
         } | null;
         authors: ({
             user: {
@@ -41,40 +41,42 @@ export declare class PublicationService {
                 firstName: string;
                 lastName: string;
                 department: string | null;
-            };
+            } | null;
         } & {
-            userId: string;
+            userId: string | null;
             id: string;
             createdAt: Date;
+            externalName: string | null;
+            externalEmail: string | null;
             authorOrder: number;
             isCorresponding: boolean;
             affiliation: string | null;
             publicationId: string;
         })[];
-        linkedProjects: {
-            id: string;
-            code: string;
-            title: string;
-        }[];
         linkedActivities: {
             id: string;
             code: string | null;
             title: string;
         }[];
+        linkedProjects: {
+            id: string;
+            code: string;
+            title: string;
+        }[];
     } & {
         id: string;
+        type: import(".prisma/client").$Enums.PublicationType;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.PublicationType;
         title: string;
         status: string;
         keywords: string[];
         language: string;
         documentId: string | null;
-        url: string | null;
         journal: string | null;
         isbn: string | null;
         doi: string | null;
+        url: string | null;
         volume: string | null;
         issue: string | null;
         pages: string | null;
@@ -105,40 +107,42 @@ export declare class PublicationService {
                     firstName: string;
                     lastName: string;
                     department: string | null;
-                };
+                } | null;
             } & {
-                userId: string;
+                userId: string | null;
                 id: string;
                 createdAt: Date;
+                externalName: string | null;
+                externalEmail: string | null;
                 authorOrder: number;
                 isCorresponding: boolean;
                 affiliation: string | null;
                 publicationId: string;
             })[];
-            linkedProjects: {
-                id: string;
-                code: string;
-                title: string;
-            }[];
             linkedActivities: {
                 id: string;
                 code: string | null;
                 title: string;
             }[];
+            linkedProjects: {
+                id: string;
+                code: string;
+                title: string;
+            }[];
         } & {
             id: string;
+            type: import(".prisma/client").$Enums.PublicationType;
             createdAt: Date;
             updatedAt: Date;
-            type: import(".prisma/client").$Enums.PublicationType;
             title: string;
             status: string;
             keywords: string[];
             language: string;
             documentId: string | null;
-            url: string | null;
             journal: string | null;
             isbn: string | null;
             doi: string | null;
+            url: string | null;
             volume: string | null;
             issue: string | null;
             pages: string | null;
@@ -163,13 +167,13 @@ export declare class PublicationService {
     getPublicationById(id: string): Promise<{
         document: {
             id: string;
+            description: string | null;
+            type: import(".prisma/client").$Enums.DocumentType;
+            projectId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            type: import(".prisma/client").$Enums.DocumentType;
             version: number;
             title: string;
-            description: string | null;
-            projectId: string | null;
             activityId: string | null;
             size: bigint;
             isPublic: boolean;
@@ -177,13 +181,6 @@ export declare class PublicationService {
             filepath: string;
             mimeType: string;
             tags: string[];
-            deletedAt: Date | null;
-            deletedBy: string | null;
-            favoritedBy: string[];
-            viewCount: number;
-            downloadCount: number;
-            lastViewedAt: Date | null;
-            previousVersionId: string | null;
             ownerId: string;
             taskId: string | null;
             seminarId: string | null;
@@ -192,6 +189,13 @@ export declare class PublicationService {
             supervisionId: string | null;
             knowledgeTransferId: string | null;
             eventId: string | null;
+            deletedAt: Date | null;
+            deletedBy: string | null;
+            downloadCount: number;
+            favoritedBy: string[];
+            lastViewedAt: Date | null;
+            previousVersionId: string | null;
+            viewCount: number;
         } | null;
         authors: ({
             user: {
@@ -201,42 +205,44 @@ export declare class PublicationService {
                 lastName: string;
                 department: string | null;
                 discipline: string | null;
-            };
+            } | null;
         } & {
-            userId: string;
+            userId: string | null;
             id: string;
             createdAt: Date;
+            externalName: string | null;
+            externalEmail: string | null;
             authorOrder: number;
             isCorresponding: boolean;
             affiliation: string | null;
             publicationId: string;
         })[];
-        linkedProjects: {
-            id: string;
-            code: string;
-            title: string;
-            status: import(".prisma/client").$Enums.ProjectStatus;
-        }[];
         linkedActivities: {
             id: string;
             type: import(".prisma/client").$Enums.ActivityType;
             code: string | null;
             title: string;
         }[];
+        linkedProjects: {
+            id: string;
+            code: string;
+            title: string;
+            status: import(".prisma/client").$Enums.ProjectStatus;
+        }[];
     } & {
         id: string;
+        type: import(".prisma/client").$Enums.PublicationType;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.PublicationType;
         title: string;
         status: string;
         keywords: string[];
         language: string;
         documentId: string | null;
-        url: string | null;
         journal: string | null;
         isbn: string | null;
         doi: string | null;
+        url: string | null;
         volume: string | null;
         issue: string | null;
         pages: string | null;
@@ -254,13 +260,13 @@ export declare class PublicationService {
     updatePublication(id: string, data: UpdatePublicationInput, userId: string): Promise<{
         document: {
             id: string;
+            description: string | null;
+            type: import(".prisma/client").$Enums.DocumentType;
+            projectId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            type: import(".prisma/client").$Enums.DocumentType;
             version: number;
             title: string;
-            description: string | null;
-            projectId: string | null;
             activityId: string | null;
             size: bigint;
             isPublic: boolean;
@@ -268,13 +274,6 @@ export declare class PublicationService {
             filepath: string;
             mimeType: string;
             tags: string[];
-            deletedAt: Date | null;
-            deletedBy: string | null;
-            favoritedBy: string[];
-            viewCount: number;
-            downloadCount: number;
-            lastViewedAt: Date | null;
-            previousVersionId: string | null;
             ownerId: string;
             taskId: string | null;
             seminarId: string | null;
@@ -283,6 +282,13 @@ export declare class PublicationService {
             supervisionId: string | null;
             knowledgeTransferId: string | null;
             eventId: string | null;
+            deletedAt: Date | null;
+            deletedBy: string | null;
+            downloadCount: number;
+            favoritedBy: string[];
+            lastViewedAt: Date | null;
+            previousVersionId: string | null;
+            viewCount: number;
         } | null;
         authors: ({
             user: {
@@ -291,40 +297,42 @@ export declare class PublicationService {
                 firstName: string;
                 lastName: string;
                 department: string | null;
-            };
+            } | null;
         } & {
-            userId: string;
+            userId: string | null;
             id: string;
             createdAt: Date;
+            externalName: string | null;
+            externalEmail: string | null;
             authorOrder: number;
             isCorresponding: boolean;
             affiliation: string | null;
             publicationId: string;
         })[];
-        linkedProjects: {
-            id: string;
-            code: string;
-            title: string;
-        }[];
         linkedActivities: {
             id: string;
             code: string | null;
             title: string;
         }[];
+        linkedProjects: {
+            id: string;
+            code: string;
+            title: string;
+        }[];
     } & {
         id: string;
+        type: import(".prisma/client").$Enums.PublicationType;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.PublicationType;
         title: string;
         status: string;
         keywords: string[];
         language: string;
         documentId: string | null;
-        url: string | null;
         journal: string | null;
         isbn: string | null;
         doi: string | null;
+        url: string | null;
         volume: string | null;
         issue: string | null;
         pages: string | null;
@@ -353,11 +361,13 @@ export declare class PublicationService {
                 id: string;
                 firstName: string;
                 lastName: string;
-            };
+            } | null;
         } & {
-            userId: string;
+            userId: string | null;
             id: string;
             createdAt: Date;
+            externalName: string | null;
+            externalEmail: string | null;
             authorOrder: number;
             isCorresponding: boolean;
             affiliation: string | null;
@@ -365,18 +375,18 @@ export declare class PublicationService {
         })[];
     } & {
         id: string;
+        type: import(".prisma/client").$Enums.PublicationType;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.PublicationType;
         title: string;
         status: string;
         keywords: string[];
         language: string;
         documentId: string | null;
-        url: string | null;
         journal: string | null;
         isbn: string | null;
         doi: string | null;
+        url: string | null;
         volume: string | null;
         issue: string | null;
         pages: string | null;
@@ -410,13 +420,13 @@ export declare class PublicationService {
     attachDocument(publicationId: string, file: Express.Multer.File, userId: string): Promise<{
         document: {
             id: string;
+            description: string | null;
+            type: import(".prisma/client").$Enums.DocumentType;
+            projectId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            type: import(".prisma/client").$Enums.DocumentType;
             version: number;
             title: string;
-            description: string | null;
-            projectId: string | null;
             activityId: string | null;
             size: bigint;
             isPublic: boolean;
@@ -424,13 +434,6 @@ export declare class PublicationService {
             filepath: string;
             mimeType: string;
             tags: string[];
-            deletedAt: Date | null;
-            deletedBy: string | null;
-            favoritedBy: string[];
-            viewCount: number;
-            downloadCount: number;
-            lastViewedAt: Date | null;
-            previousVersionId: string | null;
             ownerId: string;
             taskId: string | null;
             seminarId: string | null;
@@ -439,17 +442,26 @@ export declare class PublicationService {
             supervisionId: string | null;
             knowledgeTransferId: string | null;
             eventId: string | null;
+            deletedAt: Date | null;
+            deletedBy: string | null;
+            downloadCount: number;
+            favoritedBy: string[];
+            lastViewedAt: Date | null;
+            previousVersionId: string | null;
+            viewCount: number;
         } | null;
         authors: ({
             user: {
                 id: string;
                 firstName: string;
                 lastName: string;
-            };
+            } | null;
         } & {
-            userId: string;
+            userId: string | null;
             id: string;
             createdAt: Date;
+            externalName: string | null;
+            externalEmail: string | null;
             authorOrder: number;
             isCorresponding: boolean;
             affiliation: string | null;
@@ -457,18 +469,18 @@ export declare class PublicationService {
         })[];
     } & {
         id: string;
+        type: import(".prisma/client").$Enums.PublicationType;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.PublicationType;
         title: string;
         status: string;
         keywords: string[];
         language: string;
         documentId: string | null;
-        url: string | null;
         journal: string | null;
         isbn: string | null;
         doi: string | null;
+        url: string | null;
         volume: string | null;
         issue: string | null;
         pages: string | null;
@@ -485,13 +497,13 @@ export declare class PublicationService {
     }>;
     downloadDocument(publicationId: string): Promise<{
         id: string;
+        description: string | null;
+        type: import(".prisma/client").$Enums.DocumentType;
+        projectId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.DocumentType;
         version: number;
         title: string;
-        description: string | null;
-        projectId: string | null;
         activityId: string | null;
         size: bigint;
         isPublic: boolean;
@@ -499,13 +511,6 @@ export declare class PublicationService {
         filepath: string;
         mimeType: string;
         tags: string[];
-        deletedAt: Date | null;
-        deletedBy: string | null;
-        favoritedBy: string[];
-        viewCount: number;
-        downloadCount: number;
-        lastViewedAt: Date | null;
-        previousVersionId: string | null;
         ownerId: string;
         taskId: string | null;
         seminarId: string | null;
@@ -514,6 +519,13 @@ export declare class PublicationService {
         supervisionId: string | null;
         knowledgeTransferId: string | null;
         eventId: string | null;
+        deletedAt: Date | null;
+        deletedBy: string | null;
+        downloadCount: number;
+        favoritedBy: string[];
+        lastViewedAt: Date | null;
+        previousVersionId: string | null;
+        viewCount: number;
     }>;
 }
 export declare const publicationService: PublicationService;

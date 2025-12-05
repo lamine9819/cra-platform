@@ -5,6 +5,7 @@ exports.ActivityService = void 0;
 const client_1 = require("@prisma/client");
 const errors_1 = require("../utils/errors");
 const activity_types_1 = require("../types/activity.types");
+const notification_service_1 = require("./notification.service");
 const prisma = new client_1.PrismaClient();
 class ActivityService {
     // ✅ Créer une activité CRA
@@ -1269,6 +1270,15 @@ class ActivityService {
                 }
             }
         });
+        // Envoyer une notification au nouveau participant
+        try {
+            const notificationService = (0, notification_service_1.getNotificationService)();
+            await notificationService.notifyActivityAddition(activityId, activity.title, participantData.userId, userId);
+        }
+        catch (error) {
+            console.error('Erreur lors de l\'envoi de la notification:', error);
+            // Ne pas faire échouer l'ajout du participant si la notification échoue
+        }
         return participant;
     }
     // Mettre à jour un participant
@@ -1682,6 +1692,88 @@ class ActivityService {
     // ========================================
     // GESTION DES TÂCHES
     // ========================================
+    /**
+     * Enregistrer un historique de modification de tâche
+     */
+    async logTaskHistory(taskId, userId, action, field, oldValue, newValue) {
+        try {
+            await prisma.taskHistory.create({
+                data: {
+                    taskId,
+                    userId,
+                    action,
+                    field,
+                    oldValue: oldValue !== undefined && oldValue !== null ? JSON.stringify(oldValue) : null,
+                    newValue: newValue !== undefined && newValue !== null ? JSON.stringify(newValue) : null,
+                }
+            });
+        }
+        catch (error) {
+            console.error('Erreur lors de l\'enregistrement de l\'historique:', error);
+            // Ne pas bloquer l'opération principale si l'historique échoue
+        }
+    }
+    /**
+     * Envoyer une notification pour un changement de tâche
+     */
+    async notifyTaskChange(task, userId, action, details) {
+        try {
+            const notificationService = (0, notification_service_1.getNotificationService)();
+            if (!notificationService)
+                return;
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { firstName: true, lastName: true }
+            });
+            if (!user)
+                return;
+            let title = '';
+            let message = '';
+            let receiverId = '';
+            switch (action) {
+                case 'CREATE':
+                    // Notifier l'assigné si ce n'est pas lui qui a créé
+                    if (task.assigneeId && task.assigneeId !== userId) {
+                        title = 'Nouvelle tâche assignée';
+                        message = `${user.firstName} ${user.lastName} vous a assigné une nouvelle tâche: "${task.title}"`;
+                        receiverId = task.assigneeId;
+                    }
+                    break;
+                case 'UPDATE':
+                    // Notifier le créateur si c'est l'assigné qui modifie
+                    if (userId === task.assigneeId && task.creatorId !== userId) {
+                        title = 'Mise à jour de tâche';
+                        message = `${user.firstName} ${user.lastName} a mis à jour la tâche: "${task.title}"${details ? ` - ${details}` : ''}`;
+                        receiverId = task.creatorId;
+                    }
+                    break;
+                case 'COMPLETE':
+                    // Notifier le créateur quand la tâche est terminée
+                    if (task.creatorId && task.creatorId !== userId) {
+                        title = 'Tâche terminée';
+                        message = `${user.firstName} ${user.lastName} a marqué la tâche "${task.title}" comme terminée`;
+                        receiverId = task.creatorId;
+                    }
+                    break;
+            }
+            if (receiverId) {
+                await notificationService.createNotification({
+                    receiverId,
+                    senderId: userId,
+                    title,
+                    message,
+                    type: 'TASK_ASSIGNED',
+                    actionUrl: task.activityId ? `/chercheur/activities/${task.activityId}?tab=tasks` : undefined,
+                    entityType: 'Task',
+                    entityId: task.id
+                });
+            }
+        }
+        catch (error) {
+            console.error('Erreur lors de l\'envoi de la notification:', error);
+            // Ne pas bloquer l'opération principale
+        }
+    }
     async createTask(activityId, taskData, userId, userRole) {
         const activity = await prisma.activity.findUnique({
             where: { id: activityId },
@@ -1735,6 +1827,15 @@ class ActivityService {
                 }
             }
         });
+        // Enregistrer l'historique de création
+        await this.logTaskHistory(task.id, userId, 'CREATE', 'task', null, {
+            title: task.title,
+            status: task.status,
+            priority: task.priority,
+            assigneeId: task.assigneeId
+        });
+        // Envoyer une notification à l'assigné
+        await this.notifyTaskChange(task, userId, 'CREATE');
         return task;
     }
     async updateTask(activityId, taskId, updateData, userId, userRole) {
@@ -1826,6 +1927,49 @@ class ActivityService {
                 }
             }
         });
+        // Enregistrer l'historique pour chaque champ modifié
+        const changedFields = [];
+        if (updateData.title !== undefined && task.title !== updateData.title) {
+            await this.logTaskHistory(taskId, userId, 'UPDATE', 'title', task.title, updateData.title);
+            changedFields.push('titre');
+        }
+        if (updateData.description !== undefined && task.description !== updateData.description) {
+            await this.logTaskHistory(taskId, userId, 'UPDATE', 'description', task.description, updateData.description);
+            changedFields.push('description');
+        }
+        if (updateData.status !== undefined && task.status !== updateData.status) {
+            await this.logTaskHistory(taskId, userId, 'UPDATE', 'status', task.status, updateData.status);
+            changedFields.push('statut');
+            // Notification spéciale si marquée comme terminée
+            if (updateData.status === 'TERMINEE') {
+                await this.notifyTaskChange(updatedTask, userId, 'COMPLETE');
+            }
+        }
+        if (updateData.priority !== undefined && task.priority !== updateData.priority) {
+            await this.logTaskHistory(taskId, userId, 'UPDATE', 'priority', task.priority, updateData.priority);
+            changedFields.push('priorité');
+        }
+        if (updateData.progress !== undefined && task.progress !== updateData.progress) {
+            await this.logTaskHistory(taskId, userId, 'UPDATE', 'progress', task.progress, updateData.progress);
+            changedFields.push('progression');
+        }
+        if (updateData.assigneeId !== undefined && task.assigneeId !== updateData.assigneeId) {
+            await this.logTaskHistory(taskId, userId, 'UPDATE', 'assigneeId', task.assigneeId, updateData.assigneeId);
+            changedFields.push('assignation');
+        }
+        if (updateData.dueDate !== undefined) {
+            const oldDate = task.dueDate?.toISOString();
+            const newDate = updateData.dueDate ? new Date(updateData.dueDate).toISOString() : null;
+            if (oldDate !== newDate) {
+                await this.logTaskHistory(taskId, userId, 'UPDATE', 'dueDate', oldDate, newDate);
+                changedFields.push('échéance');
+            }
+        }
+        // Envoyer notification pour les modifications (sauf si déjà notifié pour completion)
+        if (changedFields.length > 0 && updateData.status !== 'TERMINEE') {
+            const details = changedFields.join(', ');
+            await this.notifyTaskChange(updatedTask, userId, 'UPDATE', details);
+        }
         return updatedTask;
     }
     async deleteTask(activityId, taskId, userId, userRole) {

@@ -1,3 +1,4 @@
+import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 export declare class WebSocketNotificationService {
     private io;
@@ -28,6 +29,7 @@ export declare class WebSocketNotificationService {
         totalConnections: number;
         connectedUsers: string[];
     };
+    getIO(): SocketIOServer;
 }
 export declare const initializeWebSocketService: (server: HTTPServer) => WebSocketNotificationService;
 export declare const getWebSocketService: () => WebSocketNotificationService | null;

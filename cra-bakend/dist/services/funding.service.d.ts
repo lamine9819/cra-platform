@@ -100,11 +100,11 @@ export declare class FundingService {
     getFundingById(id: string, userId: string, userRole: string): Promise<{
         convention: {
             id: string;
+            description: string | null;
+            type: import(".prisma/client").$Enums.ConventionType;
             createdAt: Date;
             updatedAt: Date;
-            type: import(".prisma/client").$Enums.ConventionType;
             title: string;
-            description: string | null;
             status: import(".prisma/client").$Enums.ConventionStatus;
             startDate: Date | null;
             endDate: Date | null;
@@ -128,9 +128,9 @@ export declare class FundingService {
                 userId: string;
                 role: import(".prisma/client").$Enums.ParticipantRole;
                 id: string;
-                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
+                isActive: boolean;
                 startDate: Date;
                 endDate: Date | null;
                 timeAllocation: number | null;
@@ -146,12 +146,14 @@ export declare class FundingService {
             };
         } & {
             id: string;
+            description: string | null;
+            type: import(".prisma/client").$Enums.ActivityType;
+            projectId: string | null;
+            themeId: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import(".prisma/client").$Enums.ActivityType;
             code: string | null;
             title: string;
-            description: string | null;
             objectives: string[];
             status: import(".prisma/client").$Enums.ActivityStatus;
             startDate: Date | null;
@@ -160,7 +162,6 @@ export declare class FundingService {
             strategicAxis: string | null;
             subAxis: string | null;
             conventionId: string | null;
-            themeId: string;
             methodology: string | null;
             location: string | null;
             results: string | null;
@@ -179,7 +180,6 @@ export declare class FundingService {
             constraints: string[];
             expectedResults: string[];
             transferMethods: string[];
-            projectId: string | null;
             stationId: string | null;
             responsibleId: string;
         };

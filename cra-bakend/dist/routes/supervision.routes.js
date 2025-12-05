@@ -9,8 +9,9 @@ const formationController = new formation_controller_1.FormationController();
 // =============================================
 // ENCADREMENTS
 // =============================================
-router.post('/', auth_1.authenticate, formationController.createSupervision);
-router.get('/', auth_1.authenticate, formationController.getUserSupervisions);
-router.delete('/:supervisionId', auth_1.authenticate, formationController.deleteSupervision);
+router.post('/', auth_1.authenticate, formationController.createSupervision.bind(formationController));
+router.get('/', auth_1.authenticate, formationController.getUserSupervisions.bind(formationController));
+router.put('/:supervisionId', auth_1.authenticate, formationController.updateSupervision.bind(formationController));
+router.delete('/:supervisionId', auth_1.authenticate, formationController.deleteSupervision.bind(formationController));
 exports.default = router;
 //# sourceMappingURL=supervision.routes.js.map

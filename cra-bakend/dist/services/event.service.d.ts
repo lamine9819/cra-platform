@@ -2,14 +2,6 @@ import { UserRole } from '@prisma/client';
 import { CreateEventDto, UpdateEventDto, CreateSeminarDto, UpdateSeminarDto, EventFilterDto, SeminarFilterDto } from '../types/event.types';
 export declare class EventService {
     createEvent(userId: string, data: CreateEventDto): Promise<{
-        documents: {
-            id: string;
-            createdAt: Date;
-            type: import(".prisma/client").$Enums.DocumentType;
-            title: string;
-            size: bigint;
-            filename: string;
-        }[];
         creator: {
             email: string;
             role: import(".prisma/client").$Enums.UserRole;
@@ -22,13 +14,21 @@ export declare class EventService {
             code: string;
             title: string;
         } | null;
+        documents: {
+            id: string;
+            type: import(".prisma/client").$Enums.DocumentType;
+            createdAt: Date;
+            title: string;
+            size: bigint;
+            filename: string;
+        }[];
         station: {
             id: string;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
             name: string;
             description: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
             location: string;
             surface: number | null;
         } | null;
@@ -40,29 +40,41 @@ export declare class EventService {
         } | null;
     } & {
         id: string;
+        description: string | null;
+        type: import(".prisma/client").$Enums.EventType;
+        color: string | null;
+        projectId: string | null;
+        creatorId: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.EventType;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.EventStatus;
         startDate: Date;
         endDate: Date | null;
-        creatorId: string;
         location: string | null;
-        projectId: string | null;
         stationId: string | null;
         activityId: string | null;
-        color: string | null;
         isAllDay: boolean;
         isRecurring: boolean;
         recurrenceRule: string | null;
     }>;
     getEventById(eventId: string, userId: string, userRole: UserRole): Promise<{
+        creator: {
+            email: string;
+            role: import(".prisma/client").$Enums.UserRole;
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
+        project: {
+            id: string;
+            code: string;
+            title: string;
+        } | null;
         documents: {
             id: string;
-            createdAt: Date;
             type: import(".prisma/client").$Enums.DocumentType;
+            createdAt: Date;
             title: string;
             size: bigint;
             filename: string;
@@ -74,25 +86,13 @@ export declare class EventService {
                 lastName: string;
             };
         }[];
-        creator: {
-            email: string;
-            role: import(".prisma/client").$Enums.UserRole;
-            id: string;
-            firstName: string;
-            lastName: string;
-        };
-        project: {
-            id: string;
-            code: string;
-            title: string;
-        } | null;
         station: {
             id: string;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
             name: string;
             description: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
             location: string;
             surface: number | null;
         } | null;
@@ -104,28 +104,25 @@ export declare class EventService {
         } | null;
     } & {
         id: string;
+        description: string | null;
+        type: import(".prisma/client").$Enums.EventType;
+        color: string | null;
+        projectId: string | null;
+        creatorId: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.EventType;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.EventStatus;
         startDate: Date;
         endDate: Date | null;
-        creatorId: string;
         location: string | null;
-        projectId: string | null;
         stationId: string | null;
         activityId: string | null;
-        color: string | null;
         isAllDay: boolean;
         isRecurring: boolean;
         recurrenceRule: string | null;
     }>;
     listEvents(userId: string, userRole: UserRole, filters: EventFilterDto): Promise<({
-        _count: {
-            documents: number;
-        };
         creator: {
             email: string;
             role: import(".prisma/client").$Enums.UserRole;
@@ -138,6 +135,9 @@ export declare class EventService {
             code: string;
             title: string;
         } | null;
+        _count: {
+            documents: number;
+        };
         station: {
             id: string;
             name: string;
@@ -151,20 +151,20 @@ export declare class EventService {
         } | null;
     } & {
         id: string;
+        description: string | null;
+        type: import(".prisma/client").$Enums.EventType;
+        color: string | null;
+        projectId: string | null;
+        creatorId: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.EventType;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.EventStatus;
         startDate: Date;
         endDate: Date | null;
-        creatorId: string;
         location: string | null;
-        projectId: string | null;
         stationId: string | null;
         activityId: string | null;
-        color: string | null;
         isAllDay: boolean;
         isRecurring: boolean;
         recurrenceRule: string | null;
@@ -183,11 +183,11 @@ export declare class EventService {
         } | null;
         station: {
             id: string;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
             name: string;
             description: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
             location: string;
             surface: number | null;
         } | null;
@@ -198,20 +198,20 @@ export declare class EventService {
         } | null;
     } & {
         id: string;
+        description: string | null;
+        type: import(".prisma/client").$Enums.EventType;
+        color: string | null;
+        projectId: string | null;
+        creatorId: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.EventType;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.EventStatus;
         startDate: Date;
         endDate: Date | null;
-        creatorId: string;
         location: string | null;
-        projectId: string | null;
         stationId: string | null;
         activityId: string | null;
-        color: string | null;
         isAllDay: boolean;
         isRecurring: boolean;
         recurrenceRule: string | null;
@@ -235,13 +235,13 @@ export declare class EventService {
         };
     } & {
         id: string;
+        description: string | null;
+        type: import(".prisma/client").$Enums.DocumentType;
+        projectId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.DocumentType;
         version: number;
         title: string;
-        description: string | null;
-        projectId: string | null;
         activityId: string | null;
         size: bigint;
         isPublic: boolean;
@@ -249,13 +249,6 @@ export declare class EventService {
         filepath: string;
         mimeType: string;
         tags: string[];
-        deletedAt: Date | null;
-        deletedBy: string | null;
-        favoritedBy: string[];
-        viewCount: number;
-        downloadCount: number;
-        lastViewedAt: Date | null;
-        previousVersionId: string | null;
         ownerId: string;
         taskId: string | null;
         seminarId: string | null;
@@ -264,32 +257,39 @@ export declare class EventService {
         supervisionId: string | null;
         knowledgeTransferId: string | null;
         eventId: string | null;
+        deletedAt: Date | null;
+        deletedBy: string | null;
+        downloadCount: number;
+        favoritedBy: string[];
+        lastViewedAt: Date | null;
+        previousVersionId: string | null;
+        viewCount: number;
     }>;
     createSeminar(userId: string, data: CreateSeminarDto): Promise<{
         documents: {
             id: string;
-            createdAt: Date;
             type: import(".prisma/client").$Enums.DocumentType;
+            createdAt: Date;
             title: string;
             size: bigint;
             filename: string;
         }[];
         calendarEvent: {
             id: string;
+            description: string | null;
+            type: import(".prisma/client").$Enums.EventType;
+            color: string | null;
+            projectId: string | null;
+            creatorId: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import(".prisma/client").$Enums.EventType;
             title: string;
-            description: string | null;
             status: import(".prisma/client").$Enums.EventStatus;
             startDate: Date;
             endDate: Date | null;
-            creatorId: string;
             location: string | null;
-            projectId: string | null;
             stationId: string | null;
             activityId: string | null;
-            color: string | null;
             isAllDay: boolean;
             isRecurring: boolean;
             recurrenceRule: string | null;
@@ -302,10 +302,10 @@ export declare class EventService {
         };
     } & {
         id: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.SeminarStatus;
         startDate: Date;
         endDate: Date | null;
@@ -318,8 +318,8 @@ export declare class EventService {
     getSeminarById(seminarId: string, userId: string, userRole: UserRole): Promise<{
         documents: {
             id: string;
-            createdAt: Date;
             type: import(".prisma/client").$Enums.DocumentType;
+            createdAt: Date;
             title: string;
             size: bigint;
             filename: string;
@@ -333,20 +333,20 @@ export declare class EventService {
         }[];
         calendarEvent: {
             id: string;
+            description: string | null;
+            type: import(".prisma/client").$Enums.EventType;
+            color: string | null;
+            projectId: string | null;
+            creatorId: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import(".prisma/client").$Enums.EventType;
             title: string;
-            description: string | null;
             status: import(".prisma/client").$Enums.EventStatus;
             startDate: Date;
             endDate: Date | null;
-            creatorId: string;
             location: string | null;
-            projectId: string | null;
             stationId: string | null;
             activityId: string | null;
-            color: string | null;
             isAllDay: boolean;
             isRecurring: boolean;
             recurrenceRule: string | null;
@@ -359,10 +359,10 @@ export declare class EventService {
         };
     } & {
         id: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.SeminarStatus;
         startDate: Date;
         endDate: Date | null;
@@ -393,10 +393,10 @@ export declare class EventService {
         };
     } & {
         id: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.SeminarStatus;
         startDate: Date;
         endDate: Date | null;
@@ -409,28 +409,28 @@ export declare class EventService {
     updateSeminar(seminarId: string, userId: string, data: UpdateSeminarDto): Promise<{
         documents: {
             id: string;
-            createdAt: Date;
             type: import(".prisma/client").$Enums.DocumentType;
+            createdAt: Date;
             title: string;
             size: bigint;
             filename: string;
         }[];
         calendarEvent: {
             id: string;
+            description: string | null;
+            type: import(".prisma/client").$Enums.EventType;
+            color: string | null;
+            projectId: string | null;
+            creatorId: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import(".prisma/client").$Enums.EventType;
             title: string;
-            description: string | null;
             status: import(".prisma/client").$Enums.EventStatus;
             startDate: Date;
             endDate: Date | null;
-            creatorId: string;
             location: string | null;
-            projectId: string | null;
             stationId: string | null;
             activityId: string | null;
-            color: string | null;
             isAllDay: boolean;
             isRecurring: boolean;
             recurrenceRule: string | null;
@@ -443,10 +443,10 @@ export declare class EventService {
         };
     } & {
         id: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
         title: string;
-        description: string | null;
         status: import(".prisma/client").$Enums.SeminarStatus;
         startDate: Date;
         endDate: Date | null;
@@ -475,13 +475,13 @@ export declare class EventService {
         };
     } & {
         id: string;
+        description: string | null;
+        type: import(".prisma/client").$Enums.DocumentType;
+        projectId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.DocumentType;
         version: number;
         title: string;
-        description: string | null;
-        projectId: string | null;
         activityId: string | null;
         size: bigint;
         isPublic: boolean;
@@ -489,13 +489,6 @@ export declare class EventService {
         filepath: string;
         mimeType: string;
         tags: string[];
-        deletedAt: Date | null;
-        deletedBy: string | null;
-        favoritedBy: string[];
-        viewCount: number;
-        downloadCount: number;
-        lastViewedAt: Date | null;
-        previousVersionId: string | null;
         ownerId: string;
         taskId: string | null;
         seminarId: string | null;
@@ -504,6 +497,13 @@ export declare class EventService {
         supervisionId: string | null;
         knowledgeTransferId: string | null;
         eventId: string | null;
+        deletedAt: Date | null;
+        deletedBy: string | null;
+        downloadCount: number;
+        favoritedBy: string[];
+        lastViewedAt: Date | null;
+        previousVersionId: string | null;
+        viewCount: number;
     }>;
     getEventStatistics(userId: string, userRole: UserRole): Promise<{
         total: number;

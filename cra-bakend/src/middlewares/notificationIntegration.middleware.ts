@@ -58,6 +58,15 @@ export const triggerNotifications = (actionType: string) => {
                   }
                   break;
 
+                case 'event_created':
+                  if (data.data?.id) {
+                    await AutomaticNotificationService.notifyEventCreated(
+                      data.data.id,
+                      userId
+                    );
+                  }
+                  break;
+
                 case 'seminar_created':
                   if (data.data?.id) {
                     await AutomaticNotificationService.notifySeminarCreated(
@@ -131,6 +140,7 @@ export const notifyTaskAssigned = triggerNotifications('task_assigned');
 export const notifyTaskCompleted = triggerNotifications('task_completed');
 export const notifyProjectCreated = triggerNotifications('project_created');
 export const notifyParticipantAdded = triggerNotifications('participant_added');
+export const notifyEventCreated = triggerNotifications('event_created');
 export const notifySeminarCreated = triggerNotifications('seminar_created');
 export const notifySeminarRegistration = triggerNotifications('seminar_registration');
 export const notifyCommentAdded = triggerNotifications('comment_added');

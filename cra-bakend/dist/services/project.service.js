@@ -4,6 +4,7 @@ exports.ProjectService = void 0;
 // src/services/project.service.ts - CORRECTION DES ERREURS ORDERBY
 const client_1 = require("@prisma/client");
 const errors_1 = require("../utils/errors");
+const notification_service_1 = require("./notification.service");
 const prisma = new client_1.PrismaClient();
 class ProjectService {
     // Créer un projet avec spécificités CRA
@@ -360,6 +361,15 @@ class ProjectService {
                 role: participantData.role,
             }
         });
+        // Envoyer une notification au nouveau participant
+        try {
+            const notificationService = (0, notification_service_1.getNotificationService)();
+            await notificationService.notifyProjectAddition(projectId, project.title, participantData.userId, requesterId);
+        }
+        catch (error) {
+            console.error('Erreur lors de l\'envoi de la notification:', error);
+            // Ne pas faire échouer l'ajout du participant si la notification échoue
+        }
         return { message: 'Participant ajouté avec succès au projet' };
     }
     // Mettre à jour un participant

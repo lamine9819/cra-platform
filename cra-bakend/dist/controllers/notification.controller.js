@@ -14,7 +14,7 @@ class NotificationController {
                 const result = await notificationService.listUserNotifications(userId, queryParams);
                 res.status(200).json({
                     success: true,
-                    data: result.notifications,
+                    notifications: result.notifications,
                     pagination: result.pagination,
                     unreadCount: result.unreadCount
                 });
@@ -90,7 +90,7 @@ class NotificationController {
                 const count = await notificationService.getUnreadCount(userId);
                 res.status(200).json({
                     success: true,
-                    data: { unreadCount: count }
+                    count: count
                 });
             }
             catch (error) {

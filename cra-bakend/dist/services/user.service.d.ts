@@ -72,8 +72,8 @@ export declare class UserService {
         activeProjects: number;
         programs: {
             id: string;
-            isActive: boolean;
             name: string;
+            isActive: boolean;
         }[];
         id: string;
         email: string;
@@ -143,5 +143,13 @@ export declare class UserService {
      * Activer/désactiver un utilisateur
      */
     toggleUserStatus(userId: string, isActive: boolean, requesterId: string): Promise<UserResponse>;
+    /**
+     * Mettre à jour la photo de profil d'un utilisateur
+     */
+    updateProfileImage(userId: string, imageUrl: string): Promise<UserResponse>;
+    /**
+     * Supprimer la photo de profil d'un utilisateur
+     */
+    deleteProfileImage(userId: string): Promise<void>;
 }
 //# sourceMappingURL=user.service.d.ts.map

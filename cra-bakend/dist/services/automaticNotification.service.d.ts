@@ -5,6 +5,7 @@ export declare class AutomaticNotificationService {
     static notifyOverdueTasks(): Promise<void>;
     static notifyProjectCreated(projectId: string, creatorId: string): Promise<void>;
     static notifyParticipantAdded(projectId: string, participantId: string, adderId: string): Promise<void>;
+    static notifyEventCreated(eventId: string, creatorId: string): Promise<void>;
     static notifySeminarCreated(seminarId: string, organizerId: string): Promise<void>;
     static notifySeminarReminder(seminarId: string): Promise<void>;
     static notifySeminarRegistration(seminarId: string, participantId: string): Promise<void>;

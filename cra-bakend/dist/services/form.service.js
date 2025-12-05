@@ -302,7 +302,7 @@ class FormService {
                     quality: 80
                 });
                 processedPhotos.push({
-                    fieldId: 'photo_field', // À adapter selon votre logique
+                    fieldId: photoData.fieldId || 'photo_field', // Utiliser le fieldId du frontend
                     filename: savedPhoto.filename,
                     originalName: photoData.filename,
                     filepath: savedPhoto.filepath,

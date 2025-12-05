@@ -19,12 +19,12 @@ export declare const linkDocumentSchema: z.ZodObject<{
         project: "project";
         activity: "activity";
         task: "task";
+        event: "event";
+        seminar: "seminar";
         training: "training";
         internship: "internship";
         supervision: "supervision";
         knowledgeTransfer: "knowledgeTransfer";
-        seminar: "seminar";
-        event: "event";
     }>;
     entityId: z.ZodString;
 }, z.core.$strip>;
@@ -37,12 +37,12 @@ export declare const unlinkDocumentSchema: z.ZodObject<{
         project: "project";
         activity: "activity";
         task: "task";
+        event: "event";
+        seminar: "seminar";
         training: "training";
         internship: "internship";
         supervision: "supervision";
         knowledgeTransfer: "knowledgeTransfer";
-        seminar: "seminar";
-        event: "event";
     }>>;
     entityId: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
@@ -92,8 +92,8 @@ export declare const documentListQueryExtendedSchema: z.ZodObject<{
         updatedAt: "updatedAt";
         title: "title";
         size: "size";
-        viewCount: "viewCount";
         downloadCount: "downloadCount";
+        viewCount: "viewCount";
     }>>>;
     sortOrder: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
         asc: "asc";
@@ -144,12 +144,12 @@ declare const _default: {
             project: "project";
             activity: "activity";
             task: "task";
+            event: "event";
+            seminar: "seminar";
             training: "training";
             internship: "internship";
             supervision: "supervision";
             knowledgeTransfer: "knowledgeTransfer";
-            seminar: "seminar";
-            event: "event";
         }>;
         entityId: z.ZodString;
     }, z.core.$strip>;
@@ -158,12 +158,12 @@ declare const _default: {
             project: "project";
             activity: "activity";
             task: "task";
+            event: "event";
+            seminar: "seminar";
             training: "training";
             internship: "internship";
             supervision: "supervision";
             knowledgeTransfer: "knowledgeTransfer";
-            seminar: "seminar";
-            event: "event";
         }>>;
         entityId: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>;
@@ -202,8 +202,8 @@ declare const _default: {
             updatedAt: "updatedAt";
             title: "title";
             size: "size";
-            viewCount: "viewCount";
             downloadCount: "downloadCount";
+            viewCount: "viewCount";
         }>>>;
         sortOrder: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
             asc: "asc";

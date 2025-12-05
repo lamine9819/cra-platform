@@ -102,15 +102,32 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'PROJECT_ADDED':
+      case 'project_created':
         return '📁';
       case 'ACTIVITY_ADDED':
+      case 'activity_created':
         return '🎯';
       case 'CHAT_MESSAGE':
         return '💬';
       case 'CHAT_MENTION':
         return '📢';
       case 'DOCUMENT_SHARED':
+      case 'document_shared':
         return '📄';
+      case 'event_created':
+        return '📅';
+      case 'seminar_created':
+      case 'seminar_reminder':
+      case 'seminar_registration':
+        return '📚';
+      case 'task_assigned':
+        return '✅';
+      case 'task_completed':
+        return '✔️';
+      case 'comment_added':
+        return '💬';
+      case 'form_response_submitted':
+        return '📝';
       default:
         return '🔔';
     }

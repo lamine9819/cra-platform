@@ -41,7 +41,9 @@ export declare const createPublicationSchema: z.ZodObject<{
     abstract: z.ZodOptional<z.ZodString>;
     keywords: z.ZodDefault<z.ZodArray<z.ZodString>>;
     authors: z.ZodArray<z.ZodObject<{
-        userId: z.ZodString;
+        userId: z.ZodOptional<z.ZodString>;
+        externalName: z.ZodOptional<z.ZodString>;
+        externalEmail: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
         authorOrder: z.ZodNumber;
         isCorresponding: z.ZodDefault<z.ZodBoolean>;
         affiliation: z.ZodOptional<z.ZodString>;
@@ -91,7 +93,9 @@ export declare const updatePublicationSchema: z.ZodObject<{
     abstract: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     keywords: z.ZodOptional<z.ZodDefault<z.ZodArray<z.ZodString>>>;
     authors: z.ZodOptional<z.ZodArray<z.ZodObject<{
-        userId: z.ZodString;
+        userId: z.ZodOptional<z.ZodString>;
+        externalName: z.ZodOptional<z.ZodString>;
+        externalEmail: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
         authorOrder: z.ZodNumber;
         isCorresponding: z.ZodDefault<z.ZodBoolean>;
         affiliation: z.ZodOptional<z.ZodString>;

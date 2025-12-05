@@ -22,8 +22,8 @@ export declare const createStrategicAxisSchema: z.ZodObject<{
 }, z.core.$strip>;
 export declare const updateStrategicAxisSchema: z.ZodObject<{
     name: z.ZodOptional<z.ZodString>;
-    code: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     description: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    code: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     order: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
 }, z.core.$strip>;
 export declare const createStrategicSubAxisSchema: z.ZodObject<{
@@ -35,8 +35,8 @@ export declare const createStrategicSubAxisSchema: z.ZodObject<{
 }, z.core.$strip>;
 export declare const updateStrategicSubAxisSchema: z.ZodObject<{
     name: z.ZodOptional<z.ZodString>;
-    code: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     description: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    code: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     order: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
 }, z.core.$strip>;
 export declare const createResearchProgramSchema: z.ZodObject<{
@@ -50,10 +50,10 @@ export declare const createResearchProgramSchema: z.ZodObject<{
     coordinatorId: z.ZodString;
 }, z.core.$strip>;
 export declare const updateResearchProgramSchema: z.ZodObject<{
-    isActive: z.ZodOptional<z.ZodDefault<z.ZodOptional<z.ZodBoolean>>>;
     name: z.ZodOptional<z.ZodString>;
-    code: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     description: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    isActive: z.ZodOptional<z.ZodDefault<z.ZodOptional<z.ZodBoolean>>>;
+    code: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     startDate: z.ZodOptional<z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date | undefined, string | undefined>>>;
     endDate: z.ZodOptional<z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date | undefined, string | undefined>>>;
     coordinatorId: z.ZodOptional<z.ZodString>;
@@ -68,10 +68,10 @@ export declare const createResearchThemeSchema: z.ZodObject<{
     programId: z.ZodString;
 }, z.core.$strip>;
 export declare const updateResearchThemeSchema: z.ZodObject<{
-    isActive: z.ZodOptional<z.ZodDefault<z.ZodOptional<z.ZodBoolean>>>;
     name: z.ZodOptional<z.ZodString>;
-    code: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     description: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    isActive: z.ZodOptional<z.ZodDefault<z.ZodOptional<z.ZodBoolean>>>;
+    code: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     objectives: z.ZodOptional<z.ZodDefault<z.ZodOptional<z.ZodArray<z.ZodString>>>>;
     order: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
 }, z.core.$strip>;
@@ -97,8 +97,8 @@ export declare const strategicPlanQuerySchema: z.ZodObject<{
     startYear: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
     endYear: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
     sortBy: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
-        createdAt: "createdAt";
         name: "name";
+        createdAt: "createdAt";
         startYear: "startYear";
         endYear: "endYear";
     }>>>;
@@ -113,8 +113,8 @@ export declare const strategicAxisQuerySchema: z.ZodObject<{
     search: z.ZodOptional<z.ZodString>;
     strategicPlanId: z.ZodOptional<z.ZodString>;
     sortBy: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
-        createdAt: "createdAt";
         name: "name";
+        createdAt: "createdAt";
         code: "code";
         order: "order";
     }>>>;
@@ -131,8 +131,8 @@ export declare const researchProgramQuerySchema: z.ZodObject<{
     coordinatorId: z.ZodOptional<z.ZodString>;
     isActive: z.ZodOptional<z.ZodCoercedBoolean<unknown>>;
     sortBy: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
-        createdAt: "createdAt";
         name: "name";
+        createdAt: "createdAt";
         code: "code";
         startDate: "startDate";
     }>>>;
@@ -148,8 +148,8 @@ export declare const researchThemeQuerySchema: z.ZodObject<{
     programId: z.ZodOptional<z.ZodString>;
     isActive: z.ZodOptional<z.ZodCoercedBoolean<unknown>>;
     sortBy: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
-        createdAt: "createdAt";
         name: "name";
+        createdAt: "createdAt";
         code: "code";
         order: "order";
     }>>>;
