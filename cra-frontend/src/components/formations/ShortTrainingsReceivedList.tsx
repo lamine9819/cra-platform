@@ -91,7 +91,7 @@ export const ShortTrainingsReceivedList: React.FC<ShortTrainingsReceivedListProp
       location: training.location,
       startDate: training.startDate.split('T')[0],
       endDate: training.endDate ? training.endDate.split('T')[0] : '',
-      duration: training.duration,
+      duration: training.duration ?? undefined,
       beneficiaries: training.beneficiaries,
       organizer: training.organizer || '',
     });

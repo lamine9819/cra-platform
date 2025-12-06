@@ -1,7 +1,7 @@
 // src/components/forms/ResponseViewer.tsx - Composant pour visualiser les réponses
 import React, { useState } from 'react';
 import { Eye, Download,  Search, Calendar, User, MessageSquare } from 'lucide-react';
-import { Form, FormResponse, FormField } from '../../services/formsApi';
+import { Form, FormResponseData, FormField } from '../../services/formsApi';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
@@ -12,7 +12,7 @@ import Pagination from '../ui/Pagination';
 
 interface ResponseViewerProps {
   form: Form;
-  responses: FormResponse[];
+  responses: FormResponseData[];
   pagination: {
     page: number;
     totalPages: number;
@@ -34,24 +34,24 @@ const ResponseViewer: React.FC<ResponseViewerProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
-  const [selectedResponse, setSelectedResponse] = useState<FormResponse | null>(null);
+  const [selectedResponse, setSelectedResponse] = useState<import("../../services/formsApi").FormResponseData | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   // Filtrage des réponses
   const filteredResponses = responses.filter(response => {
     const matchesSearch = searchTerm === '' || 
-      `${response.respondent.firstName} ${response.respondent.lastName}`
+      `${response.respondent?.firstName} ${response.respondent?.lastName}`
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      response.respondent.email.toLowerCase().includes(searchTerm.toLowerCase());
+      response.respondent?.email.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesRole = selectedRole === 'all' || response.respondent.role === selectedRole;
+    const matchesRole = selectedRole === 'all' || response.respondent?.role === selectedRole;
     
     return matchesSearch && matchesRole;
   });
 
   // Obtenir les rôles uniques des répondants
-  const uniqueRoles = Array.from(new Set(responses.map(r => r.respondent.role)));
+  const uniqueRoles = Array.from(new Set(responses.map(r => r.respondent?.role)));
 
   // Formater une valeur de réponse pour l'affichage
   const formatResponseValue = (field: FormField, value: any): string => {
@@ -91,12 +91,12 @@ const ResponseViewer: React.FC<ResponseViewerProps> = ({
           <div className="flex items-start justify-between mb-4">
             <div>
               <h3 className="font-semibold text-gray-900">
-                {response.respondent.firstName} {response.respondent.lastName}
+                {response.respondent?.firstName} {response.respondent?.lastName}
               </h3>
-              <p className="text-sm text-gray-600">{response.respondent.email}</p>
+              <p className="text-sm text-gray-600">{response.respondent?.email}</p>
             </div>
             <div className="text-right">
-              <Badge variant="secondary">{response.respondent.role}</Badge>
+              <Badge variant="secondary">{response.respondent?.role}</Badge>
               <p className="text-xs text-gray-500 mt-1">
                 {new Date(response.submittedAt).toLocaleString('fr-FR')}
               </p>
@@ -168,7 +168,7 @@ const ResponseViewer: React.FC<ResponseViewerProps> = ({
           {filteredResponses.map((response) => (
             <tr key={response.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap">
-                <Badge variant="secondary">{response.respondent.role}</Badge>
+                <Badge variant="secondary">{response.respondent?.role}</Badge>
               </td>
               {form.schema.fields.slice(0, 3).map((field) => (
                 <td key={field.id} className="px-6 py-4 whitespace-nowrap">
@@ -263,7 +263,7 @@ const ResponseViewer: React.FC<ResponseViewerProps> = ({
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-600">Répondants uniques</p>
               <p className="text-2xl font-bold text-gray-900">
-                {new Set(responses.map(r => r.respondent.email)).size}
+                {new Set(responses.map(r => r.respondent?.email)).size}
               </p>
             </div>
           </div>
@@ -334,7 +334,7 @@ const ResponseViewer: React.FC<ResponseViewerProps> = ({
 
 // Modal pour afficher les détails d'une réponse
 interface ResponseDetailModalProps {
-  response: FormResponse;
+  response: FormResponseData;
   form: Form;
   onClose: () => void;
 }
@@ -382,16 +382,16 @@ const ResponseDetailModal: React.FC<ResponseDetailModalProps> = ({
             <div>
               <p className="text-sm text-gray-600">Nom</p>
               <p className="font-medium">
-                {response.respondent.firstName} {response.respondent.lastName}
+                {response.respondent?.firstName} {response.respondent?.lastName}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Email</p>
-              <p className="font-medium">{response.respondent.email}</p>
+              <p className="font-medium">{response.respondent?.email}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Rôle</p>
-              <Badge variant="secondary">{response.respondent.role}</Badge>
+              <Badge variant="secondary">{response.respondent?.role}</Badge>
             </div>
             <div>
               <p className="text-sm text-gray-600">Date de soumission</p>

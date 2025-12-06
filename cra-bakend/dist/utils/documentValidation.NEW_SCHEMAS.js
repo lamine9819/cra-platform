@@ -7,6 +7,7 @@ exports.validateExpirationDate = validateExpirationDate;
 exports.validateEntityType = validateEntityType;
 exports.validateTags = validateTags;
 const zod_1 = require("zod");
+const client_1 = require("@prisma/client");
 // =============================================
 // PHASE 1 - SCHÉMAS CRITIQUES
 // =============================================
@@ -17,7 +18,7 @@ const zod_1 = require("zod");
 exports.updateDocumentMetadataSchema = zod_1.z.object({
     title: zod_1.z.string().min(1, 'Le titre est requis').max(255).optional(),
     description: zod_1.z.string().max(1000).optional().nullable(),
-    type: zod_1.z.nativeEnum(document_types_1.DocumentType).optional(),
+    type: zod_1.z.nativeEnum(client_1.DocumentType).optional(),
     tags: zod_1.z.array(zod_1.z.string()).max(20, 'Maximum 20 tags').optional(),
     isPublic: zod_1.z.boolean().optional()
 }).refine(data => Object.keys(data).length > 0, { message: 'Au moins un champ doit être fourni pour la mise à jour' });
@@ -36,9 +37,7 @@ exports.linkDocumentSchema = zod_1.z.object({
         'supervision',
         'knowledgeTransfer',
         'event'
-    ], {
-        errorMap: () => ({ message: 'Type d\'entité invalide' })
-    }),
+    ], { message: 'Type d\'entité invalide' }),
     entityId: zod_1.z.string().cuid('ID d\'entité invalide')
 });
 /**
@@ -103,7 +102,7 @@ exports.documentListQueryExtendedSchema = zod_1.z.object({
     page: zod_1.z.coerce.number().int().positive().optional().default(1),
     limit: zod_1.z.coerce.number().int().positive().max(100).optional().default(20),
     // Filtres existants
-    type: zod_1.z.nativeEnum(document_types_1.DocumentType).optional(),
+    type: zod_1.z.nativeEnum(client_1.DocumentType).optional(),
     ownerId: zod_1.z.string().cuid().optional(),
     projectId: zod_1.z.string().cuid().optional(),
     activityId: zod_1.z.string().cuid().optional(),

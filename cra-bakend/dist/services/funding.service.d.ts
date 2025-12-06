@@ -7,11 +7,11 @@ export declare class FundingService {
         convention: {
             id: string;
             title: string;
-            contractNumber: string | null;
-        } | null;
+            contractNumber: string;
+        };
         activity: {
             id: string;
-            code: string | null;
+            code: string;
             title: string;
         };
     } & {
@@ -22,10 +22,10 @@ export declare class FundingService {
         startDate: Date | null;
         endDate: Date | null;
         conventionId: string | null;
-        activityId: string;
-        fundingSource: string;
         contractNumber: string | null;
         currency: string;
+        activityId: string;
+        fundingSource: string;
         contactPerson: string | null;
         contactEmail: string | null;
         fundingType: import(".prisma/client").$Enums.FundingType;
@@ -48,11 +48,11 @@ export declare class FundingService {
                 id: string;
                 title: string;
                 status: import(".prisma/client").$Enums.ConventionStatus;
-                contractNumber: string | null;
-            } | null;
+                contractNumber: string;
+            };
             activity: {
                 id: string;
-                code: string | null;
+                code: string;
                 title: string;
                 responsible: {
                     id: string;
@@ -68,10 +68,10 @@ export declare class FundingService {
             startDate: Date | null;
             endDate: Date | null;
             conventionId: string | null;
-            activityId: string;
-            fundingSource: string;
             contractNumber: string | null;
             currency: string;
+            activityId: string;
+            fundingSource: string;
             contactPerson: string | null;
             contactEmail: string | null;
             fundingType: import(".prisma/client").$Enums.FundingType;
@@ -116,7 +116,7 @@ export declare class FundingService {
             mainPartner: string;
             otherPartners: string[];
             responsibleUserId: string;
-        } | null;
+        };
         activity: {
             participants: ({
                 user: {
@@ -191,10 +191,10 @@ export declare class FundingService {
         startDate: Date | null;
         endDate: Date | null;
         conventionId: string | null;
-        activityId: string;
-        fundingSource: string;
         contractNumber: string | null;
         currency: string;
+        activityId: string;
+        fundingSource: string;
         contactPerson: string | null;
         contactEmail: string | null;
         fundingType: import(".prisma/client").$Enums.FundingType;
@@ -215,11 +215,11 @@ export declare class FundingService {
         convention: {
             id: string;
             title: string;
-            contractNumber: string | null;
-        } | null;
+            contractNumber: string;
+        };
         activity: {
             id: string;
-            code: string | null;
+            code: string;
             title: string;
         };
     } & {
@@ -230,10 +230,10 @@ export declare class FundingService {
         startDate: Date | null;
         endDate: Date | null;
         conventionId: string | null;
-        activityId: string;
-        fundingSource: string;
         contractNumber: string | null;
         currency: string;
+        activityId: string;
+        fundingSource: string;
         contactPerson: string | null;
         contactEmail: string | null;
         fundingType: import(".prisma/client").$Enums.FundingType;
@@ -261,8 +261,8 @@ export declare class FundingService {
             convention: {
                 id: string;
                 title: string;
-                contractNumber: string | null;
-            } | null;
+                contractNumber: string;
+            };
         } & {
             id: string;
             createdAt: Date;
@@ -271,10 +271,10 @@ export declare class FundingService {
             startDate: Date | null;
             endDate: Date | null;
             conventionId: string | null;
-            activityId: string;
-            fundingSource: string;
             contractNumber: string | null;
             currency: string;
+            activityId: string;
+            fundingSource: string;
             contactPerson: string | null;
             contactEmail: string | null;
             fundingType: import(".prisma/client").$Enums.FundingType;

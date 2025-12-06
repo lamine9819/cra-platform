@@ -36,7 +36,7 @@ declare const formFieldSchema: z.ZodObject<{
         acceptedTypes: z.ZodOptional<z.ZodArray<z.ZodString>>;
     }, z.core.$strip>>;
     options: z.ZodOptional<z.ZodArray<z.ZodObject<{
-        value: z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>;
+        value: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>>;
         label: z.ZodString;
     }, z.core.$strip>>>;
     defaultValue: z.ZodOptional<z.ZodAny>;
@@ -80,7 +80,7 @@ declare const formSchemaSchema: z.ZodObject<{
             acceptedTypes: z.ZodOptional<z.ZodArray<z.ZodString>>;
         }, z.core.$strip>>;
         options: z.ZodOptional<z.ZodArray<z.ZodObject<{
-            value: z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>;
+            value: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>>;
             label: z.ZodString;
         }, z.core.$strip>>>;
         defaultValue: z.ZodOptional<z.ZodAny>;
@@ -136,7 +136,7 @@ export declare const createFormSchema: z.ZodObject<{
                 acceptedTypes: z.ZodOptional<z.ZodArray<z.ZodString>>;
             }, z.core.$strip>>;
             options: z.ZodOptional<z.ZodArray<z.ZodObject<{
-                value: z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>;
+                value: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>>;
                 label: z.ZodString;
             }, z.core.$strip>>>;
             defaultValue: z.ZodOptional<z.ZodAny>;
@@ -196,7 +196,7 @@ export declare const updateFormSchema: z.ZodObject<{
                 acceptedTypes: z.ZodOptional<z.ZodArray<z.ZodString>>;
             }, z.core.$strip>>;
             options: z.ZodOptional<z.ZodArray<z.ZodObject<{
-                value: z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>;
+                value: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>>;
                 label: z.ZodString;
             }, z.core.$strip>>>;
             defaultValue: z.ZodOptional<z.ZodAny>;

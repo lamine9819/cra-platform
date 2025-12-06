@@ -19,7 +19,8 @@ export class WebSocketNotificationService {
     this.io = new SocketIOServer(server, {
       cors: {
         origin: process.env.FRONTEND_URL || "http://localhost:5173",
-        methods: ["GET", "POST"]
+        methods: ["GET", "POST"],
+        credentials: true // Important : autorise l'envoi de cookies
       },
       path: '/socket.io'
     });
@@ -44,7 +45,7 @@ export class WebSocketNotificationService {
             return acc;
           }, {});
 
-          token = cookies.token; // Le nom du cookie défini dans le backend
+          token = cookies.auth_token; // Le nom du cookie défini dans le backend (auth_token)
         }
 
         if (!token) {

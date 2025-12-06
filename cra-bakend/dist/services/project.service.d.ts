@@ -138,12 +138,12 @@ export declare class ProjectService {
     searchPotentialPartners(projectId: string, query?: string, expertise?: string[], type?: string): Promise<{
         id: string;
         name: string;
-        description: string | null;
+        description: string;
         type: import(".prisma/client").$Enums.PartnerType;
         expertise: string[];
-        category: string | null;
-        contactPerson: string | null;
-        contactEmail: string | null;
+        category: string;
+        contactPerson: string;
+        contactEmail: string;
         services: string[];
     }[]>;
     private canManagePartnerships;

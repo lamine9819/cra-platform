@@ -13,7 +13,8 @@ class WebSocketNotificationService {
         this.io = new socket_io_1.Server(server, {
             cors: {
                 origin: process.env.FRONTEND_URL || "http://localhost:5173",
-                methods: ["GET", "POST"]
+                methods: ["GET", "POST"],
+                credentials: true // Important : autorise l'envoi de cookies
             },
             path: '/socket.io'
         });
@@ -33,7 +34,7 @@ class WebSocketNotificationService {
                         acc[key] = value;
                         return acc;
                     }, {});
-                    token = cookies.token; // Le nom du cookie défini dans le backend
+                    token = cookies.auth_token; // Le nom du cookie défini dans le backend (auth_token)
                 }
                 if (!token) {
                     return next(new Error('Authentification requise'));

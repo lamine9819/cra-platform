@@ -5,6 +5,7 @@ import { Request, Response, NextFunction } from 'express';
 import { DocumentService } from '../services/document.service';
 import { AuthenticatedRequest } from '../types/auth.types';
 import { ValidationError } from '../utils/errors';
+import * as path from 'path';
 import {
   updateDocumentMetadataSchema,
   linkDocumentSchema,

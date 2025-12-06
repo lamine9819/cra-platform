@@ -42,8 +42,8 @@ export declare const createProjectSchema: z.ZodObject<{
         TERMINE: "TERMINE";
         ARCHIVE: "ARCHIVE";
     }>>;
-    startDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
-    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
+    startDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
+    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
     budget: z.ZodOptional<z.ZodNumber>;
     keywords: z.ZodDefault<z.ZodArray<z.ZodString>>;
     code: z.ZodOptional<z.ZodString>;
@@ -73,8 +73,8 @@ export declare const updateProjectSchema: z.ZodObject<{
         TERMINE: "TERMINE";
         ARCHIVE: "ARCHIVE";
     }>>;
-    startDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
-    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
+    startDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
+    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
     budget: z.ZodOptional<z.ZodNumber>;
     keywords: z.ZodOptional<z.ZodArray<z.ZodString>>;
     themeId: z.ZodOptional<z.ZodString>;
@@ -104,8 +104,8 @@ export declare const projectListQuerySchema: z.ZodObject<{
     }>>;
     creatorId: z.ZodOptional<z.ZodString>;
     search: z.ZodOptional<z.ZodString>;
-    startDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
-    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
+    startDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
+    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
     themeId: z.ZodOptional<z.ZodString>;
     researchProgramId: z.ZodOptional<z.ZodString>;
     conventionId: z.ZodOptional<z.ZodString>;
@@ -156,15 +156,15 @@ export declare const addPartnershipSchema: z.ZodObject<{
     partnerType: z.ZodString;
     contribution: z.ZodOptional<z.ZodString>;
     benefits: z.ZodOptional<z.ZodString>;
-    startDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
-    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
+    startDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
+    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
 }, z.core.$strip>;
 export declare const updatePartnershipSchema: z.ZodObject<{
     partnershipId: z.ZodString;
     partnerType: z.ZodOptional<z.ZodString>;
     contribution: z.ZodOptional<z.ZodString>;
     benefits: z.ZodOptional<z.ZodString>;
-    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
+    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
     isActive: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 export declare const addFundingSchema: z.ZodObject<{
@@ -179,9 +179,9 @@ export declare const addFundingSchema: z.ZodObject<{
     }>;
     requestedAmount: z.ZodNumber;
     currency: z.ZodDefault<z.ZodString>;
-    applicationDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
-    startDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
-    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
+    applicationDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
+    startDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
+    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
     conditions: z.ZodOptional<z.ZodString>;
     contractNumber: z.ZodOptional<z.ZodString>;
     conventionId: z.ZodOptional<z.ZodString>;
@@ -198,7 +198,7 @@ export declare const updateFundingSchema: z.ZodObject<{
     }>>;
     approvedAmount: z.ZodOptional<z.ZodNumber>;
     receivedAmount: z.ZodOptional<z.ZodNumber>;
-    approvalDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
+    approvalDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
     conditions: z.ZodOptional<z.ZodString>;
     notes: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
@@ -211,8 +211,8 @@ export declare const projectSearchSchema: z.ZodObject<{
     budgetMin: z.ZodOptional<z.ZodNumber>;
     budgetMax: z.ZodOptional<z.ZodNumber>;
     dateRange: z.ZodOptional<z.ZodObject<{
-        start: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>;
-        end: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>;
+        start: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>;
+        end: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>;
     }, z.core.$strip>>;
 }, z.core.$strip>;
 export { researchTypeEnum, participantRoleEnum, fundingTypeEnum, fundingStatusEnum };

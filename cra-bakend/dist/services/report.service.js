@@ -153,14 +153,14 @@ class ReportService {
         const conventions = await prisma.convention.findMany({
             where: whereClause,
             include: {
-                fundings: {
-                    select: {
-                        fundingSource: true,
-                        approvedAmount: true,
-                        receivedAmount: true,
-                        currency: true
-                    }
-                },
+                // fundings: {
+                //   select: {
+                //     fundingSource: true,
+                //     approvedAmount: true,
+                //     receivedAmount: true,
+                //     currency: true
+                //   }
+                // },
                 activities: {
                     select: {
                         title: true,
@@ -180,7 +180,8 @@ class ReportService {
         });
         return conventions.map(conv => {
             const financementGlobal = conv.totalBudget || 0;
-            const financementMobilise = conv.fundings.reduce((sum, f) => sum + (f.receivedAmount || 0), 0);
+            // TODO: Restaurer fundings quand la relation sera disponible dans le schéma Prisma
+            const financementMobilise = 0; // conv.fundings?.reduce((sum, f) => sum + (f.receivedAmount || 0), 0) || 0;
             return {
                 intitule: conv.title,
                 dateDebut: conv.startDate || new Date(),

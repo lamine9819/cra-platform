@@ -11,6 +11,9 @@
 🔌 Initialisation du service WebSocket...
 🔌 Service WebSocket initialisé
 🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
 📅 Configuration des tâches automatiques...
 📅 Notifications récurrentes programmées
 📅 Notifications récurrentes programmées
@@ -33,3 +36,4111 @@
    - Tuer les processus: netstat -ano | findstr :3001
    - Ou sur Linux/Mac: lsof -ti:3001 | xargs kill -9
 [31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 05/12/2025 03:12:07
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 8393s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 10121s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 26526s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 26826s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 27126s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 27426s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 27726s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 28026s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 28326s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 28626s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 28926s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 32378s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 32700s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 33000s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 33300s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 33600s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 33983s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 34283s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 34583s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 34883s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 35183s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 35483s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 35783s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 36083s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 36383s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (95%)
+📊 Mémoire: 94MB / 99MB (95%) | Uptime: 36683s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 36983s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 37283s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 37583s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 37883s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 38183s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 38483s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 41882s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 45104s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 45404s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 45704s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 46004s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 46304s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 46604s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 46904s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 47204s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 47504s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 47804s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 48104s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 48404s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 48704s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 49004s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 49304s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 49604s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 49904s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 50580s
+⚠️ Utilisation mémoire élevée: 94MB / 99MB (96%)
+📊 Mémoire: 94MB / 99MB (96%) | Uptime: 50881s
+[0mGET /api/auth/profile [32m200[0m 227.209 ms - 440[0m
+[0mGET /api/notifications/unread-count [32m200[0m 243.563 ms - 26[0m
+[0mGET /api/notifications?page=1&limit=20 [32m200[0m 291.019 ms - -[0m
+[0mGET /api/notifications/unread-count [32m200[0m 36.459 ms - 26[0m
+[0mGET /api/dashboard/forms/stats?period=30 [32m200[0m 45.836 ms - 82[0m
+[0mGET /api/dashboard/forms/stats?period=30 [32m200[0m 5.228 ms - 82[0m
+[0mGET /api/notifications?page=1&limit=20 [32m200[0m 21.870 ms - -[0m
+[0mGET /api/dashboard/data-collection/stats [32m200[0m 186.673 ms - 319[0m
+[0mGET /api/dashboard/data-collection/stats [32m200[0m 24.083 ms - 319[0m
+✅ Utilisateur connecté: cmi28xzu2000wfssgl15b1g7l (cMwtSZll8Stcyk-7AAAB)
+💬 Utilisateur cmi28xzu2000wfssgl15b1g7l prêt pour le chat
+📢 cmi28xzu2000wfssgl15b1g7l a rejoint 2 salles
+[0mGET /api/dashboard/quick-stats [32m200[0m 369.468 ms - 140[0m
+[0mGET /api/dashboard/performance [32m200[0m 339.180 ms - 301[0m
+[0mGET /api/dashboard/quick-stats [32m200[0m 32.772 ms - 140[0m
+[0mGET /api/dashboard/performance [32m200[0m 25.361 ms - 301[0m
+[0mGET /api/dashboard?period=month&detailed=true&includeForms=true [32m200[0m 660.204 ms - -[0m
+[0mGET /api/dashboard?period=month&detailed=true&includeForms=true [32m200[0m 52.464 ms - -[0m
+[0mPOST /api/auth/logout [32m200[0m 3.613 ms - 50[0m
+❌ Utilisateur déconnecté: cmi28xzu2000wfssgl15b1g7l (cMwtSZll8Stcyk-7AAAB)
+⚠️ Utilisation mémoire élevée: 96MB / 102MB (94%)
+📊 Mémoire: 96MB / 102MB (94%) | Uptime: 51181s
+⚠️ Utilisation mémoire élevée: 96MB / 102MB (95%)
+📊 Mémoire: 96MB / 102MB (95%) | Uptime: 51481s
+⚠️ Utilisation mémoire élevée: 96MB / 102MB (95%)
+📊 Mémoire: 96MB / 102MB (95%) | Uptime: 51781s
+⚠️ Utilisation mémoire élevée: 96MB / 102MB (95%)
+📊 Mémoire: 96MB / 102MB (95%) | Uptime: 52081s
+⚠️ Utilisation mémoire élevée: 96MB / 102MB (95%)
+📊 Mémoire: 96MB / 102MB (95%) | Uptime: 52381s
+⚠️ Utilisation mémoire élevée: 96MB / 102MB (95%)
+📊 Mémoire: 96MB / 102MB (95%) | Uptime: 52681s
+⚠️ Utilisation mémoire élevée: 96MB / 102MB (95%)
+📊 Mémoire: 96MB / 102MB (95%) | Uptime: 52981s
+⚠️ Utilisation mémoire élevée: 97MB / 102MB (95%)
+📊 Mémoire: 97MB / 102MB (95%) | Uptime: 53281s
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 05/12/2025 18:01:46
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 306s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 607s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 907s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 1207s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 1866s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 2166s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 2466s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 2766s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 3066s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 3366s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 3666s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 3966s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 4266s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 4566s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 4866s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 5166s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 5466s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 5766s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (96%)
+📊 Mémoire: 94MB / 97MB (96%) | Uptime: 6066s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 6366s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 6666s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 6966s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 7266s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 7566s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 7866s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 8166s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 12934s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 13234s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 13534s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 13834s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 14735s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 15035s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 15335s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 15635s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 20749s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 25266s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 25566s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 25866s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 26166s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 26466s
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 26766s
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 01:31:52
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+Error: Cannot find module 'exceljs'
+Require stack:
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\controllers\form.controller.ts
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\routes\form.routes.ts
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\app.ts
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\server.ts
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at Module._resolveFilename.sharedData.moduleResolveFilenameHook.installedValue [as _resolveFilename] (C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\node_modules\@cspotcode\source-map-support\source-map-support.js:811:30)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.require (node:internal/modules/cjs/loader:1504:12)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\controllers\form.controller.ts:19:1) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\controllers\\form.controller.ts',
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\routes\\form.routes.ts',
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\app.ts',
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\server.ts'
+  ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+Error: Cannot find module 'exceljs'
+Require stack:
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\controllers\form.controller.ts
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\routes\form.routes.ts
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\app.ts
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\server.ts
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at Module._resolveFilename.sharedData.moduleResolveFilenameHook.installedValue [as _resolveFilename] (C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\node_modules\@cspotcode\source-map-support\source-map-support.js:811:30)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.require (node:internal/modules/cjs/loader:1504:12)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\controllers\form.controller.ts:19:1) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\controllers\\form.controller.ts',
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\routes\\form.routes.ts',
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\app.ts',
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\server.ts'
+  ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+Error: Cannot find module 'exceljs'
+Require stack:
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\controllers\form.controller.ts
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\routes\form.routes.ts
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\app.ts
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\server.ts
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at Module._resolveFilename.sharedData.moduleResolveFilenameHook.installedValue [as _resolveFilename] (C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\node_modules\@cspotcode\source-map-support\source-map-support.js:811:30)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.require (node:internal/modules/cjs/loader:1504:12)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\controllers\form.controller.ts:19:1) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\controllers\\form.controller.ts',
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\routes\\form.routes.ts',
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\app.ts',
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\server.ts'
+  ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+Error: Cannot find module 'exceljs'
+Require stack:
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\controllers\form.controller.ts
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\routes\form.routes.ts
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\app.ts
+- C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\server.ts
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at Module._resolveFilename.sharedData.moduleResolveFilenameHook.installedValue [as _resolveFilename] (C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\node_modules\@cspotcode\source-map-support\source-map-support.js:811:30)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.require (node:internal/modules/cjs/loader:1504:12)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\Users\lamin\Desktop\plateforme CRA\cra-platform\cra-bakend\src\controllers\form.controller.ts:19:1) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\controllers\\form.controller.ts',
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\routes\\form.routes.ts',
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\app.ts',
+    'C:\\Users\\lamin\\Desktop\\plateforme CRA\\cra-platform\\cra-bakend\\src\\server.ts'
+  ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 01:33:51
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+⚠️ Utilisation mémoire élevée: 89MB / 92MB (96%)
+📊 Mémoire: 89MB / 92MB (96%) | Uptime: 310s
+⚠️ Utilisation mémoire élevée: 89MB / 92MB (96%)
+📊 Mémoire: 89MB / 92MB (96%) | Uptime: 753s
+⚠️ Utilisation mémoire élevée: 89MB / 92MB (96%)
+📊 Mémoire: 89MB / 92MB (96%) | Uptime: 1570s
+⚠️ Utilisation mémoire élevée: 89MB / 92MB (96%)
+📊 Mémoire: 89MB / 92MB (96%) | Uptime: 1870s
+⚠️ Utilisation mémoire élevée: 89MB / 92MB (96%)
+📊 Mémoire: 89MB / 92MB (96%) | Uptime: 2170s
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:10:48
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:12:50
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+⚠️ Utilisation mémoire élevée: 89MB / 93MB (95%)
+📊 Mémoire: 89MB / 93MB (95%) | Uptime: 309s
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:20:37
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:24:22
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:25:02
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:25:37
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:25:59
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:27:18
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:27:48
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:28:01
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:28:39
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:28:57
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:29:58
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:30:47
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:31:15
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:31:44
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:31:54
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:32:09
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:32:41
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:33:08
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:33:38
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/server.ts`[39m
+✅ Application CRA configurée avec succès
+🔌 Initialisation du service WebSocket...
+🔌 Service WebSocket initialisé
+🔌 Service WebSocket initialisé
+💬 Initialisation du service WebSocket Chat...
+💬 Service WebSocket Chat initialisé
+💬 Service WebSocket Chat initialisé
+📅 Configuration des tâches automatiques...
+📅 Notifications récurrentes programmées
+📅 Notifications récurrentes programmées
+🔧 Endpoints de développement activés:
+   POST /dev/restart-services - Redémarrer les services
+   GET  /dev/stats - Statistiques détaillées
+   POST /dev/test-notification - Tester les notifications
+🎉 Serveur CRA Platform configuré avec succès !
+📝 Fonctionnalités activées:
+   - WebSocket temps réel
+   - Notifications automatiques
+   - Monitoring avancé
+   - Arrêt gracieux
+   - Nettoyage automatique (production)
+   - Endpoints de développement (dev)
+
+
+🚀 =======================================
+🚀     PLATEFORME CRA DÉMARRÉE         🚀
+🚀 =======================================
+
+🌐 Serveur principal: http://0.0.0.0:3001
+🔌 WebSocket: ws://0.0.0.0:3001/socket.io
+💊 Health check: http://0.0.0.0:3001/health
+📊 Metrics: http://0.0.0.0:3001/metrics
+📡 API Base: http://0.0.0.0:3001/api
+
+🎯 ========== MODULES ACTIFS ==========
+  ✅ Authentification JWT
+  ✅ Gestion des utilisateurs
+  ✅ Gestion des projets
+  ✅ Gestion des activités
+  ✅ Gestion des tâches
+  ✅ Gestion des documents
+  ✅ Système de formulaires
+  ✅ Gestion des événements
+  ✅ Système de reports
+  ✅ Notifications temps réel
+  ✅ Dashboard analytics
+  ✅ Système d'audit complet
+
+🔐 ========= SÉCURITÉ ACTIVE ==========
+  ✅ CORS configuré
+  ✅ Helmet (sécurité headers)
+  ✅ Rate limiting
+  ✅ Compression activée
+  ✅ Audit trails automatiques
+  ✅ Validation Zod
+  ✅ Upload sécurisé
+
+📈 ======== FONCTIONNALITÉS ==========
+  🔔 Notifications temps réel
+  📊 Analytics et métriques
+  🛡️ Audit de sécurité
+  📁 Gestion de fichiers
+  🎓 Système de séminaires
+  📝 Génération de rapports
+  📝 Formulaires dynamiques
+  💬 Commentaires contextuels
+  📱 API REST complète
+
+🌟 ========== ENDPOINTS =============
+  🔑 POST   /api/auth/login
+  🔑 POST   /api/auth/register
+  👥 GET    /api/users
+  📂 GET    /api/projects
+  📋 GET    /api/activities
+     GET       /api/publications
+  📄 GET    /api/conventions
+  📚 GET    /api/knowledge-transfers
+  💰 GET    /api/fundings
+  📅 GET    /api/plannings
+  📄 GET    /api/documents
+  📝 GET    /api/forms
+  📝 GET    /api/reports
+  🎓 GET    /api/seminars
+  💬 GET    /api/comments
+  🔔 GET    /api/notifications
+  📊 GET    /api/dashboard
+  🛡️ GET    /api/audit
+
+🎊 Environnement: DEVELOPMENT
+⏰ Démarré le: 06/12/2025 02:35:38
+
+🔌 ======== WEBSOCKET INFO ===========
+  📡 Utilisateurs connectés: 0
+  🔗 Connexions actives: 0
+  ✅ Service temps réel activé
+
+🚀 PLATEFORME CRA PRÊTE POUR LA PRODUCTION ! 🚀
+=======================================
+
+🔧 Mode développement activé
+📝 Logs détaillés activés
+🔄 Hot reload disponible
+
+📋 Pour tester l'API:
+   curl http://0.0.0.0:3001/health
+   curl http://0.0.0.0:3001/api
+
+🔗 Liens utiles:
+   📡 API Documentation: http://0.0.0.0:3001/api
+   💊 Health Check: http://0.0.0.0:3001/health
+   📊 Metrics: http://0.0.0.0:3001/metrics
+   🔌 WebSocket Test: ws://0.0.0.0:3001/socket.io
+
+
+⚠️ Utilisation mémoire élevée: 89MB / 93MB (96%)
+📊 Mémoire: 89MB / 93MB (96%) | Uptime: 309s
+⚠️ Utilisation mémoire élevée: 89MB / 93MB (96%)
+📊 Mémoire: 89MB / 93MB (96%) | Uptime: 609s
+⚠️ Utilisation mémoire élevée: 89MB / 93MB (96%)
+📊 Mémoire: 89MB / 93MB (96%) | Uptime: 909s

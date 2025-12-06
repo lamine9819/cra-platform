@@ -595,6 +595,9 @@ export const generateDocumentSlug = (document: DocumentResponse): string => {
   return `${titleSlug}-${document.id.slice(0, 8)}`;
 };
 
+// Re-export formatDocumentSize as formatFileSize for compatibility
+export { formatDocumentSize as formatFileSize } from '../types/document.types';
+
 export default {
   canEdit,
   canDelete,

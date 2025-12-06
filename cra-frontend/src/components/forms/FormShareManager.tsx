@@ -217,7 +217,7 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
       try {
         const linkInfo = await formApi.createPublicShareLink(form.id, {
           maxSubmissions,
-          expiresAt: expiresAt ? new Date(expiresAt) : undefined,
+          expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
         });
 
         setPublicLink(linkInfo);

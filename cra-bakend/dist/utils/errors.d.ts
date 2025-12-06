@@ -1,8 +1,8 @@
 export declare class ValidationError extends Error {
-    readonly field?: string | undefined;
+    readonly field?: string;
     readonly code: string;
     readonly statusCode: number;
-    constructor(message: string, field?: string | undefined);
+    constructor(message: string, field?: string);
 }
 export declare class AuthError extends Error {
     readonly code: string;
@@ -20,10 +20,10 @@ export declare class ConflictError extends Error {
     constructor(message: string);
 }
 export declare class DatabaseError extends Error {
-    readonly originalError?: Error | undefined;
+    readonly originalError?: Error;
     readonly code: string;
     readonly statusCode: number;
-    constructor(message: string, originalError?: Error | undefined);
+    constructor(message: string, originalError?: Error);
 }
 export declare class ServiceUnavailableError extends Error {
     readonly code: string;
@@ -31,17 +31,17 @@ export declare class ServiceUnavailableError extends Error {
     constructor(message?: string);
 }
 export declare class RateLimitError extends Error {
-    readonly retryAfter?: number | undefined;
+    readonly retryAfter?: number;
     readonly code: string;
     readonly statusCode: number;
-    constructor(message?: string, retryAfter?: number | undefined);
+    constructor(message?: string, retryAfter?: number);
 }
 export declare function isCustomError(error: any): error is ValidationError | AuthError | AuthorizationError | NotFoundError | ConflictError | DatabaseError | ServiceUnavailableError | RateLimitError;
 export declare function createErrorResponse(error: Error): {
     success: boolean;
     error: {
-        retryAfter?: number | undefined;
-        field?: string | undefined;
+        retryAfter?: number;
+        field?: string;
         code: string;
         message: string;
     };

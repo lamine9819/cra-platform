@@ -89,9 +89,9 @@ export const TrainingsGivenList: React.FC<TrainingsGivenListProps> = ({
       location: training.location || '',
       startDate: training.startDate.split('T')[0],
       endDate: training.endDate ? training.endDate.split('T')[0] : '',
-      duration: training.duration,
+      duration: training.duration ?? undefined,
       objectives: training.objectives,
-      maxParticipants: training.maxParticipants,
+      maxParticipants: training.maxParticipants ?? undefined,
     });
     setObjectives(training.objectives.length > 0 ? training.objectives : ['']);
     setShowEditModal(true);

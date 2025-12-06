@@ -36,13 +36,13 @@ export declare const createPartnerSchema: z.ZodObject<{
     category: z.ZodOptional<z.ZodString>;
     description: z.ZodOptional<z.ZodString>;
     address: z.ZodOptional<z.ZodString>;
-    phone: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>;
-    email: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>;
-    website: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>;
+    phone: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>;
+    email: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>;
+    website: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>;
     contactPerson: z.ZodOptional<z.ZodString>;
     contactTitle: z.ZodOptional<z.ZodString>;
-    contactEmail: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>;
-    contactPhone: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>;
+    contactEmail: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>;
+    contactPhone: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>;
     expertise: z.ZodDefault<z.ZodArray<z.ZodString>>;
     services: z.ZodDefault<z.ZodArray<z.ZodString>>;
 }, z.core.$strip>;
@@ -61,13 +61,13 @@ export declare const updatePartnerSchema: z.ZodObject<{
     category: z.ZodOptional<z.ZodString>;
     description: z.ZodOptional<z.ZodString>;
     address: z.ZodOptional<z.ZodString>;
-    phone: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>;
-    email: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>;
-    website: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>;
+    phone: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>;
+    email: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>;
+    website: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>;
     contactPerson: z.ZodOptional<z.ZodString>;
     contactTitle: z.ZodOptional<z.ZodString>;
-    contactEmail: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>;
-    contactPhone: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>;
+    contactEmail: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>;
+    contactPhone: z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>;
     expertise: z.ZodOptional<z.ZodArray<z.ZodString>>;
     services: z.ZodOptional<z.ZodArray<z.ZodString>>;
 }, z.core.$strip>;
@@ -103,8 +103,8 @@ export declare const addPartnershipSchema: z.ZodObject<{
     }>;
     contribution: z.ZodOptional<z.ZodString>;
     benefits: z.ZodOptional<z.ZodString>;
-    startDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
-    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
+    startDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
+    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
 }, z.core.$strip>;
 export declare const updatePartnershipSchema: z.ZodObject<{
     partnershipId: z.ZodString;
@@ -122,7 +122,7 @@ export declare const updatePartnershipSchema: z.ZodObject<{
     }>>;
     contribution: z.ZodOptional<z.ZodString>;
     benefits: z.ZodOptional<z.ZodString>;
-    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string | undefined, string>>, z.ZodOptional<z.ZodString>>>>;
+    endDate: z.ZodOptional<z.ZodOptional<z.ZodPipe<z.ZodPipe<z.ZodString, z.ZodTransform<string, string>>, z.ZodOptional<z.ZodString>>>>;
     isActive: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 export { partnerTypeEnum, partnershipTypeEnum };

@@ -103,7 +103,7 @@ const CreateProject: React.FC = () => {
           toast.loading('Upload du document en cours...');
           await documentService.uploadDocument(uploadFile, {
             title: `Document du projet - ${project.title}`,
-            type: 'RAPPORT',
+            type: 'RAPPORT' as import('../../types/document.types').DocumentType,
             projectId: project.id,
             isPublic: false,
           });

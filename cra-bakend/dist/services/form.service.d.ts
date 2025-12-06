@@ -24,14 +24,14 @@ export declare class FormService {
             isActive: boolean;
             title: string;
             activityId: string | null;
-            schema: import("@prisma/client/runtime/library").JsonValue;
             isPublic: boolean;
+            schema: import("@prisma/client/runtime/library").JsonValue;
             shareToken: string | null;
             shareCount: number;
             allowMultipleSubmissions: boolean;
         };
         canCollect: boolean;
-        remainingSubmissions: number | null;
+        remainingSubmissions: number;
     }>;
     submitFormResponse(formId: string, responseData: SubmitFormResponseRequest, respondentId: string | null, respondentRole: string | null, collectorInfo?: CollectorInfo): Promise<FormResponseData>;
     private processResponsePhotos;

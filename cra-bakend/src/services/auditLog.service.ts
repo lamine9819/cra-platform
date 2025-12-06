@@ -14,6 +14,7 @@ export interface AuditLogChanges {
   before?: any;
   after?: any;
   fields?: string[];
+  [key: string]: any;
 }
 
 export interface CreateAuditLogParams {

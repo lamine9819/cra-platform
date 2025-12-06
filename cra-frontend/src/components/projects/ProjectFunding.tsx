@@ -163,7 +163,7 @@ const ProjectFunding: React.FC<ProjectFundingProps> = ({ projectId, fundings = [
         toast.loading('Upload du document en cours...');
         await documentService.uploadDocument(uploadFile, {
           title: `Document de financement - ${finalSource}`,
-          type: 'CONTRAT',
+          type: 'CONTRAT' as import('../../types/document.types').DocumentType,
           projectId: projectId,
           isPublic: false,
         });

@@ -83,7 +83,7 @@ const CreateTask: React.FC = () => {
 
   const loadActivitiesForProject = async (projectId: string) => {
     try {
-      const response = await activitiesApi.getActivitiesByProject(projectId, { limit: 100 });
+      const response = await activitiesApi.getActivitiesByProject(projectId, 100);
       setActivities(response.activities);
     } catch (err: any) {
       console.error('Erreur lors du chargement des activités:', err);

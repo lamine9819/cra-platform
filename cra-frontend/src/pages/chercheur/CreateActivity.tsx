@@ -140,7 +140,7 @@ const CreateActivity: React.FC = () => {
           toast.loading('Upload du document en cours...');
           await documentService.uploadDocument(uploadFile, {
             title: `Document de l'activité - ${activity.title}`,
-            type: 'RAPPORT',
+            type: 'RAPPORT' as import('../../types/document.types').DocumentType,
             activityId: activity.id,
             isPublic: false,
           });

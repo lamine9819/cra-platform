@@ -16,7 +16,7 @@ import {
   exportQuerySchema,
   addCommentSchema
 } from '../utils/formValidation';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import * as JSZip from 'jszip';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -719,15 +719,46 @@ export class FormController {
 
       const exportData = this.formatResponsesForExport(responses, form, validatedQuery);
 
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Réponses');
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Réponses');
+
+      // Ajouter les en-têtes et les données
+      if (exportData.length > 0) {
+        const headers = Object.keys(exportData[0]);
+        worksheet.addRow(headers);
+
+        // Ajouter les données
+        exportData.forEach(row => {
+          const values = headers.map(header => row[header]);
+          worksheet.addRow(values);
+        });
+
+        // Ajuster automatiquement la largeur des colonnes
+        worksheet.columns.forEach((column, index) => {
+          let maxLength = 0;
+          column.eachCell?.({ includeEmpty: true }, (cell) => {
+            const cellLength = cell.value ? cell.value.toString().length : 10;
+            if (cellLength > maxLength) {
+              maxLength = cellLength;
+            }
+          });
+          column.width = Math.min(maxLength + 2, 50);
+        });
+
+        // Mettre en gras la première ligne (en-têtes)
+        const headerRow = worksheet.getRow(1);
+        headerRow.font = { bold: true };
+      }
 
       const filename = `${form.title.replace(/[^a-zA-Z0-9]/g, '_')}_responses_${Date.now()}.${validatedQuery.format}`;
-      const buffer = XLSX.write(workbook, { 
-        bookType: validatedQuery.format as any, 
-        type: 'buffer' 
-      });
+
+      // Générer le buffer selon le format
+      let buffer: Buffer;
+      if (validatedQuery.format === 'csv') {
+        buffer = await workbook.csv.writeBuffer() as Buffer;
+      } else {
+        buffer = await workbook.xlsx.writeBuffer() as Buffer;
+      }
 
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.setHeader('Content-Type', 

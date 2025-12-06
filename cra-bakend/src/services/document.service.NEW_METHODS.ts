@@ -1,7 +1,7 @@
 // src/services/document.service.NEW_METHODS.ts
 // NOUVELLES MÉTHODES À AJOUTER À document.service.ts
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, DocumentType } from '@prisma/client';
 import { ValidationError, AuthError, NotFoundError } from '../utils/errors';
 import { deleteFile } from '../utils/fileHelpers';
 
@@ -106,6 +106,7 @@ export class DocumentServiceNewMethods {
       where: { id: documentId },
       data: {
         ...updateData,
+        type: updateData.type ? (updateData.type as DocumentType) : undefined,
         updatedAt: new Date()
       },
       include: {

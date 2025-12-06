@@ -62,7 +62,7 @@ const Formations: React.FC = () => {
   ];
 
   const handleDownloadReport = () => {
-    downloadReportMutation.mutate();
+    downloadReportMutation.mutate(undefined as any)
   };
 
   return (

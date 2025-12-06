@@ -528,7 +528,7 @@ class CommentService {
             return acc;
         }, {});
         return Object.entries(grouped)
-            .map(([date, count]) => ({ date, count }))
+            .map(([date, count]) => ({ date, count: count }))
             .sort((a, b) => b.date.localeCompare(a.date));
     }
     // Inclusions pour les requêtes

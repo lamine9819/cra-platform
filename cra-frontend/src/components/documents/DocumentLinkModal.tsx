@@ -124,7 +124,7 @@ export const DocumentLinkModal: React.FC<DocumentLinkModalProps> = ({
   const handleUnlinkSpecific = async (link: DocumentContext) => {
     try {
       setSubmitting(true);
-      await onUnlink(link);
+      await onUnlink();
       toast.success(`Liaison avec ${link.type === 'project' ? 'le projet' : link.type === 'activity' ? 'l\'activité' : 'la tâche'} supprimée`);
     } catch (error: any) {
       toast.error(error.message || 'Erreur lors de la déliaison');

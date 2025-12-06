@@ -27,6 +27,7 @@ interface DocumentCardProps {
   mode?: 'hub' | 'contextual';
   compact?: boolean;
   showContext?: boolean;
+  showActions?: boolean;
   onView?: (document: DocumentResponse) => void;
   onDownload?: (document: DocumentResponse) => void;
   onEdit?: (document: DocumentResponse) => void;

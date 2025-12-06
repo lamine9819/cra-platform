@@ -40,7 +40,7 @@ const FormRenderer: React.FC<FormRendererProps> = ({
   // Initialiser les réponses avec les valeurs par défaut
   useEffect(() => {
     const defaultValues: Record<string, any> = {};
-    form.schema.fields.forEach(field => {
+    form.schema.fields.forEach((field: FormField) => {
       if (field.defaultValue !== undefined) {
         defaultValues[field.id] = field.defaultValue;
       }
@@ -100,8 +100,8 @@ const FormRenderer: React.FC<FormRendererProps> = ({
   // Validation de toutes les réponses
   const validateForm = useCallback((): boolean => {
     const errors: FieldError[] = [];
-    
-    form.schema.fields.forEach(field => {
+
+    form.schema.fields.forEach((field: FormField) => {
       const value = responses[field.id];
       const error = validateField(field, value);
       if (error) {

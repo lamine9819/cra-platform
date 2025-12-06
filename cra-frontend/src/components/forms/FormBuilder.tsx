@@ -373,7 +373,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
                         type="text"
                         value={option.label}
                         onChange={(e) =>
-                          updateOption(field.id, option.value, {
+                          updateOption(field.id, String(option.value), {
                             label: e.target.value,
                           })
                         }
@@ -382,7 +382,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
                       />
                       <button
                         type="button"
-                        onClick={() => removeOption(field.id, option.value)}
+                        onClick={() => removeOption(field.id, String(option.value))}
                         className="p-2 text-red-600 hover:bg-red-50 rounded"
                       >
                         <Trash2 className="w-4 h-4" />

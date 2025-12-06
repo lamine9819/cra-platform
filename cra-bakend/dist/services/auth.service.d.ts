@@ -8,8 +8,8 @@ export declare class AuthService {
             createdAt: Date;
             firstName: string;
             lastName: string;
-            specialization: string | null;
-            department: string | null;
+            specialization: string;
+            department: string;
         };
         token: string;
         message: string;
@@ -22,10 +22,10 @@ export declare class AuthService {
             lastName: string;
             role: import(".prisma/client").$Enums.UserRole;
             isActive: true;
-            specialization: string | null;
-            department: string | null;
-            phoneNumber: string | null;
-            profileImage: string | null;
+            specialization: string;
+            department: string;
+            phoneNumber: string;
+            profileImage: string;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -41,10 +41,10 @@ export declare class AuthService {
         firstName: string;
         lastName: string;
         isActive: boolean;
-        profileImage: string | null;
-        phoneNumber: string | null;
-        specialization: string | null;
-        department: string | null;
+        profileImage: string;
+        phoneNumber: string;
+        specialization: string;
+        department: string;
     }>;
     changePassword(userId: string, passwordData: ChangePasswordRequest): Promise<{
         message: string;

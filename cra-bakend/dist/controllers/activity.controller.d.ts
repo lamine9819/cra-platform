@@ -43,7 +43,7 @@ export declare class ActivityController {
     linkKnowledgeTransfer: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     unlinkKnowledgeTransfer: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     listKnowledgeTransfers: (req: Request, res: Response, next: NextFunction) => Promise<void>;
-    generateReport: (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
+    generateReport: (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>>>;
     private convertActivitiesToCSV;
 }
 //# sourceMappingURL=activity.controller.d.ts.map

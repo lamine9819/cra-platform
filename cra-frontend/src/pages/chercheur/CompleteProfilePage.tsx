@@ -81,29 +81,29 @@ const CompleteProfilePage: React.FC = () => {
         phoneNumber: profile.phoneNumber || '',
         department: profile.department || '',
         specialization: profile.specialization || '',
-        diploma: profile.diploma || '',
-        discipline: profile.discipline || '',
+        diploma: ((profile as any)?.diploma) || '',
+        discipline: ((profile as any)?.discipline) || '',
       });
 
       setProfileImage(profile.profileImage);
-      setIndividualProfile(profile.individualProfile || null);
+      setIndividualProfile(((profile as any)?.individualProfile) || null);
 
       // Charger les données du profil individuel dans le formulaire
-      if (profile.individualProfile) {
+      if (((profile as any)?.individualProfile)) {
         setIndividualProfileData({
-          matricule: profile.individualProfile.matricule || '',
-          grade: profile.individualProfile.grade || '',
-          classe: profile.individualProfile.classe || '',
-          dateNaissance: profile.individualProfile.dateNaissance ? profile.individualProfile.dateNaissance.split('T')[0] : '',
-          dateRecrutement: profile.individualProfile.dateRecrutement ? profile.individualProfile.dateRecrutement.split('T')[0] : '',
-          localite: profile.individualProfile.localite || '',
-          diplome: profile.individualProfile.diplome || '',
-          tempsRecherche: profile.individualProfile.tempsRecherche || 0,
-          tempsEnseignement: profile.individualProfile.tempsEnseignement || 0,
-          tempsFormation: profile.individualProfile.tempsFormation || 0,
-          tempsConsultation: profile.individualProfile.tempsConsultation || 0,
-          tempsGestionScientifique: profile.individualProfile.tempsGestionScientifique || 0,
-          tempsAdministration: profile.individualProfile.tempsAdministration || 0,
+          matricule: ((profile as any)?.individualProfile).matricule || '',
+          grade: ((profile as any)?.individualProfile).grade || '',
+          classe: ((profile as any)?.individualProfile).classe || '',
+          dateNaissance: ((profile as any)?.individualProfile).dateNaissance ? ((profile as any)?.individualProfile).dateNaissance.split('T')[0] : '',
+          dateRecrutement: ((profile as any)?.individualProfile).dateRecrutement ? ((profile as any)?.individualProfile).dateRecrutement.split('T')[0] : '',
+          localite: ((profile as any)?.individualProfile).localite || '',
+          diplome: ((profile as any)?.individualProfile).diplome || '',
+          tempsRecherche: ((profile as any)?.individualProfile).tempsRecherche || 0,
+          tempsEnseignement: ((profile as any)?.individualProfile).tempsEnseignement || 0,
+          tempsFormation: ((profile as any)?.individualProfile).tempsFormation || 0,
+          tempsConsultation: ((profile as any)?.individualProfile).tempsConsultation || 0,
+          tempsGestionScientifique: ((profile as any)?.individualProfile).tempsGestionScientifique || 0,
+          tempsAdministration: ((profile as any)?.individualProfile).tempsAdministration || 0,
         });
       }
     } catch (error: any) {
@@ -380,7 +380,7 @@ const CompleteProfilePage: React.FC = () => {
               data={individualProfile}
               formData={individualProfileData}
               isEditing={isEditingIndividual}
-              onChange={(field, value) => setIndividualProfileData(prev => ({ ...prev, [field]: value }))}
+              onChange={(field, value) => setIndividualProfileData((prev: any) => ({ ...prev, [field]: value }))}
               onDownload={handleDownloadFiche}
             />
           )}

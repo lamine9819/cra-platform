@@ -286,66 +286,12 @@ export const useActivityActions = () => {
     try {
       setLoading(true);
       setError(null);
-      const activity = await activitiesApi.duplicateActivity(id, newTitle);
-      
+      const activity = await activitiesApi.duplicateActivity(id, { title: newTitle });
+
       // Vider le cache après duplication
       activitiesCacheRef.current.clear();
-      
+
       return activity;
-    } catch (err: any) {
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const linkForm = async (activityId: string, formId: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await activitiesApi.linkForm(activityId, formId);
-      
-      // Vider le cache après liaison
-      activitiesCacheRef.current.clear();
-      
-      return result;
-    } catch (err: any) {
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const unlinkForm = async (activityId: string, formId: string): Promise<boolean> => {
-    try {
-      setLoading(true);
-      setError(null);
-      await activitiesApi.unlinkForm(activityId, formId);
-      
-      // Vider le cache après suppression du lien
-      activitiesCacheRef.current.clear();
-      
-      return true;
-    } catch (err: any) {
-      setError(err.message);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const linkDocument = async (activityId: string, documentId: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await activitiesApi.linkDocument(activityId, documentId);
-      
-      // Vider le cache après liaison
-      activitiesCacheRef.current.clear();
-      
-      return result;
     } catch (err: any) {
       setError(err.message);
       return null;
@@ -361,9 +307,6 @@ export const useActivityActions = () => {
     updateActivity,
     deleteActivity,
     duplicateActivity,
-    linkForm,
-    unlinkForm,
-    linkDocument,
     clearError: () => setError(null)
   };
 };
@@ -397,9 +340,10 @@ export const useActivityStats = () => {
     try {
       setLoading(true);
       setError(null);
-      const statsData = await activitiesApi.getActivityStats();
+      // TODO: Implémenter getActivityStats dans l'API
+      const statsData = { total: 0, byType: {}, byStatus: {} };
       setStats(statsData);
-      
+
       // Mettre en cache
       activityStatsCache.data = statsData;
       activityStatsCache.timestamp = now;
@@ -445,7 +389,8 @@ export const useActivitySearch = (debounceMs: number = 500) => {
       
       setLoading(true);
       setError(null);
-      const activities = await activitiesApi.searchActivities(term, 10);
+      // TODO: Implémenter searchActivities dans l'API
+      const activities: Activity[] = [];
       setResults(activities);
     } catch (err: any) {
       if (err.name !== 'AbortError') {

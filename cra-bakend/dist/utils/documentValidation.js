@@ -120,9 +120,7 @@ exports.linkDocumentSchema = zod_1.z.object({
         'supervision',
         'knowledgeTransfer',
         'event'
-    ], {
-        errorMap: () => ({ message: 'Type d\'entité invalide' })
-    }),
+    ], { message: 'Type d\'entité invalide' }),
     entityId: zod_1.z.string().cuid('ID d\'entité invalide')
 });
 /**

@@ -442,6 +442,8 @@ export interface UpdateActivityRequest {
   description?: string;
   objectives?: string[];
   type?: ActivityType;
+  themeId?: string;
+  responsibleId?: string;
   methodology?: string;
   location?: string;
   startDate?: string;
@@ -540,13 +542,20 @@ export interface UpdateActivityTaskRequest {
 }
 
 export interface ReconductActivityRequest {
+  title?: string;
+  newTitle?: string;
   reason: string;
+  notes?: string;
   modifications?: string;
   budgetChanges?: string;
   teamChanges?: string;
   scopeChanges?: string;
   newStartDate?: string;
   newEndDate?: string;
+  copyParticipants?: boolean;
+  copyTasks?: boolean;
+  copyPartnerships?: boolean;
+  copyFundings?: boolean;
 }
 
 // =============================================
@@ -571,7 +580,13 @@ export interface ActivityListQuery {
   isRecurrent?: boolean;
   conventionId?: string;
   projectId?: string;
+  location?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
+
+// Alias for compatibility
+export type ActivityFilters = ActivityListQuery;
 
 export interface ActivityListResponse {
   activities: Activity[];

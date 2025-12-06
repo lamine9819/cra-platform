@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import eventService from '../services/event.service';
 import reportService from '../services/reportEvent.service';
-import { DocumentType } from '@prisma/client';
+import { DocumentType, UserRole } from '@prisma/client';
 import * as fs from 'fs';
 
 import { AuthenticatedRequest } from '../types/auth.types';
@@ -30,7 +30,7 @@ export class EventController {
     try {
       const { id } = req.params;
       const userId = req.user.userId;
-      const userRole = req.user.role;
+      const userRole = req.user.role as UserRole;
 
       const event = await eventService.getEventById(id, userId, userRole);
 
@@ -46,7 +46,7 @@ export class EventController {
   async listEvents(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.user.userId;
-      const userRole = req.user.role;
+      const userRole = req.user.role as UserRole;
       const filters = req.query;
 
       const events = await eventService.listEvents(userId, userRole, filters);
@@ -65,7 +65,7 @@ export class EventController {
     try {
       const { id } = req.params;
       const userId = req.user.userId;
-      const userRole = req.user.role;
+      const userRole = req.user.role as UserRole;
       const updateData = req.body;
 
       const event = await eventService.updateEvent(id, userId, userRole, updateData);
@@ -84,7 +84,7 @@ export class EventController {
     try {
       const { id } = req.params;
       const userId = req.user.userId;
-      const userRole = req.user.role;
+      const userRole = req.user.role as UserRole;
 
       const result = await eventService.deleteEvent(id, userId, userRole);
 
@@ -134,7 +134,7 @@ export class EventController {
   async getEventStatistics(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.user.userId;
-      const userRole = req.user.role;
+      const userRole = req.user.role as UserRole;
 
       const stats = await eventService.getEventStatistics(userId, userRole);
 
@@ -170,7 +170,7 @@ export class EventController {
     try {
       const { id } = req.params;
       const userId = req.user.userId;
-      const userRole = req.user.role;
+      const userRole = req.user.role as UserRole;
 
       const seminar = await eventService.getSeminarById(id, userId, userRole);
 
@@ -186,7 +186,7 @@ export class EventController {
   async listSeminars(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.user.userId;
-      const userRole = req.user.role;
+      const userRole = req.user.role as UserRole;
       const filters = req.query;
 
       const seminars = await eventService.listSeminars(userId, userRole, filters);
@@ -274,7 +274,7 @@ export class EventController {
   async generateEventReport(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.user.userId;
-      const userRole = req.user.role;
+      const userRole = req.user.role as UserRole;
 
       // Map and validate query parameters to EventReportDto
       const filters = {

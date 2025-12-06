@@ -1,0 +1,103 @@
+version: '3.9'
+
+services:
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: cra-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cra-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-Bathily}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cra-db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cra-network
+
+  # Redis pour le cache (optionnel)
+  redis:
+    image: redis:7-alpine
+    container_name: cra-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_dev:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - cra-network
+
+  # Backend
+  backend:
+    build:
+      context: ./cra-bakend
+      dockerfile: Dockerfile
+      target: builder
+    container_name: cra-backend-dev
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-Bathily}@postgres:5432/cra-db
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-make-it-very-long-and-random}
+      JWT_EXPIRES_IN: 24h
+      PORT: 3001
+      FRONTEND_URL: http://localhost:5173
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./cra-bakend/src:/app/src
+      - ./cra-bakend/uploads:/app/uploads
+      - ./cra-bakend/logs:/app/logs
+      - ./cra-bakend/prisma:/app/prisma
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: npm run dev
+    networks:
+      - cra-network
+
+  # Frontend
+  frontend:
+    build:
+      context: ./cra-frontend
+      dockerfile: Dockerfile
+      target: builder
+    container_name: cra-frontend-dev
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:3001
+      VITE_API_BASE_URL: http://localhost:3001/api
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./cra-frontend/src:/app/src
+      - ./cra-frontend/public:/app/public
+    command: npm run dev -- --host 0.0.0.0
+    networks:
+      - cra-network
+
+volumes:
+  postgres_data_dev:
+    driver: local
+  redis_data_dev:
+    driver: local
+
+networks:
+  cra-network:
+    driver: bridge

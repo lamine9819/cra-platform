@@ -61,7 +61,7 @@ export const DocumentsHub: React.FC = () => {
   // Queries
   const { data: documentsData, isLoading: isLoadingAll, refetch: refetchAll } = useDocuments({
     search: searchTerm,
-    type: typeFilter || undefined,
+    type: (typeFilter as import("../../types/document.types").DocumentType) || undefined,
   });
   const { data: favoritesData, isLoading: isLoadingFavorites, refetch: refetchFavorites } = useFavoriteDocuments();
   const { data: trashData, isLoading: isLoadingTrash, refetch: refetchTrash } = useTrashDocuments();

@@ -113,7 +113,7 @@ const ActivityFundingComponent: React.FC<ActivityFundingProps> = ({
         toast.loading('Upload du document en cours...');
         await documentService.uploadDocument(uploadFile, {
           title: `Document de financement - ${newFunding.fundingSource}`,
-          type: 'CONTRAT',
+          type: 'CONTRAT' as import('../../types/document.types').DocumentType,
           activityId: activityId,
           isPublic: false,
         });

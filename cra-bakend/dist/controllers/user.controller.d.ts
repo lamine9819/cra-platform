@@ -23,7 +23,7 @@ export declare class UserController {
     /**
      * Télécharger la fiche individuelle d'un chercheur
      */
-    downloadIndividualProfile: (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
+    downloadIndividualProfile: (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>>>;
     /**
      * Télécharger sa propre fiche individuelle
      */
@@ -83,7 +83,7 @@ export declare class UserController {
     /**
      * Upload d'une photo de profil
      */
-    uploadProfileImage: (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
+    uploadProfileImage: (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>>>;
     /**
      * Supprimer la photo de profil
      */

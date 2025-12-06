@@ -103,28 +103,10 @@ export const useNotifications = () => {
   useEffect(() => {
     if (!user) return;
 
-    // Obtenir le token depuis les cookies
-    const getTokenFromCookies = () => {
-      const cookies = document.cookie.split(';');
-      for (let cookie of cookies) {
-        const [name, value] = cookie.trim().split('=');
-        if (name === 'token') {
-          return value;
-        }
-      }
-      return null;
-    };
-
-    const token = getTokenFromCookies();
-    if (!token) {
-      console.warn('Pas de token trouvé pour la connexion WebSocket');
-      return;
-    }
-
-    // Connexion WebSocket
+    // Connexion WebSocket avec support des cookies HttpOnly
     const socketInstance = io(API_BASE_URL, {
       path: '/socket.io',
-      auth: { token },
+      withCredentials: true, // Important : envoie automatiquement les cookies HttpOnly
       transports: ['websocket', 'polling']
     });
 

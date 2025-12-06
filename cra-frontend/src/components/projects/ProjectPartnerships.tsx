@@ -144,7 +144,7 @@ const ProjectPartnerships: React.FC<ProjectPartnershipsProps> = ({ projectId, pa
         toast.loading('Upload du document en cours...');
         await documentService.uploadDocument(uploadFile, {
           title: `Document de partenariat - ${newPartnership.partnerType}`,
-          type: 'CONTRAT',
+          type: 'CONTRAT' as import('../../types/document.types').DocumentType,
           projectId: projectId,
           isPublic: false,
         });

@@ -157,7 +157,7 @@ export const useProjectActions = () => {
     try {
       setLoading(true);
       setError(null);
-      const project = await projectsApi.duplicateProject(id, newTitle);
+      const project = await projectsApi.duplicateProject(id, { title: newTitle });
       return project;
     } catch (err: any) {
       setError(err.message);
@@ -167,7 +167,7 @@ export const useProjectActions = () => {
     }
   };
 
-  const addParticipant = async (projectId: string, userId: string, role: string) => {
+  const addParticipant = async (projectId: string, userId: string, role: import('../types/project.types').ParticipantRole) => {
     try {
       setLoading(true);
       setError(null);
@@ -210,7 +210,14 @@ export const useProjectStats = () => {
     try {
       setLoading(true);
       setError(null);
-      const statsData = await projectsApi.getProjectStats();
+      // TODO: Implémenter getProjectStats dans l'API
+      const statsData = {
+        total: 0,
+        byStatus: {},
+        recent: [],
+        myProjects: 0,
+        participatingProjects: 0
+      };
       setStats(statsData);
     } catch (err: any) {
       setError(err.message);

@@ -57,10 +57,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
   const getProfileImageUrl = () => {
     if (!user?.profileImage) return null;
     if (user.profileImage.startsWith('http')) return user.profileImage;
-    const fullUrl = `${API_BASE_URL}${user.profileImage}`;
-    console.log('Header - User profileImage:', user.profileImage);
-    console.log('Header - Full URL:', fullUrl);
-    return fullUrl;
+    return `${API_BASE_URL}${user.profileImage}`;
   };
 
   const getInitials = () => {
@@ -80,7 +77,23 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
 
     if (notification.actionUrl) {
       setIsNotificationOpen(false);
-      navigate(notification.actionUrl);
+
+      // Adapter l'URL en fonction du rôle de l'utilisateur
+      let finalUrl = notification.actionUrl;
+
+      // Si l'URL ne commence pas déjà par un rôle (chercheur, coordonateur, admin)
+      if (!finalUrl.match(/^\/(chercheur|coordonateur|admin)\//)) {
+        // Mapper le rôle vers le préfixe de route correct
+        const roleToPrefix: Record<string, string> = {
+          'CHERCHEUR': 'chercheur',
+          'COORDONATEUR_PROJET': 'coordonateur',
+          'ADMINISTRATEUR': 'admin'
+        };
+        const rolePrefix = roleToPrefix[user?.role || 'CHERCHEUR'] || 'chercheur';
+        finalUrl = `/${rolePrefix}${finalUrl}`;
+      }
+
+      navigate(finalUrl);
     }
   };
 
@@ -306,14 +319,8 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
                     src={getProfileImageUrl()!}
                     alt="Photo de profil"
                     className="w-full h-full object-cover"
-                    onError={() => {
-                      console.error('Failed to load image:', getProfileImageUrl());
-                      setImageError(true);
-                    }}
-                    onLoad={() => {
-                      console.log('Image loaded successfully:', getProfileImageUrl());
-                      setImageError(false);
-                    }}
+                    onError={() => setImageError(true)}
+                    onLoad={() => setImageError(false)}
                   />
                 ) : (
                   <span className="text-white text-sm font-medium">

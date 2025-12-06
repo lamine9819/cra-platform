@@ -23,8 +23,8 @@ export interface CreateIndividualProfileRequest {
     matricule: string;
     grade: string;
     classe?: string;
-    dateNaissance: Date;
-    dateRecrutement: Date;
+    dateNaissance?: Date;
+    dateRecrutement?: Date;
     localite: string;
     diplome: string;
     tempsRecherche?: number;

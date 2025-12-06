@@ -144,6 +144,7 @@ export interface Convention {
   title: string;
   type: string;
   status: string;
+  contractNumber?: string;
 }
 
 export interface ProjectParticipant {
@@ -195,6 +196,7 @@ export interface ProjectFunding {
   conditions?: string;
   contractNumber?: string;
   conventionId?: string;
+  notes?: string;
 }
 
 export interface Project {
@@ -288,6 +290,9 @@ export interface ProjectListQuery {
   endDate?: string;
 }
 
+// Alias for compatibility
+export type ProjectFilters = ProjectListQuery;
+
 export interface ProjectListResponse {
   projects: Project[];
   pagination: {
@@ -354,6 +359,7 @@ export interface UpdateFundingRequest {
   approvalDate?: string;
   conditions?: string;
   notes?: string;
+  contractNumber?: string;
 }
 
 // =============================================

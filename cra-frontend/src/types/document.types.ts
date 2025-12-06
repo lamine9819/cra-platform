@@ -11,6 +11,7 @@ export enum DocumentType {
   DONNEES_EXPERIMENTALES = 'DONNEES_EXPERIMENTALES',
   FORMULAIRE = 'FORMULAIRE',
   IMAGE = 'IMAGE',
+  CONTRAT = 'CONTRAT',
   AUTRE = 'AUTRE'
 }
 
@@ -232,6 +233,7 @@ export interface DocumentStatsResponse {
 
 export interface DocumentCardProps {
   document: DocumentResponse;
+  mode?: 'hub' | 'contextual';
   onView?: (document: DocumentResponse) => void;
   onDownload?: (document: DocumentResponse) => void;
   onShare?: (document: DocumentResponse) => void;
@@ -239,6 +241,8 @@ export interface DocumentCardProps {
   onDelete?: (document: DocumentResponse) => void;
   onLink?: (document: DocumentResponse) => void;
   onUnlink?: (document: DocumentResponse) => void;
+  onFavorite?: (document: DocumentResponse) => void;
+  onManageLinks?: (document: DocumentResponse) => void;
   showActions?: boolean;
   compact?: boolean;
   showContext?: boolean;
@@ -383,6 +387,7 @@ export const DOCUMENT_TYPES = [
   { value: DocumentType.DONNEES_EXPERIMENTALES, label: 'Données expérimentales' },
   { value: DocumentType.FORMULAIRE, label: 'Formulaire' },
   { value: DocumentType.IMAGE, label: 'Image' },
+  { value: DocumentType.CONTRAT, label: 'Contrat' },
   { value: DocumentType.AUTRE, label: 'Autre' }
 ];
 
@@ -479,6 +484,7 @@ export const getDocumentTypeIcon = (type: DocumentType): string => {
     [DocumentType.DONNEES_EXPERIMENTALES]: '📊',
     [DocumentType.FORMULAIRE]: '📝',
     [DocumentType.IMAGE]: '🖼️',
+    [DocumentType.CONTRAT]: '📜',
     [DocumentType.AUTRE]: '📎'
   };
   return icons[type] || '📎';

@@ -48,7 +48,7 @@ export function useOfflineSync(): UseOfflineSyncResult {
         // Auto-sync si des données en attente
         const pending = offlineFormService.getPendingSyncCount();
         if (pending > 0) {
-          toast.info(`${pending} réponse(s) en attente de synchronisation`);
+          toast(`${pending} réponse(s) en attente de synchronisation`);
         }
       } else {
         toast.error('Connexion perdue - Mode offline activé');
@@ -77,7 +77,7 @@ export function useOfflineSync(): UseOfflineSyncResult {
     }
 
     if (isSyncing) {
-      toast.info('Synchronisation déjà en cours');
+      toast('Synchronisation déjà en cours');
       return;
     }
 
@@ -93,7 +93,7 @@ export function useOfflineSync(): UseOfflineSyncResult {
       if (result.failed === 0) {
         toast.success(`${result.successful} réponse(s) synchronisée(s) avec succès`);
       } else {
-        toast.warning(
+        toast.error(
           `${result.successful} réussie(s), ${result.failed} échouée(s)`
         );
       }

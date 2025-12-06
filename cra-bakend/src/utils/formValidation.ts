@@ -45,7 +45,7 @@ const formFieldSchema = z.object({
     acceptedTypes: z.array(z.string()).optional(),
   }).optional(),
   options: z.array(z.object({
-    value: z.union([z.string(), z.number()]),
+    value: z.union([z.string(), z.number()]).optional(),
     label: z.string(),
   })).optional(),
   defaultValue: z.any().optional(),

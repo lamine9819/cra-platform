@@ -51,7 +51,7 @@
     });
 
     const duplicateMutation = useMutation({
-      mutationFn: (id: string) => activitiesApi.duplicateActivity(id),
+      mutationFn: (id: string) => activitiesApi.duplicateActivity(id, {}),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['admin-activities'] });
         toast.success('Activité dupliquée avec succès');

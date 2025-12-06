@@ -643,7 +643,7 @@ export class CommentService {
     }, {});
 
     return Object.entries(grouped)
-      .map(([date, count]) => ({ date, count }))
+      .map(([date, count]) => ({ date, count: count as number }))
       .sort((a, b) => b.date.localeCompare(a.date));
   }
 

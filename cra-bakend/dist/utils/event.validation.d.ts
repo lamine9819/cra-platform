@@ -21,7 +21,7 @@ export declare const createEventSchema: z.ZodObject<{
         isAllDay: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
         isRecurring: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
         recurrenceRule: z.ZodOptional<z.ZodString>;
-        color: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<string | undefined, string | undefined>>;
+        color: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<string, string>>;
         stationId: z.ZodOptional<z.ZodString>;
         projectId: z.ZodOptional<z.ZodString>;
         activityId: z.ZodOptional<z.ZodString>;
@@ -56,7 +56,7 @@ export declare const updateEventSchema: z.ZodObject<{
         isAllDay: z.ZodOptional<z.ZodBoolean>;
         isRecurring: z.ZodOptional<z.ZodBoolean>;
         recurrenceRule: z.ZodOptional<z.ZodString>;
-        color: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<string | undefined, string | undefined>>;
+        color: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<string, string>>;
         stationId: z.ZodOptional<z.ZodString>;
         projectId: z.ZodOptional<z.ZodString>;
         activityId: z.ZodOptional<z.ZodString>;
@@ -93,8 +93,8 @@ export declare const updateSeminarSchema: z.ZodObject<{
 }, z.core.$strip>;
 export declare const eventFilterSchema: z.ZodObject<{
     query: z.ZodObject<{
-        startDate: z.ZodCatch<z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date | undefined, string | undefined>>>;
-        endDate: z.ZodCatch<z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date | undefined, string | undefined>>>;
+        startDate: z.ZodCatch<z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date, string>>>;
+        endDate: z.ZodCatch<z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date, string>>>;
         type: z.ZodCatch<z.ZodOptional<z.ZodEnum<{
             REUNION: "REUNION";
             SEMINAIRE: "SEMINAIRE";
@@ -138,8 +138,8 @@ export declare const eventReportSchema: z.ZodObject<{
             pdf: "pdf";
             docx: "docx";
         }>;
-        startDate: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date | undefined, string | undefined>>;
-        endDate: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date | undefined, string | undefined>>;
+        startDate: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date, string>>;
+        endDate: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date, string>>;
         type: z.ZodOptional<z.ZodEnum<{
             REUNION: "REUNION";
             SEMINAIRE: "SEMINAIRE";

@@ -13,11 +13,11 @@ export declare class PublicationService {
             title: string;
             activityId: string | null;
             size: bigint;
-            isPublic: boolean;
             filename: string;
             filepath: string;
             mimeType: string;
             tags: string[];
+            isPublic: boolean;
             ownerId: string;
             taskId: string | null;
             seminarId: string | null;
@@ -33,15 +33,15 @@ export declare class PublicationService {
             lastViewedAt: Date | null;
             previousVersionId: string | null;
             viewCount: number;
-        } | null;
+        };
         authors: ({
             user: {
                 email: string;
                 id: string;
                 firstName: string;
                 lastName: string;
-                department: string | null;
-            } | null;
+                department: string;
+            };
         } & {
             userId: string | null;
             id: string;
@@ -55,7 +55,7 @@ export declare class PublicationService {
         })[];
         linkedActivities: {
             id: string;
-            code: string | null;
+            code: string;
             title: string;
         }[];
         linkedProjects: {
@@ -99,15 +99,15 @@ export declare class PublicationService {
                 filename: string;
                 filepath: string;
                 mimeType: string;
-            } | null;
+            };
             authors: ({
                 user: {
                     email: string;
                     id: string;
                     firstName: string;
                     lastName: string;
-                    department: string | null;
-                } | null;
+                    department: string;
+                };
             } & {
                 userId: string | null;
                 id: string;
@@ -121,7 +121,7 @@ export declare class PublicationService {
             })[];
             linkedActivities: {
                 id: string;
-                code: string | null;
+                code: string;
                 title: string;
             }[];
             linkedProjects: {
@@ -176,11 +176,11 @@ export declare class PublicationService {
             title: string;
             activityId: string | null;
             size: bigint;
-            isPublic: boolean;
             filename: string;
             filepath: string;
             mimeType: string;
             tags: string[];
+            isPublic: boolean;
             ownerId: string;
             taskId: string | null;
             seminarId: string | null;
@@ -196,16 +196,16 @@ export declare class PublicationService {
             lastViewedAt: Date | null;
             previousVersionId: string | null;
             viewCount: number;
-        } | null;
+        };
         authors: ({
             user: {
                 email: string;
                 id: string;
                 firstName: string;
                 lastName: string;
-                department: string | null;
-                discipline: string | null;
-            } | null;
+                department: string;
+                discipline: string;
+            };
         } & {
             userId: string | null;
             id: string;
@@ -220,7 +220,7 @@ export declare class PublicationService {
         linkedActivities: {
             id: string;
             type: import(".prisma/client").$Enums.ActivityType;
-            code: string | null;
+            code: string;
             title: string;
         }[];
         linkedProjects: {
@@ -269,11 +269,11 @@ export declare class PublicationService {
             title: string;
             activityId: string | null;
             size: bigint;
-            isPublic: boolean;
             filename: string;
             filepath: string;
             mimeType: string;
             tags: string[];
+            isPublic: boolean;
             ownerId: string;
             taskId: string | null;
             seminarId: string | null;
@@ -289,15 +289,15 @@ export declare class PublicationService {
             lastViewedAt: Date | null;
             previousVersionId: string | null;
             viewCount: number;
-        } | null;
+        };
         authors: ({
             user: {
                 email: string;
                 id: string;
                 firstName: string;
                 lastName: string;
-                department: string | null;
-            } | null;
+                department: string;
+            };
         } & {
             userId: string | null;
             id: string;
@@ -311,7 +311,7 @@ export declare class PublicationService {
         })[];
         linkedActivities: {
             id: string;
-            code: string | null;
+            code: string;
             title: string;
         }[];
         linkedProjects: {
@@ -355,13 +355,13 @@ export declare class PublicationService {
             id: string;
             filename: string;
             mimeType: string;
-        } | null;
+        };
         authors: ({
             user: {
                 id: string;
                 firstName: string;
                 lastName: string;
-            } | null;
+            };
         } & {
             userId: string | null;
             id: string;
@@ -429,11 +429,11 @@ export declare class PublicationService {
             title: string;
             activityId: string | null;
             size: bigint;
-            isPublic: boolean;
             filename: string;
             filepath: string;
             mimeType: string;
             tags: string[];
+            isPublic: boolean;
             ownerId: string;
             taskId: string | null;
             seminarId: string | null;
@@ -449,13 +449,13 @@ export declare class PublicationService {
             lastViewedAt: Date | null;
             previousVersionId: string | null;
             viewCount: number;
-        } | null;
+        };
         authors: ({
             user: {
                 id: string;
                 firstName: string;
                 lastName: string;
-            } | null;
+            };
         } & {
             userId: string | null;
             id: string;
@@ -506,11 +506,11 @@ export declare class PublicationService {
         title: string;
         activityId: string | null;
         size: bigint;
-        isPublic: boolean;
         filename: string;
         filepath: string;
         mimeType: string;
         tags: string[];
+        isPublic: boolean;
         ownerId: string;
         taskId: string | null;
         seminarId: string | null;

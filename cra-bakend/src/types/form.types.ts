@@ -19,7 +19,7 @@ export interface FormField {
     acceptedTypes?: string[];
   };
   options?: Array<{
-    value: string | number;
+    value?: string | number;
     label: string;
   }>;
   defaultValue?: any;

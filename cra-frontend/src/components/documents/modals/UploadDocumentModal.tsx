@@ -31,6 +31,10 @@ interface UploadDocumentModalProps {
   // Options
   multiple?: boolean;
   autoLink?: boolean; // Lier automatiquement au contexte
+
+  // Legacy props for compatibility
+  defaultEntityType?: 'activity' | 'project' | 'task';
+  defaultEntityId?: string;
 }
 
 interface FileWithMeta {
@@ -56,7 +60,13 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   seminarId,
   multiple = true,
   autoLink = true,
+  defaultEntityType,
+  defaultEntityId,
 }) => {
+  // Support for legacy props
+  const finalActivityId = activityId || (defaultEntityType === 'activity' ? defaultEntityId : undefined);
+  const finalProjectId = projectId || (defaultEntityType === 'project' ? defaultEntityId : undefined);
+  const finalTaskId = taskId || (defaultEntityType === 'task' ? defaultEntityId : undefined);
   const [files, setFiles] = useState<FileWithMeta[]>([]);
   const [currentTab, setCurrentTab] = useState<'upload' | 'link'>('upload');
   const [isUploading, setIsUploading] = useState(false);

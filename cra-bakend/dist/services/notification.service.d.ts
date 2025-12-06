@@ -29,8 +29,8 @@ export declare class NotificationService {
             id: string;
             firstName: string;
             lastName: string;
-            profileImage: string | null;
-        } | null;
+            profileImage: string;
+        };
     } & {
         id: string;
         type: string;
@@ -38,11 +38,11 @@ export declare class NotificationService {
         updatedAt: Date;
         message: string;
         title: string;
-        receiverId: string;
         isRead: boolean;
         readAt: Date | null;
         actionUrl: string | null;
         senderId: string | null;
+        receiverId: string;
         entityType: string | null;
         entityId: string | null;
     }>;

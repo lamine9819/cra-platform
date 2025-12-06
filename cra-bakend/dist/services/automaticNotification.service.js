@@ -15,14 +15,22 @@ class AutomaticNotificationService {
             const task = await prisma.task.findUnique({
                 where: { id: taskId },
                 include: {
-                    project: { select: { title: true } },
-                    activity: { select: { title: true } },
+                    project: { select: { id: true, title: true } },
+                    activity: { select: { id: true, title: true } },
                     creator: { select: { firstName: true, lastName: true } }
                 }
             });
             if (!task)
                 return;
             const contextTitle = task.project?.title || task.activity?.title || 'Tâche isolée';
+            // Déterminer l'URL d'action selon le contexte
+            let actionUrl = '/projects'; // URL par défaut
+            if (task.activityId) {
+                actionUrl = `/activities/${task.activityId}`;
+            }
+            else if (task.projectId) {
+                actionUrl = `/projects/${task.projectId}`;
+            }
             await this.notificationService.createNotification({
                 title: 'Nouvelle tâche assignée',
                 message: `Vous avez été assigné(e) à la tâche "${task.title}" dans ${contextTitle}`,
@@ -31,7 +39,7 @@ class AutomaticNotificationService {
                 senderId: assignerId,
                 entityType: 'task',
                 entityId: taskId,
-                actionUrl: `/tasks/${taskId}`
+                actionUrl
             });
             console.log(`✅ Notification envoyée: Tâche ${taskId} assignée à ${assigneeId}`);
         }
@@ -47,6 +55,7 @@ class AutomaticNotificationService {
                 include: {
                     project: {
                         select: {
+                            id: true,
                             title: true,
                             creatorId: true,
                             participants: {
@@ -55,6 +64,7 @@ class AutomaticNotificationService {
                             }
                         }
                     },
+                    activity: { select: { id: true } },
                     assignee: { select: { firstName: true, lastName: true } }
                 }
             });
@@ -71,6 +81,14 @@ class AutomaticNotificationService {
                     receiversToNotify.push(participant.user.id);
                 }
             }
+            // Déterminer l'URL d'action selon le contexte
+            let actionUrl = '/projects';
+            if (task.activityId) {
+                actionUrl = `/activities/${task.activityId}`;
+            }
+            else if (task.projectId) {
+                actionUrl = `/projects/${task.projectId}`;
+            }
             // Créer les notifications
             for (const receiverId of receiversToNotify) {
                 await this.notificationService.createNotification({
@@ -81,7 +99,7 @@ class AutomaticNotificationService {
                     senderId: assigneeId,
                     entityType: 'task',
                     entityId: taskId,
-                    actionUrl: `/tasks/${taskId}`
+                    actionUrl
                 });
             }
             console.log(`✅ Notifications envoyées: Tâche ${taskId} terminée`);
@@ -101,11 +119,21 @@ class AutomaticNotificationService {
                     assigneeId: { not: null }
                 },
                 include: {
-                    assignee: { select: { id: true } }
+                    assignee: { select: { id: true } },
+                    activity: { select: { id: true } },
+                    project: { select: { id: true } }
                 }
             });
             for (const task of overdueTasks) {
                 if (task.assignee) {
+                    // Déterminer l'URL d'action selon le contexte
+                    let actionUrl = '/projects';
+                    if (task.activityId) {
+                        actionUrl = `/activities/${task.activityId}`;
+                    }
+                    else if (task.projectId) {
+                        actionUrl = `/projects/${task.projectId}`;
+                    }
                     await this.notificationService.createNotification({
                         title: 'Tâche en retard ⚠️',
                         message: `La tâche "${task.title}" est en retard depuis le ${task.dueDate?.toLocaleDateString()}`,
@@ -113,7 +141,7 @@ class AutomaticNotificationService {
                         receiverId: task.assignee.id,
                         entityType: 'task',
                         entityId: task.id,
-                        actionUrl: `/tasks/${task.id}`
+                        actionUrl
                     });
                 }
             }
@@ -214,7 +242,7 @@ class AutomaticNotificationService {
                 title: 'Nouvel événement créé 📅',
                 message: `"${event.title}" créé par ${event.creator.firstName} ${event.creator.lastName} le ${event.startDate.toLocaleDateString()}`,
                 type: 'event_created',
-                actionUrl: `/events/${eventId}`,
+                actionUrl: `/calendar`,
                 entityType: 'event',
                 entityId: eventId
             }));
@@ -252,7 +280,7 @@ class AutomaticNotificationService {
                 title: 'Nouveau séminaire disponible 📚',
                 message: `"${seminar.title}" organisé par ${seminar.organizer.firstName} ${seminar.organizer.lastName} le ${seminar.startDate.toLocaleDateString()}`,
                 type: 'seminar_created',
-                actionUrl: `/seminars/${seminarId}`,
+                actionUrl: `/calendar`,
                 entityType: 'seminar',
                 entityId: seminarId
             }));
@@ -283,7 +311,7 @@ class AutomaticNotificationService {
                 title: 'Rappel de séminaire 🔔',
                 message: `Le séminaire "${seminar.title}" aura lieu demain à ${seminar.startDate.toLocaleTimeString()}`,
                 type: 'seminar_reminder',
-                actionUrl: `/seminars/${seminarId}`,
+                actionUrl: `/calendar`,
                 entityType: 'seminar',
                 entityId: seminarId
             }));
@@ -316,7 +344,7 @@ class AutomaticNotificationService {
                 senderId: participantId,
                 entityType: 'seminar',
                 entityId: seminarId,
-                actionUrl: `/seminars/${seminarId}`
+                actionUrl: `/calendar`
             });
             // Notifier le participant
             await this.notificationService.createNotification({
@@ -327,7 +355,7 @@ class AutomaticNotificationService {
                 senderId: seminar.organizerId,
                 entityType: 'seminar',
                 entityId: seminarId,
-                actionUrl: `/seminars/${seminarId}`
+                actionUrl: `/calendar`
             });
             console.log(`✅ Notifications inscription séminaire envoyées`);
         }
@@ -352,6 +380,7 @@ class AutomaticNotificationService {
             // Déterminer qui notifier selon le type de cible
             let receiversToNotify = [];
             let targetTitle = '';
+            let actionUrl = '';
             switch (targetType) {
                 case 'project':
                     const project = await prisma.project.findUnique({
@@ -365,6 +394,7 @@ class AutomaticNotificationService {
                     });
                     if (project) {
                         targetTitle = project.title;
+                        actionUrl = `/projects/${targetId}`;
                         receiversToNotify = [
                             project.creatorId,
                             ...project.participants.map((p) => p.user.id)
@@ -387,6 +417,7 @@ class AutomaticNotificationService {
                     });
                     if (activity) {
                         targetTitle = activity.title;
+                        actionUrl = `/activities/${targetId}`;
                         receiversToNotify = [
                             activity.project.creatorId,
                             ...activity.project.participants.map((p) => p.user.id)
@@ -395,10 +426,21 @@ class AutomaticNotificationService {
                     break;
                 case 'task':
                     const task = await prisma.task.findUnique({
-                        where: { id: targetId }
+                        where: { id: targetId },
+                        include: {
+                            activity: { select: { id: true } },
+                            project: { select: { id: true } }
+                        }
                     });
                     if (task) {
                         targetTitle = task.title;
+                        // Pointer vers l'activité ou le projet parent
+                        if (task.activityId) {
+                            actionUrl = `/activities/${task.activityId}`;
+                        }
+                        else if (task.projectId) {
+                            actionUrl = `/projects/${task.projectId}`;
+                        }
                         receiversToNotify = [
                             task.creatorId,
                             ...(task.assigneeId ? [task.assigneeId] : [])
@@ -407,14 +449,14 @@ class AutomaticNotificationService {
                     break;
             }
             // Créer les notifications
-            if (receiversToNotify.length > 0) {
+            if (receiversToNotify.length > 0 && actionUrl) {
                 const notificationPromises = receiversToNotify.map(receiverId => this.notificationService.createNotification({
                     receiverId,
                     senderId: authorId,
                     title: 'Nouveau commentaire 💬',
                     message: `${comment.author.firstName} ${comment.author.lastName} a commenté "${targetTitle}"`,
                     type: 'comment_added',
-                    actionUrl: `/comments/${commentId}`,
+                    actionUrl,
                     entityType: 'comment',
                     entityId: commentId
                 }));
@@ -446,7 +488,7 @@ class AutomaticNotificationService {
                 title: 'Document partagé avec vous 📄',
                 message: `${document.owner.firstName} ${document.owner.lastName} a partagé le document "${document.title}"`,
                 type: 'document_shared',
-                actionUrl: `/documents/${documentId}`,
+                actionUrl: `/documents`,
                 entityType: 'document',
                 entityId: documentId
             }));
@@ -508,7 +550,7 @@ class AutomaticNotificationService {
                     senderId: respondentId,
                     entityType: 'form',
                     entityId: formId,
-                    actionUrl: `/forms/${formId}/responses`
+                    actionUrl: `/forms/${formId}`
                 });
             }
             console.log(`✅ ${receiversToNotify.length} notifications réponse formulaire envoyées`);

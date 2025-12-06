@@ -3,7 +3,9 @@
 // NOUVELLES MÉTHODES À AJOUTER À document.controller.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentControllerNewMethods = void 0;
+const tslib_1 = require("tslib");
 const document_service_1 = require("../services/document.service");
+const path = tslib_1.__importStar(require("path"));
 const documentValidation_1 = require("../utils/documentValidation");
 const documentService = new document_service_1.DocumentService();
 class DocumentControllerNewMethods {

@@ -75,7 +75,18 @@ export const useMessages = ({ channelId, autoLoad = true }: UseMessagesOptions) 
 
     try {
       setError(null);
-      const message = await sendMessage(channelId, content, mentionedUserIds, fileUrl, fileName, fileSize, fileMimeType);
+      // Create message with file metadata if provided
+      const messageData: any = {
+        content,
+        mentionedUserIds,
+      };
+      if (fileUrl) {
+        messageData.fileUrl = fileUrl;
+        messageData.fileName = fileName;
+        messageData.fileSize = fileSize;
+        messageData.fileMimeType = fileMimeType;
+      }
+      const message = await sendMessage(channelId, content, mentionedUserIds);
       return message;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erreur lors de l\'envoi du message');

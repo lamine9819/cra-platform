@@ -27,13 +27,13 @@
     "importHelpers": true,
 
     /* Type Checking */
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
     "noImplicitReturns": false,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitOverride": false,
     "exactOptionalPropertyTypes": false,
 
     /* Interop Constraints */

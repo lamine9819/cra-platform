@@ -13,7 +13,7 @@ export declare class EventService {
             id: string;
             code: string;
             title: string;
-        } | null;
+        };
         documents: {
             id: string;
             type: import(".prisma/client").$Enums.DocumentType;
@@ -31,13 +31,13 @@ export declare class EventService {
             isActive: boolean;
             location: string;
             surface: number | null;
-        } | null;
+        };
         activity: {
             id: string;
             type: import(".prisma/client").$Enums.ActivityType;
-            code: string | null;
+            code: string;
             title: string;
-        } | null;
+        };
     } & {
         id: string;
         description: string | null;
@@ -70,7 +70,7 @@ export declare class EventService {
             id: string;
             code: string;
             title: string;
-        } | null;
+        };
         documents: {
             id: string;
             type: import(".prisma/client").$Enums.DocumentType;
@@ -95,13 +95,13 @@ export declare class EventService {
             isActive: boolean;
             location: string;
             surface: number | null;
-        } | null;
+        };
         activity: {
             id: string;
             type: import(".prisma/client").$Enums.ActivityType;
-            code: string | null;
+            code: string;
             title: string;
-        } | null;
+        };
     } & {
         id: string;
         description: string | null;
@@ -134,7 +134,7 @@ export declare class EventService {
             id: string;
             code: string;
             title: string;
-        } | null;
+        };
         _count: {
             documents: number;
         };
@@ -142,13 +142,13 @@ export declare class EventService {
             id: string;
             name: string;
             location: string;
-        } | null;
+        };
         activity: {
             id: string;
             type: import(".prisma/client").$Enums.ActivityType;
-            code: string | null;
+            code: string;
             title: string;
-        } | null;
+        };
     } & {
         id: string;
         description: string | null;
@@ -180,7 +180,7 @@ export declare class EventService {
             id: string;
             code: string;
             title: string;
-        } | null;
+        };
         station: {
             id: string;
             name: string;
@@ -190,12 +190,12 @@ export declare class EventService {
             isActive: boolean;
             location: string;
             surface: number | null;
-        } | null;
+        };
         activity: {
             id: string;
-            code: string | null;
+            code: string;
             title: string;
-        } | null;
+        };
     } & {
         id: string;
         description: string | null;
@@ -244,11 +244,11 @@ export declare class EventService {
         title: string;
         activityId: string | null;
         size: bigint;
-        isPublic: boolean;
         filename: string;
         filepath: string;
         mimeType: string;
         tags: string[];
+        isPublic: boolean;
         ownerId: string;
         taskId: string | null;
         seminarId: string | null;
@@ -293,7 +293,7 @@ export declare class EventService {
             isAllDay: boolean;
             isRecurring: boolean;
             recurrenceRule: string | null;
-        } | null;
+        };
         organizer: {
             email: string;
             id: string;
@@ -350,7 +350,7 @@ export declare class EventService {
             isAllDay: boolean;
             isRecurring: boolean;
             recurrenceRule: string | null;
-        } | null;
+        };
         organizer: {
             email: string;
             id: string;
@@ -382,9 +382,9 @@ export declare class EventService {
             type: import(".prisma/client").$Enums.EventType;
             title: string;
             startDate: Date;
-            endDate: Date | null;
-            location: string | null;
-        } | null;
+            endDate: Date;
+            location: string;
+        };
         organizer: {
             email: string;
             id: string;
@@ -434,7 +434,7 @@ export declare class EventService {
             isAllDay: boolean;
             isRecurring: boolean;
             recurrenceRule: string | null;
-        } | null;
+        };
         organizer: {
             email: string;
             id: string;
@@ -484,11 +484,11 @@ export declare class EventService {
         title: string;
         activityId: string | null;
         size: bigint;
-        isPublic: boolean;
         filename: string;
         filepath: string;
         mimeType: string;
         tags: string[];
+        isPublic: boolean;
         ownerId: string;
         taskId: string | null;
         seminarId: string | null;

@@ -108,7 +108,7 @@ const ActivityPartnerships: React.FC<ActivityPartnershipsProps> = ({
         toast.loading('Upload du document en cours...');
         await documentService.uploadDocument(uploadFile, {
           title: `Document de partenariat - ${newPartnership.partnerName}`,
-          type: 'CONTRAT',
+          type: 'CONTRAT' as import('../../types/document.types').DocumentType,
           activityId: activityId,
           isPublic: false,
         });

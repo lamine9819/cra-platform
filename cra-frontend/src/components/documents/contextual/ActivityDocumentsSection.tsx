@@ -165,7 +165,7 @@ const ActivityDocumentsSection: React.FC<ActivityDocumentsSectionProps> = ({ act
               {/* Actions */}
               <div className="flex items-center gap-2 ml-4">
                 <Button
-                  onClick={() => handleDownload(doc.id, doc.filename)}
+                  onClick={() => handleDownload(doc)}
                   variant="outline"
                   className="border-blue-600 text-blue-600 hover:bg-blue-50"
                   title="T�l�charger"
@@ -173,7 +173,7 @@ const ActivityDocumentsSection: React.FC<ActivityDocumentsSectionProps> = ({ act
                   <Download className="w-4 h-4" />
                 </Button>
                 <Button
-                  onClick={() => handleDelete(doc.id)}
+                  onClick={() => handleDelete(doc)}
                   variant="outline"
                   className="border-red-600 text-red-600 hover:bg-red-50"
                   title="Supprimer"
@@ -198,7 +198,7 @@ const ActivityDocumentsSection: React.FC<ActivityDocumentsSectionProps> = ({ act
                 </label>
                 <input
                   type="file"
-                  onChange={handleFileUpload}
+                  onChange={(e) => console.log("TODO: implement file upload", e)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
                 <p className="text-xs text-gray-500 mt-2">

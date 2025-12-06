@@ -10,11 +10,11 @@ export declare const getAuditLogStats: (req: Request, res: Response) => Promise<
 /**
  * Récupérer l'historique d'une entité spécifique
  */
-export declare const getEntityHistory: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getEntityHistory: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
 /**
  * Récupérer un log d'audit spécifique
  */
-export declare const getAuditLogById: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getAuditLogById: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
 /**
  * Exporter les logs d'audit au format CSV
  */

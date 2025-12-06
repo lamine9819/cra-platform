@@ -102,8 +102,8 @@ const AddParticipantModal: React.FC<AddParticipantModalProps> = ({
   const handleAddParticipant = async () => {
     if (!selectedUser) return;
 
-    const participant = await addParticipant(projectId, selectedUser.id, selectedRole);
-    
+    const participant = await addParticipant(projectId, selectedUser.id, selectedRole as import('../../types/project.types').ParticipantRole);
+
     if (participant) {
       onParticipantAdded();
       handleClose();

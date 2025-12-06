@@ -159,7 +159,7 @@ export const EditMetadataModal: React.FC<EditMetadataModalProps> = ({
               <select
                 id="type"
                 value={type}
-                onChange={(e) => setType(e.target.value)}
+                onChange={(e) => setType(e.target.value as import("../../../types/document.types").DocumentType)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 {DOCUMENT_TYPES.map((docType) => (

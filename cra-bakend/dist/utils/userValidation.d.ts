@@ -10,8 +10,8 @@ export declare const createUserSchema: z.ZodObject<{
         ADMINISTRATEUR: "ADMINISTRATEUR";
     }>;
     phoneNumber: z.ZodOptional<z.ZodString>;
-    dateOfBirth: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<Date | undefined, string>>>;
-    dateOfHire: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<Date | undefined, string>>>;
+    dateOfBirth: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<Date, string>>>;
+    dateOfHire: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<Date, string>>>;
     diploma: z.ZodOptional<z.ZodString>;
     specialization: z.ZodOptional<z.ZodString>;
     discipline: z.ZodOptional<z.ZodString>;
@@ -41,8 +41,8 @@ export declare const updateUserSchema: z.ZodObject<{
     firstName: z.ZodOptional<z.ZodString>;
     lastName: z.ZodOptional<z.ZodString>;
     phoneNumber: z.ZodOptional<z.ZodString>;
-    dateOfBirth: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<Date | undefined, string>>>;
-    dateOfHire: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<Date | undefined, string>>>;
+    dateOfBirth: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<Date, string>>>;
+    dateOfHire: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<Date, string>>>;
     diploma: z.ZodOptional<z.ZodString>;
     specialization: z.ZodOptional<z.ZodString>;
     discipline: z.ZodOptional<z.ZodString>;
@@ -112,7 +112,7 @@ export declare const createPersonnelRequestSchema: z.ZodObject<{
     location: z.ZodString;
     estimatedCost: z.ZodOptional<z.ZodNumber>;
     fundingSource: z.ZodOptional<z.ZodString>;
-    requestedDate: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<Date | undefined, string>>>;
+    requestedDate: z.ZodOptional<z.ZodPipe<z.ZodString, z.ZodTransform<Date, string>>>;
     justification: z.ZodString;
     center: z.ZodString;
 }, z.core.$strip>;

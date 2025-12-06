@@ -8,9 +8,9 @@ export declare class PublicationController {
     deletePublication(req: AuthenticatedRequest, res: Response): Promise<void>;
     getMyPublications(req: AuthenticatedRequest, res: Response): Promise<void>;
     getPublicationStats(req: AuthenticatedRequest, res: Response): Promise<void>;
-    uploadDocument(req: AuthenticatedRequest, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    uploadDocument(req: AuthenticatedRequest, res: Response): Promise<Response<any, Record<string, any>>>;
     downloadDocument(req: AuthenticatedRequest, res: Response): Promise<void>;
-    generateReport(req: AuthenticatedRequest, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    generateReport(req: AuthenticatedRequest, res: Response): Promise<Response<any, Record<string, any>>>;
 }
 export declare const publicationController: PublicationController;
 //# sourceMappingURL=publication.controller.d.ts.map

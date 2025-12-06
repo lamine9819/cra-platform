@@ -30,11 +30,11 @@ export interface CreateIndividualProfileRequest {
   matricule: string;
   grade: string; // "7", "CR", "CST"
   classe?: string; // "1", "6.3"
-  dateNaissance: Date;
-  dateRecrutement: Date;
+  dateNaissance?: Date;
+  dateRecrutement?: Date;
   localite: string; // Lieu d'affectation
   diplome: string; // DOCTORAT, MASTER, etc.
-  
+
   // Répartition du temps par activité (en pourcentage, total = 100%)
   tempsRecherche?: number;
   tempsEnseignement?: number;

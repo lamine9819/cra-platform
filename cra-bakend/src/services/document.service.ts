@@ -1,6 +1,6 @@
 // src/services/document.service.ts - Version mise à jour conforme au schéma Prisma
 import fs from 'fs';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, DocumentType } from '@prisma/client';
 import { ValidationError, AuthError } from '../utils/errors';
 import { UploadFileRequest, ShareDocumentRequest, DocumentListQuery, DocumentResponse } from '../types/document.types';
 import { getFileTypeFromMime, deleteFile } from '../utils/fileHelpers';
@@ -795,6 +795,7 @@ export class DocumentService {
       where: { id: documentId },
       data: {
         ...updateData,
+        type: updateData.type ? (updateData.type as DocumentType) : undefined,
         updatedAt: new Date()
       },
       include: this.getDocumentIncludes()
@@ -805,7 +806,7 @@ export class DocumentService {
       updatedFields: Object.keys(updateData)
     });
 
-    return this.formatDocumentResponse(document as DocumentWithRelations);
+    return this.formatDocumentResponse(document as unknown as DocumentWithRelations);
   }
 
   /**

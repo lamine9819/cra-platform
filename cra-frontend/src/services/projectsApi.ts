@@ -440,3 +440,27 @@ class ProjectsApiService {
 // Export singleton
 export const projectsApi = new ProjectsApiService();
 export default projectsApi;
+
+// Re-export types for convenience
+export type {
+  Project,
+  CreateProjectRequest,
+  UpdateProjectRequest,
+  ProjectListQuery,
+  ProjectListResponse,
+  ProjectFilters,
+  AddParticipantRequest,
+  UpdateParticipantRequest,
+  AddPartnershipRequest,
+  UpdatePartnershipRequest,
+  AddFundingRequest,
+  UpdateFundingRequest,
+  ProjectStatistics,
+  ProjectReport,
+  ProjectPartnership,
+  ProjectFunding,
+  Partner,
+  ProjectStatus,
+  ResearchType,
+  ParticipantRole,
+} from '../types/project.types';

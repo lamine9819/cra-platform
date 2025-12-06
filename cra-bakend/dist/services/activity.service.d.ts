@@ -109,10 +109,10 @@ export declare class ActivityService {
         startDate: Date | null;
         endDate: Date | null;
         conventionId: string | null;
-        activityId: string;
-        fundingSource: string;
         contractNumber: string | null;
         currency: string;
+        activityId: string;
+        fundingSource: string;
         contactPerson: string | null;
         contactEmail: string | null;
         fundingType: import(".prisma/client").$Enums.FundingType;
@@ -134,10 +134,10 @@ export declare class ActivityService {
         startDate: Date | null;
         endDate: Date | null;
         conventionId: string | null;
-        activityId: string;
-        fundingSource: string;
         contractNumber: string | null;
         currency: string;
+        activityId: string;
+        fundingSource: string;
         contactPerson: string | null;
         contactEmail: string | null;
         fundingType: import(".prisma/client").$Enums.FundingType;
@@ -158,7 +158,7 @@ export declare class ActivityService {
             type: import(".prisma/client").$Enums.ConventionType;
             title: string;
             status: import(".prisma/client").$Enums.ConventionStatus;
-        } | null;
+        };
     } & {
         id: string;
         createdAt: Date;
@@ -167,10 +167,10 @@ export declare class ActivityService {
         startDate: Date | null;
         endDate: Date | null;
         conventionId: string | null;
-        activityId: string;
-        fundingSource: string;
         contractNumber: string | null;
         currency: string;
+        activityId: string;
+        fundingSource: string;
         contactPerson: string | null;
         contactEmail: string | null;
         fundingType: import(".prisma/client").$Enums.FundingType;
@@ -303,7 +303,7 @@ export declare class ActivityService {
             id: string;
             firstName: string;
             lastName: string;
-        } | null;
+        };
     } & {
         id: string;
         description: string | null;
@@ -331,7 +331,7 @@ export declare class ActivityService {
             id: string;
             firstName: string;
             lastName: string;
-        } | null;
+        };
     } & {
         id: string;
         description: string | null;
@@ -364,7 +364,7 @@ export declare class ActivityService {
             id: string;
             firstName: string;
             lastName: string;
-        } | null;
+        };
     } & {
         id: string;
         description: string | null;
@@ -421,11 +421,11 @@ export declare class ActivityService {
             title: string;
             activityId: string | null;
             size: bigint;
-            isPublic: boolean;
             filename: string;
             filepath: string;
             mimeType: string;
             tags: string[];
+            isPublic: boolean;
             ownerId: string;
             taskId: string | null;
             seminarId: string | null;
@@ -447,7 +447,7 @@ export declare class ActivityService {
             id: string;
             firstName: string;
             lastName: string;
-        } | null;
+        };
     } & {
         id: string;
         description: string | null;
@@ -472,15 +472,15 @@ export declare class ActivityService {
         };
         activity: {
             id: string;
-            code: string | null;
+            code: string;
             title: string;
-        } | null;
+        };
         assignee: {
             email: string;
             id: string;
             firstName: string;
             lastName: string;
-        } | null;
+        };
     } & {
         id: string;
         description: string | null;
@@ -512,7 +512,7 @@ export declare class ActivityService {
             id: string;
             firstName: string;
             lastName: string;
-        } | null;
+        };
     } & {
         id: string;
         description: string | null;
@@ -544,7 +544,7 @@ export declare class ActivityService {
             id: string;
             firstName: string;
             lastName: string;
-        } | null;
+        };
     } & {
         id: string;
         description: string | null;
@@ -604,7 +604,7 @@ export declare class ActivityService {
             id: string;
             firstName: string;
             lastName: string;
-            profileImage: string | null;
+            profileImage: string;
         };
     } & {
         id: string;

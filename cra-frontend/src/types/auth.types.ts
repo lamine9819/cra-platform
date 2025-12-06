@@ -3,6 +3,26 @@
 // =============================================
 
 // src/types/auth.types.ts
+
+export interface IndividualProfile {
+  birthDate?: string;
+  birthPlace?: string;
+  nationality?: string;
+  gender?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  postalCode?: string;
+  emergencyContact?: string;
+  emergencyPhone?: string;
+  bio?: string;
+  linkedin?: string;
+  researchGate?: string;
+  orcid?: string;
+  googleScholar?: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -16,6 +36,7 @@ export interface User {
   department?: string;
   diploma?: string;
   discipline?: string;
+  individualProfile?: IndividualProfile;
   supervisor?: {
     id: string;
     firstName: string;

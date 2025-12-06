@@ -33,13 +33,13 @@ interface User {
 interface Project {
   id: string;
   title: string;
-  code: string;
+  code?: string;
 }
 
 interface Activity {
   id: string;
   title: string;
-  code: string;
+  code?: string;
 }
 
 const CreatePublication: React.FC = () => {
@@ -307,10 +307,11 @@ const CreatePublication: React.FC = () => {
   };
 
   const handleAddKeyword = () => {
-    if (newKeyword.trim() && !formData.keywords.includes(newKeyword.trim())) {
+    const keywords = formData.keywords || [];
+    if (newKeyword.trim() && !keywords.includes(newKeyword.trim())) {
       setFormData({
         ...formData,
-        keywords: [...formData.keywords, newKeyword.trim()]
+        keywords: [...keywords, newKeyword.trim()]
       });
       setNewKeyword('');
     }
@@ -319,7 +320,7 @@ const CreatePublication: React.FC = () => {
   const handleRemoveKeyword = (keyword: string) => {
     setFormData({
       ...formData,
-      keywords: formData.keywords.filter(k => k !== keyword)
+      keywords: (formData.keywords || []).filter(k => k !== keyword)
     });
   };
 
@@ -761,9 +762,9 @@ const CreatePublication: React.FC = () => {
               </button>
             </div>
 
-            {formData.keywords.length > 0 && (
+            {(formData.keywords || []).length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {formData.keywords.map((keyword, index) => (
+                {(formData.keywords || []).map((keyword, index) => (
                   <span
                     key={index}
                     className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-2"

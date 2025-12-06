@@ -84,6 +84,7 @@ class DocumentServiceNewMethods {
             where: { id: documentId },
             data: {
                 ...updateData,
+                type: updateData.type ? updateData.type : undefined,
                 updatedAt: new Date()
             },
             include: {

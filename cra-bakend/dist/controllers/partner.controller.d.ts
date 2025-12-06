@@ -5,6 +5,6 @@ export declare class PartnerController {
     getPartnerById: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     updatePartner: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     deletePartner: (req: Request, res: Response, next: NextFunction) => Promise<void>;
-    searchByExpertise: (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
+    searchByExpertise: (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>>>;
 }
 //# sourceMappingURL=partner.controller.d.ts.map

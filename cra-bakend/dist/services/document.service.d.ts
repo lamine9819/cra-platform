@@ -100,10 +100,10 @@ export declare class DocumentService {
     } & {
         id: string;
         documentId: string;
-        sharedWithId: string;
         canEdit: boolean;
         canDelete: boolean;
         sharedAt: Date;
+        sharedWithId: string;
         expiresAt: Date | null;
         revokedAt: Date | null;
         revokedBy: string | null;
@@ -128,10 +128,10 @@ export declare class DocumentService {
     } & {
         id: string;
         documentId: string;
-        sharedWithId: string;
         canEdit: boolean;
         canDelete: boolean;
         sharedAt: Date;
+        sharedWithId: string;
         expiresAt: Date | null;
         revokedAt: Date | null;
         revokedBy: string | null;

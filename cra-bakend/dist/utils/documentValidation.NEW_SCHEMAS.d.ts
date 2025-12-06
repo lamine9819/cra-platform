@@ -6,7 +6,20 @@ import { z } from 'zod';
 export declare const updateDocumentMetadataSchema: z.ZodObject<{
     title: z.ZodOptional<z.ZodString>;
     description: z.ZodNullable<z.ZodOptional<z.ZodString>>;
-    type: z.ZodOptional<z.ZodEnum<any>>;
+    type: z.ZodOptional<z.ZodEnum<{
+        RAPPORT: "RAPPORT";
+        FICHE_ACTIVITE: "FICHE_ACTIVITE";
+        FICHE_TECHNIQUE: "FICHE_TECHNIQUE";
+        FICHE_INDIVIDUELLE: "FICHE_INDIVIDUELLE";
+        DONNEES_EXPERIMENTALES: "DONNEES_EXPERIMENTALES";
+        FORMULAIRE: "FORMULAIRE";
+        PUBLICATION_SCIENTIFIQUE: "PUBLICATION_SCIENTIFIQUE";
+        MEMOIRE: "MEMOIRE";
+        THESE: "THESE";
+        IMAGE: "IMAGE";
+        PRESENTATION: "PRESENTATION";
+        AUTRE: "AUTRE";
+    }>>;
     tags: z.ZodOptional<z.ZodArray<z.ZodString>>;
     isPublic: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
@@ -16,10 +29,10 @@ export declare const updateDocumentMetadataSchema: z.ZodObject<{
  */
 export declare const linkDocumentSchema: z.ZodObject<{
     entityType: z.ZodEnum<{
+        event: "event";
         project: "project";
         activity: "activity";
         task: "task";
-        event: "event";
         seminar: "seminar";
         training: "training";
         internship: "internship";
@@ -34,10 +47,10 @@ export declare const linkDocumentSchema: z.ZodObject<{
  */
 export declare const unlinkDocumentSchema: z.ZodObject<{
     entityType: z.ZodOptional<z.ZodEnum<{
+        event: "event";
         project: "project";
         activity: "activity";
         task: "task";
-        event: "event";
         seminar: "seminar";
         training: "training";
         internship: "internship";
@@ -70,7 +83,20 @@ export declare const shareDocumentWithExpirationSchema: z.ZodObject<{
 export declare const documentListQueryExtendedSchema: z.ZodObject<{
     page: z.ZodDefault<z.ZodOptional<z.ZodCoercedNumber<unknown>>>;
     limit: z.ZodDefault<z.ZodOptional<z.ZodCoercedNumber<unknown>>>;
-    type: z.ZodOptional<z.ZodEnum<any>>;
+    type: z.ZodOptional<z.ZodEnum<{
+        RAPPORT: "RAPPORT";
+        FICHE_ACTIVITE: "FICHE_ACTIVITE";
+        FICHE_TECHNIQUE: "FICHE_TECHNIQUE";
+        FICHE_INDIVIDUELLE: "FICHE_INDIVIDUELLE";
+        DONNEES_EXPERIMENTALES: "DONNEES_EXPERIMENTALES";
+        FORMULAIRE: "FORMULAIRE";
+        PUBLICATION_SCIENTIFIQUE: "PUBLICATION_SCIENTIFIQUE";
+        MEMOIRE: "MEMOIRE";
+        THESE: "THESE";
+        IMAGE: "IMAGE";
+        PRESENTATION: "PRESENTATION";
+        AUTRE: "AUTRE";
+    }>>;
     ownerId: z.ZodOptional<z.ZodString>;
     projectId: z.ZodOptional<z.ZodString>;
     activityId: z.ZodOptional<z.ZodString>;
@@ -135,16 +161,29 @@ declare const _default: {
     updateDocumentMetadataSchema: z.ZodObject<{
         title: z.ZodOptional<z.ZodString>;
         description: z.ZodNullable<z.ZodOptional<z.ZodString>>;
-        type: z.ZodOptional<z.ZodEnum<any>>;
+        type: z.ZodOptional<z.ZodEnum<{
+            RAPPORT: "RAPPORT";
+            FICHE_ACTIVITE: "FICHE_ACTIVITE";
+            FICHE_TECHNIQUE: "FICHE_TECHNIQUE";
+            FICHE_INDIVIDUELLE: "FICHE_INDIVIDUELLE";
+            DONNEES_EXPERIMENTALES: "DONNEES_EXPERIMENTALES";
+            FORMULAIRE: "FORMULAIRE";
+            PUBLICATION_SCIENTIFIQUE: "PUBLICATION_SCIENTIFIQUE";
+            MEMOIRE: "MEMOIRE";
+            THESE: "THESE";
+            IMAGE: "IMAGE";
+            PRESENTATION: "PRESENTATION";
+            AUTRE: "AUTRE";
+        }>>;
         tags: z.ZodOptional<z.ZodArray<z.ZodString>>;
         isPublic: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>;
     linkDocumentSchema: z.ZodObject<{
         entityType: z.ZodEnum<{
+            event: "event";
             project: "project";
             activity: "activity";
             task: "task";
-            event: "event";
             seminar: "seminar";
             training: "training";
             internship: "internship";
@@ -155,10 +194,10 @@ declare const _default: {
     }, z.core.$strip>;
     unlinkDocumentSchema: z.ZodObject<{
         entityType: z.ZodOptional<z.ZodEnum<{
+            event: "event";
             project: "project";
             activity: "activity";
             task: "task";
-            event: "event";
             seminar: "seminar";
             training: "training";
             internship: "internship";
@@ -180,7 +219,20 @@ declare const _default: {
     documentListQueryExtendedSchema: z.ZodObject<{
         page: z.ZodDefault<z.ZodOptional<z.ZodCoercedNumber<unknown>>>;
         limit: z.ZodDefault<z.ZodOptional<z.ZodCoercedNumber<unknown>>>;
-        type: z.ZodOptional<z.ZodEnum<any>>;
+        type: z.ZodOptional<z.ZodEnum<{
+            RAPPORT: "RAPPORT";
+            FICHE_ACTIVITE: "FICHE_ACTIVITE";
+            FICHE_TECHNIQUE: "FICHE_TECHNIQUE";
+            FICHE_INDIVIDUELLE: "FICHE_INDIVIDUELLE";
+            DONNEES_EXPERIMENTALES: "DONNEES_EXPERIMENTALES";
+            FORMULAIRE: "FORMULAIRE";
+            PUBLICATION_SCIENTIFIQUE: "PUBLICATION_SCIENTIFIQUE";
+            MEMOIRE: "MEMOIRE";
+            THESE: "THESE";
+            IMAGE: "IMAGE";
+            PRESENTATION: "PRESENTATION";
+            AUTRE: "AUTRE";
+        }>>;
         ownerId: z.ZodOptional<z.ZodString>;
         projectId: z.ZodOptional<z.ZodString>;
         activityId: z.ZodOptional<z.ZodString>;

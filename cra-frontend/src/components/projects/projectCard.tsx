@@ -254,8 +254,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <span>{project._count?.documents || 0} documents</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <CheckSquare className="h-4 w-4" />
-            <span>{project._count?.tasks || 0} tâches</span>
+            <Users className="h-4 w-4" />
+            <span>{project._count?.partnerships || 0} partenariats</span>
           </div>
         </div>
 

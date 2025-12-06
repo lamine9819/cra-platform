@@ -6,7 +6,7 @@ const client_1 = require("@prisma/client");
 const form_service_1 = require("../services/form.service");
 const formComment_service_1 = require("../services/formComment.service");
 const formValidation_1 = require("../utils/formValidation");
-const XLSX = tslib_1.__importStar(require("xlsx"));
+const exceljs_1 = tslib_1.__importDefault(require("exceljs"));
 const prisma = new client_1.PrismaClient();
 const formService = new form_service_1.FormService();
 const commentService = new formComment_service_1.FormCommentService();
@@ -612,14 +612,41 @@ class FormController {
                     });
                 }
                 const exportData = this.formatResponsesForExport(responses, form, validatedQuery);
-                const workbook = XLSX.utils.book_new();
-                const worksheet = XLSX.utils.json_to_sheet(exportData);
-                XLSX.utils.book_append_sheet(workbook, worksheet, 'Réponses');
+                const workbook = new exceljs_1.default.Workbook();
+                const worksheet = workbook.addWorksheet('Réponses');
+                // Ajouter les en-têtes et les données
+                if (exportData.length > 0) {
+                    const headers = Object.keys(exportData[0]);
+                    worksheet.addRow(headers);
+                    // Ajouter les données
+                    exportData.forEach(row => {
+                        const values = headers.map(header => row[header]);
+                        worksheet.addRow(values);
+                    });
+                    // Ajuster automatiquement la largeur des colonnes
+                    worksheet.columns.forEach((column, index) => {
+                        let maxLength = 0;
+                        column.eachCell?.({ includeEmpty: true }, (cell) => {
+                            const cellLength = cell.value ? cell.value.toString().length : 10;
+                            if (cellLength > maxLength) {
+                                maxLength = cellLength;
+                            }
+                        });
+                        column.width = Math.min(maxLength + 2, 50);
+                    });
+                    // Mettre en gras la première ligne (en-têtes)
+                    const headerRow = worksheet.getRow(1);
+                    headerRow.font = { bold: true };
+                }
                 const filename = `${form.title.replace(/[^a-zA-Z0-9]/g, '_')}_responses_${Date.now()}.${validatedQuery.format}`;
-                const buffer = XLSX.write(workbook, {
-                    bookType: validatedQuery.format,
-                    type: 'buffer'
-                });
+                // Générer le buffer selon le format
+                let buffer;
+                if (validatedQuery.format === 'csv') {
+                    buffer = await workbook.csv.writeBuffer();
+                }
+                else {
+                    buffer = await workbook.xlsx.writeBuffer();
+                }
                 res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
                 res.setHeader('Content-Type', validatedQuery.format === 'csv'
                     ? 'text/csv'

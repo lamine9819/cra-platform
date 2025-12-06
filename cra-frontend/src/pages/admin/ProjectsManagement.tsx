@@ -39,7 +39,7 @@
         page: currentPage,
         limit: pageSize,
         search: search || undefined,
-        status: filterStatus || undefined,
+        status: (filterStatus as import('../../types/project.types').ProjectStatus) || undefined,
       }),
     });
 
@@ -66,7 +66,7 @@
     });
 
     const duplicateMutation = useMutation({
-      mutationFn: (id: string) => projectsApi.duplicateProject(id),
+      mutationFn: (id: string) => projectsApi.duplicateProject(id, {}),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['admin-projects'] });
         toast.success('Projet dupliqué avec succès');

@@ -136,9 +136,7 @@ export const linkDocumentSchema = z.object({
     'supervision',
     'knowledgeTransfer',
     'event'
-  ], {
-    errorMap: () => ({ message: 'Type d\'entité invalide' })
-  }),
+  ], { message: 'Type d\'entité invalide' }),
   entityId: z.string().cuid('ID d\'entité invalide')
 });
 

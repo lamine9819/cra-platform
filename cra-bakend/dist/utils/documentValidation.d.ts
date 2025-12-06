@@ -48,8 +48,8 @@ export declare const shareDocumentSchema: z.ZodObject<{
     canDelete: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
 }, z.core.$strip>;
 export declare const documentListQuerySchema: z.ZodObject<{
-    page: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<number, string | undefined>>;
-    limit: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<number, string | undefined>>;
+    page: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<number, string>>;
+    limit: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<number, string>>;
     type: z.ZodOptional<z.ZodEnum<{
         AUTRE: "AUTRE";
         RAPPORT: "RAPPORT";
@@ -112,10 +112,10 @@ export declare const updateDocumentMetadataSchema: z.ZodObject<{
  */
 export declare const linkDocumentSchema: z.ZodObject<{
     entityType: z.ZodEnum<{
+        event: "event";
         project: "project";
         activity: "activity";
         task: "task";
-        event: "event";
         seminar: "seminar";
         training: "training";
         internship: "internship";
@@ -130,10 +130,10 @@ export declare const linkDocumentSchema: z.ZodObject<{
  */
 export declare const unlinkDocumentSchema: z.ZodObject<{
     entityType: z.ZodOptional<z.ZodEnum<{
+        event: "event";
         project: "project";
         activity: "activity";
         task: "task";
-        event: "event";
         seminar: "seminar";
         training: "training";
         internship: "internship";

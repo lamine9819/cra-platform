@@ -43,8 +43,8 @@ export declare const createResearchProgramSchema: z.ZodObject<{
     name: z.ZodString;
     description: z.ZodOptional<z.ZodString>;
     code: z.ZodOptional<z.ZodString>;
-    startDate: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date | undefined, string | undefined>>;
-    endDate: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date | undefined, string | undefined>>;
+    startDate: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date, string>>;
+    endDate: z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date, string>>;
     isActive: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
     strategicSubAxisId: z.ZodString;
     coordinatorId: z.ZodString;
@@ -54,8 +54,8 @@ export declare const updateResearchProgramSchema: z.ZodObject<{
     description: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     isActive: z.ZodOptional<z.ZodDefault<z.ZodOptional<z.ZodBoolean>>>;
     code: z.ZodOptional<z.ZodOptional<z.ZodString>>;
-    startDate: z.ZodOptional<z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date | undefined, string | undefined>>>;
-    endDate: z.ZodOptional<z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date | undefined, string | undefined>>>;
+    startDate: z.ZodOptional<z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date, string>>>;
+    endDate: z.ZodOptional<z.ZodPipe<z.ZodOptional<z.ZodString>, z.ZodTransform<Date, string>>>;
     coordinatorId: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 export declare const createResearchThemeSchema: z.ZodObject<{

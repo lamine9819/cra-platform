@@ -9,6 +9,7 @@ export interface AuditLogChanges {
     before?: any;
     after?: any;
     fields?: string[];
+    [key: string]: any;
 }
 export interface CreateAuditLogParams {
     action: string;
@@ -25,6 +26,13 @@ export declare class AuditLogService {
      * Créer un log d'audit
      */
     static createLog(params: CreateAuditLogParams): Promise<{
+        user: {
+            email: string;
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
+    } & {
         userId: string | null;
         id: string;
         createdAt: Date;
@@ -35,11 +43,18 @@ export declare class AuditLogService {
         details: import("@prisma/client/runtime/library").JsonValue | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         changes: import("@prisma/client/runtime/library").JsonValue | null;
-    } | null>;
+    }>;
     /**
      * Log pour une création d'entité
      */
     static logCreate(entityType: string, entityId: string, data: any, userId?: string, metadata?: AuditLogMetadata): Promise<{
+        user: {
+            email: string;
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
+    } & {
         userId: string | null;
         id: string;
         createdAt: Date;
@@ -50,11 +65,18 @@ export declare class AuditLogService {
         details: import("@prisma/client/runtime/library").JsonValue | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         changes: import("@prisma/client/runtime/library").JsonValue | null;
-    } | null>;
+    }>;
     /**
      * Log pour une mise à jour d'entité
      */
     static logUpdate(entityType: string, entityId: string, before: any, after: any, userId?: string, metadata?: AuditLogMetadata): Promise<{
+        user: {
+            email: string;
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
+    } & {
         userId: string | null;
         id: string;
         createdAt: Date;
@@ -65,11 +87,18 @@ export declare class AuditLogService {
         details: import("@prisma/client/runtime/library").JsonValue | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         changes: import("@prisma/client/runtime/library").JsonValue | null;
-    } | null>;
+    }>;
     /**
      * Log pour une suppression d'entité
      */
     static logDelete(entityType: string, entityId: string, data: any, userId?: string, metadata?: AuditLogMetadata): Promise<{
+        user: {
+            email: string;
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
+    } & {
         userId: string | null;
         id: string;
         createdAt: Date;
@@ -80,11 +109,18 @@ export declare class AuditLogService {
         details: import("@prisma/client/runtime/library").JsonValue | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         changes: import("@prisma/client/runtime/library").JsonValue | null;
-    } | null>;
+    }>;
     /**
      * Log pour une connexion utilisateur
      */
     static logLogin(userId: string, success: boolean, metadata?: AuditLogMetadata): Promise<{
+        user: {
+            email: string;
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
+    } & {
         userId: string | null;
         id: string;
         createdAt: Date;
@@ -95,11 +131,18 @@ export declare class AuditLogService {
         details: import("@prisma/client/runtime/library").JsonValue | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         changes: import("@prisma/client/runtime/library").JsonValue | null;
-    } | null>;
+    }>;
     /**
      * Log pour une déconnexion utilisateur
      */
     static logLogout(userId: string, metadata?: AuditLogMetadata): Promise<{
+        user: {
+            email: string;
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
+    } & {
         userId: string | null;
         id: string;
         createdAt: Date;
@@ -110,11 +153,18 @@ export declare class AuditLogService {
         details: import("@prisma/client/runtime/library").JsonValue | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         changes: import("@prisma/client/runtime/library").JsonValue | null;
-    } | null>;
+    }>;
     /**
      * Log pour une consultation/vue d'entité
      */
     static logView(entityType: string, entityId: string, userId?: string, metadata?: AuditLogMetadata): Promise<{
+        user: {
+            email: string;
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
+    } & {
         userId: string | null;
         id: string;
         createdAt: Date;
@@ -125,11 +175,18 @@ export declare class AuditLogService {
         details: import("@prisma/client/runtime/library").JsonValue | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         changes: import("@prisma/client/runtime/library").JsonValue | null;
-    } | null>;
+    }>;
     /**
      * Log pour une erreur
      */
     static logError(error: Error, userId?: string, entityType?: string, entityId?: string, metadata?: AuditLogMetadata): Promise<{
+        user: {
+            email: string;
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
+    } & {
         userId: string | null;
         id: string;
         createdAt: Date;
@@ -140,11 +197,18 @@ export declare class AuditLogService {
         details: import("@prisma/client/runtime/library").JsonValue | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         changes: import("@prisma/client/runtime/library").JsonValue | null;
-    } | null>;
+    }>;
     /**
      * Log critique pour des actions sensibles
      */
     static logCritical(action: string, details: any, userId?: string, metadata?: AuditLogMetadata): Promise<{
+        user: {
+            email: string;
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
+    } & {
         userId: string | null;
         id: string;
         createdAt: Date;
@@ -155,7 +219,7 @@ export declare class AuditLogService {
         details: import("@prisma/client/runtime/library").JsonValue | null;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         changes: import("@prisma/client/runtime/library").JsonValue | null;
-    } | null>;
+    }>;
     /**
      * Récupérer les logs avec filtres et pagination
      */
@@ -175,7 +239,7 @@ export declare class AuditLogService {
                 id: string;
                 firstName: string;
                 lastName: string;
-            } | null;
+            };
         } & {
             userId: string | null;
             id: string;
@@ -208,7 +272,7 @@ export declare class AuditLogService {
             count: number;
         }[];
         byEntityType: {
-            entityType: string | null;
+            entityType: string;
             count: number;
         }[];
     }>;
@@ -221,7 +285,7 @@ export declare class AuditLogService {
             id: string;
             firstName: string;
             lastName: string;
-        } | null;
+        };
     } & {
         userId: string | null;
         id: string;

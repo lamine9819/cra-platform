@@ -630,3 +630,29 @@ class ActivitiesApiService {
 // Export singleton
 export const activitiesApi = new ActivitiesApiService();
 export default activitiesApi;
+
+// Re-export types for convenience
+export type {
+  Activity,
+  CreateActivityRequest,
+  UpdateActivityRequest,
+  ActivityListQuery,
+  ActivityListResponse,
+  ActivityFilters,
+  ActivityParticipant,
+  ActivityPartnership,
+  ActivityFunding,
+  ActivityTask,
+  AddActivityParticipantRequest,
+  UpdateActivityParticipantRequest,
+  AddActivityPartnershipRequest,
+  UpdateActivityPartnershipRequest,
+  AddActivityFundingRequest,
+  UpdateActivityFundingRequest,
+  CreateActivityTaskRequest,
+  UpdateActivityTaskRequest,
+  ReconductActivityRequest,
+  ActivityStatistics,
+  ActivityType,
+  ActivityStatus,
+} from '../types/activity.types';

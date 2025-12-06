@@ -1223,8 +1223,8 @@ export declare class StrategicPlanningService {
         };
         firstName: string;
         lastName: string;
-        specialization: string | null;
-        department: string | null;
+        specialization: string;
+        department: string;
     }[]>;
 }
 //# sourceMappingURL=strategic-planning.service.d.ts.map
