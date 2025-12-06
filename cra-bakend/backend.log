@@ -4144,3 +4144,92 @@ Require stack:
 📊 Mémoire: 89MB / 93MB (96%) | Uptime: 609s
 ⚠️ Utilisation mémoire élevée: 89MB / 93MB (96%)
 📊 Mémoire: 89MB / 93MB (96%) | Uptime: 909s
+[0mPOST /api/auth/login [32m200[0m 408.510 ms - 481[0m
+[0mGET /api/notifications/unread-count [32m200[0m 221.987 ms - 26[0m
+[0mGET /api/notifications?page=1&limit=20 [32m200[0m 251.113 ms - -[0m
+[0mGET /api/notifications/unread-count [32m200[0m 35.205 ms - 26[0m
+[0mGET /api/notifications?page=1&limit=20 [32m200[0m 24.502 ms - -[0m
+[0mGET /api/dashboard/forms/stats?period=30 [32m200[0m 47.190 ms - 82[0m
+[0mGET /api/dashboard/forms/stats?period=30 [32m200[0m 6.872 ms - 82[0m
+✅ Utilisateur connecté: cmi28xztj000gfssg94gyvfef (pZIOEiS3v3qlIbXLAAAB)
+💬 Utilisateur cmi28xztj000gfssg94gyvfef prêt pour le chat
+📢 cmi28xztj000gfssg94gyvfef a rejoint 2 salles
+[0mGET /api/dashboard/performance [32m200[0m 344.711 ms - 295[0m
+[0mGET /api/dashboard/quick-stats [32m200[0m 433.907 ms - 140[0m
+[0mGET /api/dashboard/performance [32m200[0m 20.603 ms - 295[0m
+[0mGET /api/dashboard/data-collection/stats [32m200[0m 404.185 ms - -[0m
+[0mGET /api/dashboard/quick-stats [32m200[0m 17.606 ms - 140[0m
+[0mGET /api/dashboard/data-collection/stats [32m200[0m 20.756 ms - -[0m
+[0mGET /api/dashboard?period=month&detailed=true&includeForms=true [32m200[0m 526.838 ms - -[0m
+[0mGET /api/dashboard?period=month&detailed=true&includeForms=true [32m200[0m 37.545 ms - -[0m
+[0mGET /api/forms?page=1&limit=10&search= [32m200[0m 240.034 ms - -[0m
+[0mGET /api/forms?page=1&limit=10&search= [32m200[0m 26.107 ms - -[0m
+[0mGET /api/forms/cmiq7i4mv0001fszgykvd65cy?includeComments=true [32m200[0m 57.251 ms - -[0m
+[0mGET /api/forms/cmiq7i4mv0001fszgykvd65cy?includeComments=true [32m200[0m 13.494 ms - -[0m
+[0mGET /api/forms/cmiq7i4mv0001fszgykvd65cy/responses?page=1&limit=20&collectorType=ALL [32m200[0m 211.706 ms - -[0m
+[0mGET /api/forms/cmiq7i4mv0001fszgykvd65cy/responses?page=1&limit=20&collectorType=ALL [32m200[0m 14.844 ms - -[0m
+[0mGET /api/forms/cmiq7i4mv0001fszgykvd65cy/export?format=xlsx&includePhotos=true&includeMetadata=true&collectorTypes%5B%5D=USER&collectorTypes%5B%5D=SHARED_USER&collectorTypes%5B%5D=PUBLIC [32m200[0m 124.212 ms - 7328[0m
+[0mGET /api/documents/favorites [32m200[0m 237.927 ms - 118[0m
+[0mGET /api/documents/trash [32m200[0m 20.276 ms - -[0m
+[0mGET /api/documents?search= [32m200[0m 305.598 ms - -[0m
+[0mGET /api/documents/stats/overview [32m200[0m 73.150 ms - -[0m
+[0mGET /api/documents/cmipws5rw0007fspsnza755m2/preview [32m200[0m 27.221 ms - 74437[0m
+⚠️ Utilisation mémoire élevée: 94MB / 96MB (97%)
+📊 Mémoire: 94MB / 96MB (97%) | Uptime: 1209s
+[0mGET /api/activities?page=1&limit=12 [32m200[0m 303.605 ms - -[0m
+[0mGET /api/documents/activity/cmi28xzuz001nfssgfixfdidj [32m200[0m 49.042 ms - -[0m
+[0mGET /api/activities/cmi28xzuz001nfssgfixfdidj [32m200[0m 60.332 ms - -[0m
+[0mGET /api/documents?search=&limit=50 [32m200[0m 48.636 ms - -[0m
+[0mGET /api/activities/cmi28xzuz001nfssgfixfdidj/recurrence-history [32m200[0m 148.314 ms - 657[0m
+[0mDELETE /api/documents/trash/empty [32m200[0m 11.247 ms - 97[0m
+[0mGET /api/documents/trash [32m200[0m 14.653 ms - -[0m
+[0mGET /api/documents/trash [32m200[0m 15.837 ms - -[0m
+[0mGET /api/documents/stats/overview [32m200[0m 35.379 ms - -[0m
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (98%)
+📊 Mémoire: 94MB / 97MB (98%) | Uptime: 1509s
+[0mGET /api/documents/cmijiakfo000bfs58a6e51aln/preview [32m200[0m 166.198 ms - 185908[0m
+⚠️ Utilisation mémoire élevée: 94MB / 97MB (97%)
+📊 Mémoire: 94MB / 97MB (97%) | Uptime: 1809s
+[0mGET /api/events?startDate=2025-12-01T00%3A00%3A00.000Z&endDate=2025-12-31T23%3A59%3A59.999Z [32m200[0m 129.713 ms - -[0m
+[0mGET /api/events?startDate=2025-12-01T00%3A00%3A00.000Z&endDate=2025-12-31T23%3A59%3A59.999Z [32m200[0m 5.636 ms - -[0m
+[0mGET /api/events/seminars?startDate=2025-12-01T00%3A00%3A00.000Z&endDate=2025-12-31T23%3A59%3A59.999Z [32m200[0m 12.169 ms - 36[0m
+[0mGET /api/events/seminars?startDate=2025-12-01T00%3A00%3A00.000Z&endDate=2025-12-31T23%3A59%3A59.999Z [32m200[0m 5.898 ms - 36[0m
+❌ Utilisateur déconnecté: cmi28xztj000gfssg94gyvfef (pZIOEiS3v3qlIbXLAAAB)
+[0mGET /api/auth/profile [32m200[0m 102.221 ms - 441[0m
+[0mGET /api/notifications/unread-count [32m200[0m 130.435 ms - 26[0m
+[0mGET /api/notifications/unread-count [32m200[0m 2.970 ms - 26[0m
+[0mGET /api/notifications?page=1&limit=20 [32m200[0m 140.395 ms - -[0m
+[0mGET /api/notifications?page=1&limit=20 [32m200[0m 6.644 ms - -[0m
+✅ Utilisateur connecté: cmi28xztj000gfssg94gyvfef (JBEVgtBruNjG7bYrAAAD)
+💬 Utilisateur cmi28xztj000gfssg94gyvfef prêt pour le chat
+📢 cmi28xztj000gfssg94gyvfef a rejoint 2 salles
+[0mGET /api/documents/favorites [32m200[0m 172.969 ms - 118[0m
+[0mGET /api/documents/trash [32m200[0m 175.616 ms - -[0m
+[0mGET /api/documents?search= [32m200[0m 199.685 ms - -[0m
+[0mGET /api/documents/stats/overview [32m200[0m 222.489 ms - -[0m
+[0mGET /api/documents?search=&limit=50 [32m200[0m 52.553 ms - -[0m
+[0mGET /api/forms?page=1&limit=10&search= [32m200[0m 162.467 ms - -[0m
+[0mGET /api/forms?page=1&limit=10&search= [32m200[0m 23.208 ms - -[0m
+[0mGET /api/forms/cmiq7i4mv0001fszgykvd65cy?includeComments=true [32m200[0m 17.603 ms - -[0m
+[0mGET /api/forms/cmiq7i4mv0001fszgykvd65cy?includeComments=true [32m200[0m 11.713 ms - -[0m
+[0mGET /api/forms?page=1&limit=10&search= [32m200[0m 12.321 ms - -[0m
+[0mGET /api/forms?page=1&limit=10&search= [32m200[0m 15.224 ms - -[0m
+[0mGET /api/trainings/short-received [32m200[0m 115.447 ms - 36[0m
+[0mGET /api/trainings/diplomatic-received [32m200[0m 216.647 ms - 36[0m
+[0mGET /api/trainings/given [32m200[0m 194.211 ms - 36[0m
+[0mGET /api/supervisions [32m200[0m 194.134 ms - 36[0m
+⚠️ Utilisation mémoire élevée: 92MB / 97MB (95%)
+📊 Mémoire: 92MB / 97MB (95%) | Uptime: 2109s
+⚠️ Utilisation mémoire élevée: 93MB / 97MB (95%)
+📊 Mémoire: 93MB / 97MB (95%) | Uptime: 2409s
+⚠️ Utilisation mémoire élevée: 93MB / 97MB (95%)
+📊 Mémoire: 93MB / 97MB (95%) | Uptime: 2709s
+❌ Utilisateur déconnecté: cmi28xztj000gfssg94gyvfef (JBEVgtBruNjG7bYrAAAD)
+⚠️ Utilisation mémoire élevée: 93MB / 97MB (95%)
+📊 Mémoire: 93MB / 97MB (95%) | Uptime: 5926s
+⚠️ Utilisation mémoire élevée: 93MB / 97MB (95%)
+📊 Mémoire: 93MB / 97MB (95%) | Uptime: 32489s
+✅ Utilisateur connecté: cmi28xztj000gfssg94gyvfef (aeXhO7sLtb8QQAC5AAAF)
+💬 Utilisateur cmi28xztj000gfssg94gyvfef prêt pour le chat
+📢 cmi28xztj000gfssg94gyvfef a rejoint 2 salles
+❌ Utilisateur déconnecté: cmi28xztj000gfssg94gyvfef (aeXhO7sLtb8QQAC5AAAF)
