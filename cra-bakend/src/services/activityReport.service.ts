@@ -232,9 +232,8 @@ export class ActivityReportService {
   }
 
   private checkReportAccess(activity: any, userId: string, userRole: string): boolean {
-    if (userRole === 'ADMINISTRATEUR') return true;
+    if (userRole === 'ADMINISTRATEUR' || userRole === 'COORDONATEUR_PROJET') return true;
     if (activity.responsibleId === userId) return true;
-    if (userRole === 'COORDONATEUR_PROJET' && activity.project?.creatorId === userId) return true;
     
     return false;
   }

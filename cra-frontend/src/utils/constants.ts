@@ -31,5 +31,5 @@ export const ROUTES = {
   LOGIN: '/login',
   ADMIN: '/admin',
   CHERCHEUR: '/chercheur',
-  COORDONATEUR: '/coordonateur',
+  COORDONATEUR: '/chercheur',
 } as const;

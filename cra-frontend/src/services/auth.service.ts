@@ -111,7 +111,7 @@ export class AuthService {
     const roleRoutes = {
       ADMINISTRATEUR: '/admin',
       CHERCHEUR: '/chercheur',
-      COORDONATEUR_PROJET: '/coordonateur'
+      COORDONATEUR_PROJET: '/chercheur' // Coordinateurs utilisent le même espace que chercheurs
     };
 
     return roleRoutes[role as keyof typeof roleRoutes] || '/dashboard';

@@ -22,6 +22,7 @@ import {
 import { activitiesApi } from '../../services/activitiesApi';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../hooks/useAuth';
+import { UserRole } from '../../types/auth.types';
 import ActivityParticipants from '../../components/activities/ActivityParticipants';
 import ActivityPartnerships from '../../components/activities/ActivityPartnerships';
 import ActivityFunding from '../../components/activities/ActivityFunding';
@@ -208,15 +209,19 @@ const ActivityDetail: React.FC = () => {
   }
 
   // Vérifier si l'utilisateur peut gérer l'activité (responsable ou admin)
-  const canManageActivity = activity.responsible.id === user?.id || user?.role === 'ADMINISTRATEUR';
+  const canManageActivity = activity.responsible.id === user?.id || user?.role === UserRole.ADMINISTRATEUR;
 
-  const tabs = [
-    { id: 'overview' as TabType, label: 'Vue d\'ensemble', icon: FileText },
+  // Vérifier si l'utilisateur peut générer un rapport (responsable, admin ou coordinateur)
+  const canGenerateReport = canManageActivity || user?.role === UserRole.COORDONATEUR_PROJET;
+
+    const tabs = [
+    { id: 'overview' as TabType, label: "Vue d'ensemble", icon: FileText },
     { id: 'participants' as TabType, label: 'Participants', icon: Users, count: activity._count?.participants },
     { id: 'partnerships' as TabType, label: 'Partenariats', icon: TrendingUp, count: activity.partners?.length || 0 },
     { id: 'funding' as TabType, label: 'Financements', icon: Target, count: activity.fundings?.length || 0 },
     { id: 'tasks' as TabType, label: 'Tâches', icon: CheckCircle, count: activity._count?.tasks },
-    { id: 'documents' as TabType, label: 'Documents', icon: Download, count: documentsData?.length || 0 },
+    // Onglet Documents visible uniquement pour ceux qui peuvent gérer l'activité
+    ...(canManageActivity ? [{ id: 'documents' as TabType, label: 'Documents', icon: Download, count: documentsData?.length || 0 }] : []),
   ];
 
   return (
@@ -259,59 +264,63 @@ const ActivityDetail: React.FC = () => {
             )}
           </div>
 
-          {/* Actions - Visible uniquement pour le responsable et les admins */}
-          {canManageActivity && (
-            <div className="flex flex-col sm:flex-row gap-2 lg:ml-4 min-w-fit">
-              {/* Boutons principaux */}
-              <div className="flex gap-2">
-                <Link to={`/chercheur/activities/${id}/edit`} className="flex-1 sm:flex-none">
-                  <Button className="bg-green-600 hover:bg-green-700 text-white w-full">
-                    <Edit className="w-4 h-4 mr-2" />
-                    Modifier
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-2 lg:ml-4 min-w-fit">
+            {/* Boutons de gestion - Visible uniquement pour le responsable et les admins */}
+            {canManageActivity && (
+              <>
+                <div className="flex gap-2">
+                  <Link to={`/chercheur/activities/${id}/edit`} className="flex-1 sm:flex-none">
+                    <Button className="bg-green-600 hover:bg-green-700 text-white w-full">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Modifier
+                    </Button>
+                  </Link>
+                  <Button
+                    onClick={handleDelete}
+                    variant="outline"
+                    className="border-red-600 text-red-600 hover:bg-red-50 flex-1 sm:flex-none"
+                  >
+                    <Trash2 className="w-4 h-4 sm:mr-0 mr-2" />
+                    <span className="sm:hidden">Supprimer</span>
                   </Button>
-                </Link>
-                <Button
-                  onClick={handleDelete}
-                  variant="outline"
-                  className="border-red-600 text-red-600 hover:bg-red-50 flex-1 sm:flex-none"
-                >
-                  <Trash2 className="w-4 h-4 sm:mr-0 mr-2" />
-                  <span className="sm:hidden">Supprimer</span>
-                </Button>
-              </div>
+                </div>
 
-              {/* Autres actions */}
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  onClick={handleGenerateReport}
-                  variant="outline"
-                  className="border-blue-600 text-blue-600 hover:bg-blue-50 flex-1 sm:flex-none"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Rapport</span>
-                  <span className="sm:hidden">Rapport Word</span>
-                </Button>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    onClick={() => setShowReconductModal(true)}
+                    variant="outline"
+                    className="border-purple-600 text-purple-600 hover:bg-purple-50 flex-1 sm:flex-none"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Reconduire
+                  </Button>
 
-                <Button
-                  onClick={() => setShowReconductModal(true)}
-                  variant="outline"
-                  className="border-purple-600 text-purple-600 hover:bg-purple-50 flex-1 sm:flex-none"
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Reconduire
-                </Button>
+                  <Button
+                    onClick={handleDuplicate}
+                    variant="outline"
+                    className="border-gray-600 text-gray-600 hover:bg-gray-50 flex-1 sm:flex-none"
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Dupliquer
+                  </Button>
+                </div>
+              </>
+            )}
 
+            {/* Bouton Rapport - Visible pour responsable, admin et coordinateur */}
+            {canGenerateReport && (
               <Button
-                onClick={handleDuplicate}
+                onClick={handleGenerateReport}
                 variant="outline"
-                className="border-gray-600 text-gray-600 hover:bg-gray-50 flex-1 sm:flex-none"
+                className="border-blue-600 text-blue-600 hover:bg-blue-50 flex-1 sm:flex-none"
               >
-                <Copy className="w-4 h-4 mr-2" />
-                Dupliquer
+                <Download className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Rapport</span>
+                <span className="sm:hidden">Rapport Word</span>
               </Button>
-            </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Informations clés */}
@@ -610,7 +619,7 @@ const ActivityDetail: React.FC = () => {
                 // Éliminer les doublons basés sur l'ID
                 index === self.findIndex(u => u.id === user.id)
               )}
-              isCreator={activity.responsible.id === user?.id || user?.role === 'ADMINISTRATEUR'}
+              isCreator={activity.responsible.id === user?.id || user?.role === UserRole.ADMINISTRATEUR}
             />
           )}
 
@@ -660,15 +669,17 @@ const ActivityDetail: React.FC = () => {
                   <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600 mb-2">Aucun document</p>
                   <p className="text-sm text-gray-500 mb-4">
-                    Ajoutez des documents pour cette activité
+                    {canManageActivity ? 'Ajoutez des documents pour cette activité' : 'Aucun document disponible pour cette activité'}
                   </p>
-                  <Button
-                    onClick={() => setShowUploadModal(true)}
-                    variant="outline"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Ajouter un document
-                  </Button>
+                  {canManageActivity && (
+                    <Button
+                      onClick={() => setShowUploadModal(true)}
+                      variant="outline"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Ajouter un document
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

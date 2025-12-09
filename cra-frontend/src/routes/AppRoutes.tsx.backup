@@ -1,4 +1,4 @@
-// src/routes/AppRoutes.tsx - Chercheurs et Coordinateurs utilisent le même layout
+// src/routes/AppRoutes.tsx - Adaptation avec votre structure existante
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/routing/ProtectedRoute';
@@ -8,6 +8,7 @@ import { useAuth } from '../hooks/useAuth';
 // Import des layouts existants
 import AdminLayout from '../layouts/AdminLayout';
 import ChercheurLayout from '../layouts/ChercheurLayout';
+import CoordinateurLayout from '../layouts/CoordinateurLayout';
 
 // Import des pages existantes
 import LoginPage from '../pages/auth/LoginPage';
@@ -28,7 +29,7 @@ const RoleBasedRedirect: React.FC = () => {
   const redirectPath = {
     [UserRole.ADMINISTRATEUR]: '/admin',
     [UserRole.CHERCHEUR]: '/chercheur',
-    [UserRole.COORDONATEUR_PROJET]: '/chercheur', // Coordinateurs utilisent le même espace que chercheurs
+    [UserRole.COORDONATEUR_PROJET]: '/coordonateur',
   }[user.role];
 
   return <Navigate to={redirectPath || '/login'} replace />;
@@ -45,8 +46,8 @@ const AppRoutes: React.FC = () => {
       <Route path="/forms/public/:shareToken" element={<PublicFormPage />} />
 
       {/* Routes administrateur */}
-      <Route
-        path="/admin/*"
+      <Route 
+        path="/admin/*" 
         element={
           <ProtectedRoute allowedRoles={[UserRole.ADMINISTRATEUR]}>
             <AdminLayout />
@@ -54,24 +55,34 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* Routes chercheur et coordinateur - même layout */}
+      {/* Routes chercheur */}
       <Route
         path="/chercheur/*"
         element={
-          <ProtectedRoute allowedRoles={[UserRole.CHERCHEUR, UserRole.COORDONATEUR_PROJET]}>
+          <ProtectedRoute allowedRoles={[UserRole.CHERCHEUR]}>
             <ChercheurLayout />
           </ProtectedRoute>
         }
       />
 
-      {/* Redirection automatique basée sur le rôle */}
+      {/* Routes coordonateur de projet */}
       <Route
-        path="/dashboard"
+        path="/coordonateur/*"
+        element={
+          <ProtectedRoute allowedRoles={[UserRole.COORDONATEUR_PROJET]}>
+            <CoordinateurLayout />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Redirection automatique basée sur le rôle */}
+      <Route 
+        path="/dashboard" 
         element={
           <ProtectedRoute>
             <RoleBasedRedirect />
           </ProtectedRoute>
-        }
+        } 
       />
 
       {/* Page 404 */}

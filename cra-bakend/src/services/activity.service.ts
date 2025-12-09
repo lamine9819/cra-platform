@@ -188,7 +188,7 @@ export class ActivityService {
     }
 
     // Filtrer selon les droits d'accès
-    if (userRole !== 'ADMINISTRATEUR') {
+    if (userRole !== 'ADMINISTRATEUR' && userRole !== 'COORDONATEUR_PROJET') {
       where.OR = [
         { responsibleId: userId },
         { participants: { some: { userId: userId, isActive: true } } },
@@ -832,7 +832,7 @@ export class ActivityService {
   async getActivityStats(userId: string, userRole: string): Promise<CRAActivityStats> {
     const whereCondition: any = {};
     
-    if (userRole !== 'ADMINISTRATEUR') {
+    if (userRole !== 'ADMINISTRATEUR' && userRole !== 'COORDONATEUR_PROJET') {
       whereCondition.OR = [
         { responsibleId: userId },
         { participants: { some: { userId: userId, isActive: true } } },
@@ -1215,7 +1215,7 @@ export class ActivityService {
   // Vérification des droits d'accès à une activité CRA
   private checkActivityAccess(activity: any, userId: string, userRole: string): boolean {
     // Admin a accès à tout
-    if (userRole === 'ADMINISTRATEUR') return true;
+    if (userRole === 'ADMINISTRATEUR' || userRole === 'COORDONATEUR_PROJET') return true;
     
     // Responsable de l'activité a accès
     if (activity.responsibleId === userId) return true;

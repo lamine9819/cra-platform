@@ -17,7 +17,7 @@ router.use(authenticate);
 // Créer un projet (Chercheur ou Admin)
 router.post(
   '/',
-  authorize(['CHERCHEUR', 'ADMINISTRATEUR']),
+  authorize(['CHERCHEUR', 'COORDONATEUR_PROJET', 'ADMINISTRATEUR']),
   projectController.createProject
 );
 

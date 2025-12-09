@@ -210,7 +210,7 @@ export class DocumentService {
     }
 
     // Filtrer selon les droits d'accès
-    if (userRole !== 'ADMINISTRATEUR') {
+    if (userRole !== 'ADMINISTRATEUR' && userRole !== 'COORDONATEUR_PROJET') {
       where.OR = [
         { ownerId: userId },
         { isPublic: true },
@@ -522,7 +522,7 @@ export class DocumentService {
 
   // Vérifier l'accès à un document
   private async checkDocumentAccess(document: DocumentWithRelations, userId: string, userRole: string): Promise<boolean> {
-    if (userRole === 'ADMINISTRATEUR') return true;
+    if (userRole === 'ADMINISTRATEUR' || userRole === 'COORDONATEUR_PROJET') return true;
     if (document.ownerId === userId) return true;
     if (document.isPublic) return true;
     if (document.shares?.some(share => share.sharedWithId === userId)) return true;

@@ -30,3 +30,8 @@ export const requireAdmin = authorize(['ADMINISTRATEUR']);
 
 // Middleware pour vérifier si l'utilisateur est chercheur ou admin
 export const requireChercheurOrAdmin = authorize(['CHERCHEUR', 'ADMINISTRATEUR']);
+// Middleware pour vérifier si l'utilisateur est coordinateur, chercheur ou admin
+export const requireChercheurCoordinateurOrAdmin = authorize(['CHERCHEUR', 'COORDONATEUR_PROJET', 'ADMINISTRATEUR']);
+
+// Middleware pour vérifier si l'utilisateur est coordinateur ou admin
+export const requireCoordinateurOrAdmin = authorize(['COORDONATEUR_PROJET', 'ADMINISTRATEUR']);

@@ -119,13 +119,14 @@ const ProjectDetail: React.FC = () => {
   // Vérifier si l'utilisateur peut gérer le projet (créateur ou admin)
   const canManageProject = project.creator?.id === user?.id || user?.role === 'ADMINISTRATEUR';
 
-  const tabs = [
-    { id: 'overview' as TabType, label: 'Vue d\'ensemble', icon: Target },
+    const tabs = [
+    { id: 'overview' as TabType, label: "Vue d'ensemble", icon: Target },
     { id: 'participants' as TabType, label: 'Participants', icon: Users, count: project.participants?.length || 0 },
     { id: 'partnerships' as TabType, label: 'Partenariats', icon: Handshake, count: project.partnerships?.length || 0 },
     { id: 'funding' as TabType, label: 'Financement', icon: DollarSign, count: project.fundings?.length || 0 },
     { id: 'analytics' as TabType, label: 'Analyse', icon: BarChart3 },
-    { id: 'documents' as TabType, label: 'Documents', icon: FileText, count: documentsData?.length || 0 },
+    // Onglet Documents visible uniquement pour ceux qui peuvent gérer le projet
+    ...(canManageProject ? [{ id: 'documents' as TabType, label: 'Documents', icon: FileText, count: documentsData?.length || 0 }] : []),
   ];
 
   return (
@@ -479,15 +480,17 @@ const ProjectDetail: React.FC = () => {
                   <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600 mb-2">Aucun document</p>
                   <p className="text-sm text-gray-500 mb-4">
-                    Ajoutez des documents pour ce projet
+                    {canManageProject ? 'Ajoutez des documents pour ce projet' : 'Aucun document disponible pour ce projet'}
                   </p>
-                  <Button
-                    onClick={() => setShowUploadModal(true)}
-                    variant="outline"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Ajouter un document
-                  </Button>
+                  {canManageProject && (
+                    <Button
+                      onClick={() => setShowUploadModal(true)}
+                      variant="outline"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Ajouter un document
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
