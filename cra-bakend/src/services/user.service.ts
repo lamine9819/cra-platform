@@ -10,7 +10,6 @@ import {
   UpdateIndividualProfileRequest,
   UserStatsResponse
 } from '../types/user.types';
-import { addUserToGeneralChannel } from '../utils/channelHelper';
 
 const prisma = new PrismaClient();
 
@@ -104,9 +103,6 @@ export class UserService {
         individualProfile: true,
       }
     });
-
-    // Ajouter automatiquement l'utilisateur au canal général
-    await addUserToGeneralChannel(user.id);
 
     return this.formatUserResponse(user);
   }

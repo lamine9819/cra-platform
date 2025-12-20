@@ -7,6 +7,8 @@ import compression from 'compression';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import swaggerUi from 'swagger-ui-express';
+import { generateSwaggerDocs } from './utils/swagger-auto-generator';
 
 // Import des routes
 import authRoutes from './routes/auth.routes';
@@ -77,14 +79,15 @@ app.use(cors({
   origin: function (origin, callback) {
     // Autoriser les requêtes sans origine (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
-    
+
     const allowedOrigins = [
       FRONTEND_URL,
       'http://localhost:5173',
-      'http://localhost:5173',
-      'http://127.0.0.1:5173'
+      'http://127.0.0.1:5173',
+      'http://localhost:3001',  // Backend pour Swagger UI
+      'http://127.0.0.1:3001'   // Backend pour Swagger UI
     ];
-    
+
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -107,7 +110,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Rate limiting général
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: NODE_ENV === 'production' ? 100 : 1000, // limite par IP
+  max: NODE_ENV === 'production' ? 100 : 10000, // limite par IP (très élevée en dev)
   message: {
     success: false,
     message: 'Trop de requêtes depuis cette IP, réessayez plus tard.',
@@ -118,7 +121,11 @@ const limiter = rateLimit({
   // Fonction skip corrigée pour éviter les conflits path-to-regexp
   skip: (req) => {
     const path = req.path;
-    return path === '/health' || 
+    // En développement, désactiver le rate limiting pour les routes API
+    if (NODE_ENV !== 'production' && path.startsWith('/api/')) {
+      return true;
+    }
+    return path === '/health' ||
            path === '/api/auth/refresh' ||
            path.startsWith('/uploads/') ||
            path.startsWith('/public/');
@@ -399,11 +406,58 @@ app.get('/api', (_req, res) => {
       supervisions: '/api/supervisions'
     },
     documentation: {
+      swagger: '/api-docs',
+      swaggerJson: '/api-docs.json',
       health: '/health',
       detailedHealth: '/health/detailed',
       metrics: '/metrics'
     }
   });
+});
+
+// =============================================
+// DOCUMENTATION SWAGGER
+// =============================================
+
+// Générer automatiquement la documentation Swagger depuis les routes
+let openApiDocument: any = null;
+
+// Route pour le JSON de la spécification OpenAPI
+app.get('/api-docs.json', async (_req, res) => {
+  if (!openApiDocument) {
+    const routesDir = path.join(__dirname, 'routes');
+    openApiDocument = await generateSwaggerDocs(routesDir);
+  }
+  res.setHeader('Content-Type', 'application/json');
+  res.send(openApiDocument);
+});
+
+// Interface Swagger UI (Documentation générée automatiquement depuis vos routes Express)
+app.use('/api-docs', swaggerUi.serve);
+app.get('/api-docs', async (req, res, next) => {
+  if (!openApiDocument) {
+    console.log('🔄 Génération automatique de la documentation Swagger...');
+    const routesDir = path.join(__dirname, 'routes');
+    openApiDocument = await generateSwaggerDocs(routesDir);
+    console.log('✅ Documentation Swagger générée automatiquement');
+  }
+
+  const swaggerSetup = swaggerUi.setup(openApiDocument, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'CRA Platform API - Documentation Auto-générée',
+    customfavIcon: '/favicon.ico',
+    swaggerOptions: {
+      persistAuthorization: true,
+      displayRequestDuration: true,
+      filter: true,
+      syntaxHighlight: {
+        activate: true,
+        theme: 'monokai'
+      }
+    }
+  });
+
+  swaggerSetup(req, res, next);
 });
 
 // Routes avec rate limiting spécial pour l'auth
