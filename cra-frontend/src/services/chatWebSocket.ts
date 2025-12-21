@@ -1,6 +1,6 @@
 // src/services/chatWebSocket.ts
 import { io, Socket } from 'socket.io-client';
-import { WebSocketMessage, TypingIndicator, Message } from '../types/chat.types';
+import { WebSocketMessage } from '../types/chat.types';
 
 type EventCallback = (data: any) => void;
 
@@ -108,62 +108,6 @@ class ChatWebSocketService {
     this.socket.on('chat:reaction_removed', (data: WebSocketMessage) => {
       this.emit('reaction_removed', data);
     });
-
-    // Utilisateur en train de taper
-    this.socket.on('chat:user_typing', (data: TypingIndicator) => {
-      this.emit('user_typing', data);
-    });
-
-    // Utilisateur a rejoint
-    this.socket.on('chat:user_joined', (data: any) => {
-      this.emit('user_joined', data);
-    });
-
-    // Utilisateur a quitté
-    this.socket.on('chat:user_left', (data: any) => {
-      this.emit('user_left', data);
-    });
-
-    // Canal modifié
-    this.socket.on('chat:channel_updated', (data: WebSocketMessage) => {
-      this.emit('channel_updated', data);
-    });
-
-    // Mention reçue
-    this.socket.on('chat:mention', (data: any) => {
-      this.emit('mention', data);
-    });
-  }
-
-  // Rejoindre un canal
-  joinChannel(channelId: string): void {
-    if (!this.socket?.connected) {
-      console.warn('⚠️ WebSocket non connecté, impossible de rejoindre le canal');
-      return;
-    }
-
-    this.socket.emit('chat:join_channel', { channelId });
-  }
-
-  // Quitter un canal
-  leaveChannel(channelId: string): void {
-    if (!this.socket?.connected) return;
-
-    this.socket.emit('chat:leave_channel', { channelId });
-  }
-
-  // Commencer à taper
-  startTyping(channelId: string, userName: string): void {
-    if (!this.socket?.connected) return;
-
-    this.socket.emit('chat:typing_start', { channelId, userName });
-  }
-
-  // Arrêter de taper
-  stopTyping(channelId: string): void {
-    if (!this.socket?.connected) return;
-
-    this.socket.emit('chat:typing_stop', { channelId });
   }
 
   // Écouter un événement

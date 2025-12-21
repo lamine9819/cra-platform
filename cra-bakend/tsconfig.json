@@ -9,6 +9,7 @@
 
     /* Modules */
     "module": "commonjs",
+    "ignoreDeprecations": "5.0",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,

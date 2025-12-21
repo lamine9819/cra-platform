@@ -13,8 +13,6 @@ interface MessageListProps {
   onEdit?: (messageId: string, content: string) => void;
   onDelete?: (messageId: string) => void;
   onReact?: (messageId: string, emoji: string) => void;
-  onReply?: (message: Message) => void;
-  typingUsers?: Array<{ userId: string; userName?: string }>;
 }
 
 const MessageList: React.FC<MessageListProps> = ({
@@ -26,8 +24,6 @@ const MessageList: React.FC<MessageListProps> = ({
   onEdit,
   onDelete,
   onReact,
-  onReply,
-  typingUsers = [],
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -119,28 +115,9 @@ const MessageList: React.FC<MessageListProps> = ({
             onEdit={onEdit}
             onDelete={onDelete}
             onReact={onReact}
-            onReply={onReply}
           />
         ))}
       </div>
-
-      {/* Typing indicator */}
-      {typingUsers.length > 0 && (
-        <div className="px-4 py-2 text-sm text-gray-500">
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1">
-              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-            </div>
-            <span>
-              {typingUsers.length === 1
-                ? `${typingUsers[0].userName || 'Quelqu\'un'} est en train d'écrire...`
-                : `${typingUsers.length} personnes sont en train d'écrire...`}
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Scroll anchor */}
       <div ref={messagesEndRef} />

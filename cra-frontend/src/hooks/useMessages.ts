@@ -3,11 +3,10 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useChat } from '../contexts/ChatContext';
 
 interface UseMessagesOptions {
-  channelId: string | null;
   autoLoad?: boolean;
 }
 
-export const useMessages = ({ channelId, autoLoad = true }: UseMessagesOptions) => {
+export const useMessages = ({ autoLoad = true }: UseMessagesOptions = {}) => {
   const { state, loadMessages, sendMessage, updateMessage, deleteMessage } = useChat();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,12 +15,12 @@ export const useMessages = ({ channelId, autoLoad = true }: UseMessagesOptions) 
 
   const loadingRef = useRef(false);
 
-  // Charger les messages au montage si autoLoad et channelId sont définis
+  // Charger les messages au montage si autoLoad est activé
   useEffect(() => {
-    if (autoLoad && channelId && !loadingRef.current) {
+    if (autoLoad && !loadingRef.current) {
       loadingRef.current = true;
       setPage(1);
-      loadMessages(channelId, 1)
+      loadMessages(1)
         .then(() => {
           setHasMore(true);
         })
@@ -32,24 +31,23 @@ export const useMessages = ({ channelId, autoLoad = true }: UseMessagesOptions) 
           loadingRef.current = false;
         });
     }
-  }, [channelId, autoLoad, loadMessages]);
+  }, [autoLoad, loadMessages]);
 
   // Charger plus de messages (pagination)
   const loadMore = useCallback(async () => {
-    if (!channelId || loading || !hasMore) return;
+    if (loading || !hasMore) return;
 
     try {
       setLoading(true);
       setError(null);
       const nextPage = page + 1;
 
-      await loadMessages(channelId, nextPage);
+      await loadMessages(nextPage);
       setPage(nextPage);
 
       // Vérifier s'il y a plus de messages
       // Cette logique devrait être basée sur les métadonnées de pagination du backend
-      const messages = state.messages[channelId] || [];
-      if (messages.length < nextPage * 50) {
+      if (state.messages.length < nextPage * 50) {
         setHasMore(false);
       }
     } catch (err: any) {
@@ -57,42 +55,25 @@ export const useMessages = ({ channelId, autoLoad = true }: UseMessagesOptions) 
     } finally {
       setLoading(false);
     }
-  }, [channelId, loading, hasMore, page, loadMessages, state.messages]);
+  }, [loading, hasMore, page, loadMessages, state.messages.length]);
 
   // Envoyer un message
   const send = useCallback(async (
     content: string,
-    mentionedUserIds?: string[],
     fileUrl?: string,
     fileName?: string,
     fileSize?: number,
     fileMimeType?: string
   ) => {
-    if (!channelId) {
-      setError('Aucun canal sélectionné');
-      return null;
-    }
-
     try {
       setError(null);
-      // Create message with file metadata if provided
-      const messageData: any = {
-        content,
-        mentionedUserIds,
-      };
-      if (fileUrl) {
-        messageData.fileUrl = fileUrl;
-        messageData.fileName = fileName;
-        messageData.fileSize = fileSize;
-        messageData.fileMimeType = fileMimeType;
-      }
-      const message = await sendMessage(channelId, content, mentionedUserIds);
+      const message = await sendMessage(content, fileUrl, fileName, fileSize, fileMimeType);
       return message;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erreur lors de l\'envoi du message');
       return null;
     }
-  }, [channelId, sendMessage]);
+  }, [sendMessage]);
 
   // Modifier un message
   const update = useCallback(async (messageId: string, content: string) => {
@@ -118,12 +99,8 @@ export const useMessages = ({ channelId, autoLoad = true }: UseMessagesOptions) 
     }
   }, [deleteMessage]);
 
-  const messages = channelId ? (state.messages[channelId] || []) : [];
-  const typingUsers = channelId ? (state.typingUsers[channelId] || []) : [];
-
   return {
-    messages,
-    typingUsers,
+    messages: state.messages,
     loading,
     error,
     hasMore,

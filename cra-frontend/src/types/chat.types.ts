@@ -1,33 +1,36 @@
 // src/types/chat.types.ts
 
 // =============================================
-// ENUMS
+// INTERFACES DE REQUÊTE
 // =============================================
 
-export enum ChannelType {
-  GENERAL = 'GENERAL',
-  PROJECT = 'PROJECT',
-  THEME = 'THEME',
-  PRIVATE = 'PRIVATE',
-  ANNOUNCEMENT = 'ANNOUNCEMENT',
+export interface CreateMessageRequest {
+  content: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  fileMimeType?: string;
 }
 
-export enum ChannelMemberRole {
-  OWNER = 'OWNER',
-  ADMIN = 'ADMIN',
-  MODERATOR = 'MODERATOR',
-  MEMBER = 'MEMBER',
+export interface UpdateMessageRequest {
+  content: string;
 }
 
-export enum MessageType {
-  TEXT = 'TEXT',
-  FILE = 'FILE',
-  IMAGE = 'IMAGE',
-  SYSTEM = 'SYSTEM',
+export interface AddReactionRequest {
+  emoji: string;
+}
+
+export interface MessageListQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  authorId?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 // =============================================
-// INTERFACES DE BASE
+// INTERFACES DE RÉPONSE
 // =============================================
 
 export interface UserBasicInfo {
@@ -37,38 +40,6 @@ export interface UserBasicInfo {
   email: string;
   role: string;
   profileImage?: string | null;
-}
-
-export interface ChannelMember {
-  id: string;
-  role: ChannelMemberRole;
-  isMuted: boolean;
-  lastReadAt?: Date | null;
-  lastReadMessageId?: string | null;
-  notificationsEnabled: boolean;
-  joinedAt: Date;
-  user: UserBasicInfo;
-}
-
-export interface Channel {
-  id: string;
-  name: string;
-  description?: string | null;
-  type: ChannelType;
-  isPrivate: boolean;
-  isArchived: boolean;
-  icon?: string | null;
-  color?: string | null;
-  projectId?: string | null;
-  themeId?: string | null;
-  creator: UserBasicInfo;
-  createdAt: Date;
-  updatedAt: Date;
-  memberCount: number;
-  unreadCount?: number;
-  lastMessage?: Message | null;
-  currentUserRole?: ChannelMemberRole;
-  currentUserIsMember: boolean;
 }
 
 export interface MessageReaction {
@@ -81,101 +52,34 @@ export interface MessageReaction {
 export interface Message {
   id: string;
   content: string;
-  type: MessageType;
   isEdited: boolean;
   editedAt?: Date | null;
   isDeleted: boolean;
   deletedAt?: Date | null;
+
+  // Fichier attaché
   fileUrl?: string | null;
   fileName?: string | null;
   fileSize?: number | null;
   fileMimeType?: string | null;
+
+  // Relations
   author: UserBasicInfo;
-  channelId: string;
-  parentMessageId?: string | null;
-  mentions: UserBasicInfo[];
+
+  // Réactions
   reactions: MessageReaction[];
-  replyCount: number;
+
+  // Permissions
   canEdit: boolean;
   canDelete: boolean;
+
+  // Métadonnées
   createdAt: Date;
   updatedAt: Date;
 }
 
 // =============================================
-// REQUÊTES API
-// =============================================
-
-export interface CreateChannelRequest {
-  name: string;
-  description?: string;
-  type: ChannelType;
-  isPrivate?: boolean;
-  icon?: string;
-  color?: string;
-  projectId?: string;
-  themeId?: string;
-  memberIds?: string[];
-}
-
-export interface UpdateChannelRequest {
-  name?: string;
-  description?: string;
-  icon?: string;
-  color?: string;
-  isArchived?: boolean;
-}
-
-export interface CreateMessageRequest {
-  content: string;
-  type?: MessageType;
-  parentMessageId?: string;
-  fileUrl?: string;
-  fileName?: string;
-  fileSize?: number;
-  fileMimeType?: string;
-  mentionedUserIds?: string[];
-}
-
-export interface UpdateMessageRequest {
-  content: string;
-}
-
-export interface AddChannelMembersRequest {
-  userIds: string[];
-  role?: ChannelMemberRole;
-}
-
-export interface UpdateMemberRoleRequest {
-  role: ChannelMemberRole;
-}
-
-export interface AddReactionRequest {
-  emoji: string;
-}
-
-export interface ChannelListQuery {
-  page?: number;
-  limit?: number;
-  type?: ChannelType;
-  search?: string;
-  includeArchived?: boolean;
-  projectId?: string;
-  themeId?: string;
-}
-
-export interface MessageListQuery {
-  page?: number;
-  limit?: number;
-  search?: string;
-  authorId?: string;
-  startDate?: string;
-  endDate?: string;
-  parentMessageId?: string | null;
-}
-
-// =============================================
-// RÉPONSES API
+// INTERFACES DE PAGINATION
 // =============================================
 
 export interface PaginationMeta {
@@ -187,72 +91,39 @@ export interface PaginationMeta {
   hasPrev: boolean;
 }
 
-export interface PaginatedChannelsResponse {
-  channels: Channel[];
-  pagination: PaginationMeta;
-}
-
 export interface PaginatedMessagesResponse {
   messages: Message[];
   pagination: PaginationMeta;
 }
 
-export interface ChannelStatsResponse {
-  totalChannels: number;
-  byType: {
-    [key in ChannelType]: number;
-  };
-  totalMessages: number;
-  totalMembers: number;
-  activeChannels: number;
-  mostActiveChannels: Array<{
-    channelId: string;
-    channelName: string;
-    messageCount: number;
-  }>;
+// =============================================
+// STATE MANAGEMENT
+// =============================================
+
+export interface ChatState {
+  messages: Message[];
+  isConnected: boolean;
+  isLoading: boolean;
+  error: string | null;
 }
 
-export interface UnreadMessagesResponse {
-  totalUnread: number;
-  byChannel: Array<{
-    channelId: string;
-    channelName: string;
-    unreadCount: number;
-    lastMessage?: Message;
-  }>;
-}
+export type ChatAction =
+  | { type: 'SET_MESSAGES'; payload: Message[] }
+  | { type: 'PREPEND_MESSAGES'; payload: Message[] }
+  | { type: 'ADD_MESSAGE'; payload: Message }
+  | { type: 'UPDATE_MESSAGE'; payload: Message }
+  | { type: 'REMOVE_MESSAGE'; payload: string }
+  | { type: 'SET_IS_CONNECTED'; payload: boolean }
+  | { type: 'SET_IS_LOADING'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | null };
 
 // =============================================
-// WEBSOCKET
+// INTERFACES WEBSOCKET
 // =============================================
 
 export interface WebSocketMessage {
   type: 'new_message' | 'message_updated' | 'message_deleted' |
-        'reaction_added' | 'reaction_removed' | 'user_typing' |
-        'user_joined' | 'user_left' | 'channel_updated';
-  channelId: string;
+        'reaction_added' | 'reaction_removed';
   data: any;
   timestamp: Date;
-}
-
-export interface TypingIndicator {
-  channelId: string;
-  userId: string;
-  userName?: string;
-  isTyping: boolean;
-}
-
-// =============================================
-// ÉTAT LOCAL
-// =============================================
-
-export interface ChatState {
-  channels: Channel[];
-  currentChannel: Channel | null;
-  messages: Record<string, Message[]>;
-  typingUsers: Record<string, TypingIndicator[]>;
-  unreadCounts: Record<string, number>;
-  isConnected: boolean;
-  isLoading: boolean;
-  error: string | null;
 }

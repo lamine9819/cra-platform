@@ -85,7 +85,6 @@ model ResearchTheme {
   updatedAt   DateTime        @updatedAt
   programId   String
   activities  Activity[]
-  channels    Channel[]
   projects    Project[]
   program     ResearchProgram @relation(fields: [programId], references: [id])
 
@@ -376,8 +375,6 @@ model User {
   activityParticipations ActivityParticipant[]
   auditLogs              AuditLog[]
   createdEvents          CalendarEvent[]         @relation("EventCreator")
-  channelMemberships     ChannelMember[]
-  createdChannels        Channel[]               @relation("ChannelCreator")
   chatMessages           ChatMessage[]           @relation("MessageAuthor")
   comments               Comment[]
   responsibleConventions Convention[]
@@ -393,7 +390,6 @@ model User {
   internships            Internship[]            @relation("InternshipIntern")
   supervisedInternships  Internship[]            @relation("InternshipSupervisor")
   knowledgeTransfers     KnowledgeTransfer[]
-  messageMentions        MessageMention[]
   messageReactions       MessageReaction[]
   receivedNotifications  Notification[]          @relation("NotificationReceiver")
   sentNotifications      Notification[]          @relation("NotificationSender")
@@ -467,7 +463,6 @@ model Project {
   themeId            String
   activities         Activity[]
   events             CalendarEvent[]
-  channels           Channel[]
   comments           Comment[]
   documents          Document[]
   fundings           ProjectFunding[]
@@ -1133,83 +1128,25 @@ model Comment {
   @@map("comments")
 }
 
-model Channel {
-  id          String          @id @default(cuid())
-  name        String
-  description String?
-  type        ChannelType     @default(GENERAL)
-  isPrivate   Boolean         @default(false)
-  isArchived  Boolean         @default(false)
-  icon        String?
-  color       String?
-  projectId   String?
-  themeId     String?
-  creatorId   String
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  members     ChannelMember[]
-  creator     User            @relation("ChannelCreator", fields: [creatorId], references: [id])
-  project     Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  theme       ResearchTheme?  @relation(fields: [themeId], references: [id])
-  messages    ChatMessage[]
-
-  @@index([type])
-  @@index([isArchived])
-  @@index([projectId])
-  @@index([themeId])
-  @@map("channels")
-}
-
-model ChannelMember {
-  id                   String            @id @default(cuid())
-  role                 ChannelMemberRole @default(MEMBER)
-  isMuted              Boolean           @default(false)
-  lastReadAt           DateTime?
-  lastReadMessageId    String?
-  notificationsEnabled Boolean           @default(true)
-  channelId            String
-  userId               String
-  joinedAt             DateTime          @default(now())
-  leftAt               DateTime?
-  channel              Channel           @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([channelId, userId])
-  @@index([userId])
-  @@index([channelId])
-  @@map("channel_members")
-}
-
 model ChatMessage {
-  id              String            @id @default(cuid())
-  content         String
-  type            MessageType       @default(TEXT)
-  isEdited        Boolean           @default(false)
-  editedAt        DateTime?
-  isDeleted       Boolean           @default(false)
-  deletedAt       DateTime?
-  deletedBy       String?
-  fileUrl         String?
-  fileName        String?
-  fileSize        BigInt?
-  fileMimeType    String?
-  metadata        Json?
-  authorId        String
-  channelId       String
-  parentMessageId String?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  author          User              @relation("MessageAuthor", fields: [authorId], references: [id])
-  channel         Channel           @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  parentMessage   ChatMessage?      @relation("MessageReplies", fields: [parentMessageId], references: [id], onDelete: Cascade)
-  replies         ChatMessage[]     @relation("MessageReplies")
-  mentions        MessageMention[]
-  reactions       MessageReaction[]
+  id           String            @id @default(cuid())
+  content      String
+  isEdited     Boolean           @default(false)
+  editedAt     DateTime?
+  isDeleted    Boolean           @default(false)
+  deletedAt    DateTime?
+  fileUrl      String?
+  fileName     String?
+  fileSize     BigInt?
+  fileMimeType String?
+  authorId     String
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  author       User              @relation("MessageAuthor", fields: [authorId], references: [id])
+  reactions    MessageReaction[]
 
-  @@index([channelId])
   @@index([authorId])
   @@index([createdAt(sort: Desc)])
-  @@index([parentMessageId])
   @@index([isDeleted])
   @@map("chat_messages")
 }
@@ -1228,18 +1165,6 @@ model MessageReaction {
   @@map("message_reactions")
 }
 
-model MessageMention {
-  id        String      @id @default(cuid())
-  messageId String
-  userId    String
-  createdAt DateTime    @default(now())
-  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([messageId, userId])
-  @@index([userId])
-  @@map("message_mentions")
-}
 
 model Notification {
   id         String    @id @default(cuid())
@@ -1510,24 +1435,3 @@ enum ObjectiveStatus {
   REPORTE
 }
 
-enum ChannelType {
-  GENERAL
-  PROJECT
-  THEME
-  PRIVATE
-  ANNOUNCEMENT
-}
-
-enum ChannelMemberRole {
-  OWNER
-  ADMIN
-  MODERATOR
-  MEMBER
-}
-
-enum MessageType {
-  TEXT
-  FILE
-  IMAGE
-  SYSTEM
-}

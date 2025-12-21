@@ -1,7 +1,7 @@
 // src/components/chat/ChatMessage.tsx
 import React, { useState } from 'react';
 import { Message } from '../../types/chat.types';
-import { Edit2, Trash2, MoreVertical, Reply, SmilePlus } from 'lucide-react';
+import { Edit2, Trash2, MoreVertical, SmilePlus } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { getFileUrl, formatFileSize } from '../../utils/fileUrl';
@@ -12,7 +12,6 @@ interface ChatMessageProps {
   onEdit?: (messageId: string, content: string) => void;
   onDelete?: (messageId: string) => void;
   onReact?: (messageId: string, emoji: string) => void;
-  onReply?: (message: Message) => void;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -21,7 +20,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   onEdit,
   onDelete,
   onReact,
-  onReply,
 }) => {
   const [showActions, setShowActions] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
@@ -215,16 +213,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             ))}
           </div>
         )}
-
-        {/* Reply count */}
-        {message.replyCount > 0 && (
-          <button
-            onClick={() => onReply?.(message)}
-            className="mt-2 text-sm text-green-600 hover:underline"
-          >
-            {message.replyCount} réponse{message.replyCount > 1 ? 's' : ''}
-          </button>
-        )}
       </div>
 
       {/* Actions */}
@@ -256,17 +244,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               </div>
             )}
           </div>
-
-          {/* Reply button */}
-          {onReply && (
-            <button
-              onClick={() => onReply(message)}
-              className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-white rounded-md border border-gray-200 bg-white shadow-sm"
-              title="Répondre"
-            >
-              <Reply className="w-4 h-4" />
-            </button>
-          )}
 
           {/* Edit/Delete for own messages */}
           {isOwnMessage && (
