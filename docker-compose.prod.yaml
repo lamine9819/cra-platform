@@ -1,25 +1,6 @@
 version: '3.9'
 
 services:
-  # Nginx Reverse Proxy
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    restart: always
-    volumes:
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - nginx_cache:/var/cache/nginx
-      - nginx_logs:/var/log/nginx
-    depends_on:
-      backend:
-        condition: service_started
-      frontend:
-        condition: service_started
-    networks:
-      - cra-network
-  
-
   # Base de données PostgreSQL
   postgres:
     image: postgres:16-alpine
@@ -149,10 +130,6 @@ volumes:
   backend_uploads:
     driver: local
   backend_logs:
-    driver: local
-  nginx_cache:
-    driver: local
-  nginx_logs:
     driver: local
 
 networks:
