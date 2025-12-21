@@ -101,6 +101,6 @@
     "zod": "^4.0.5"
   },
   "prisma": {
-    "seed": "node -r ts-node/register prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   }
 }
