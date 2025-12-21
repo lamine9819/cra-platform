@@ -1,7 +1,8 @@
-// src/routes/auth.routes.ts - Ajout de la route pour changer le mot de passe
+// src/routes/auth.routes.ts - Routes d'authentification
+// La documentation est générée automatiquement depuis auth.openapi.ts
 import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller';
-import { authenticate } from '../middlewares/auth'; // Votre middleware d'authentification
+import { authenticate } from '../middlewares/auth';
 
 const router = Router();
 const authController = new AuthController();
@@ -12,7 +13,7 @@ router.post('/login', authController.login);
 
 // Routes protégées (avec authentification)
 router.get('/profile', authenticate, authController.getProfile);
-router.post('/change-password', authenticate, authController.changePassword); // NOUVELLE ROUTE
+router.post('/change-password', authenticate, authController.changePassword);
 router.post('/logout', authenticate, authController.logout);
 
 export default router;

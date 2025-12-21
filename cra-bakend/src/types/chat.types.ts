@@ -1,91 +1,23 @@
 // src/types/chat.types.ts
 
 // =============================================
-// ENUMS
-// =============================================
-
-export enum ChannelType {
-  GENERAL = 'GENERAL',
-  PROJECT = 'PROJECT',
-  THEME = 'THEME',
-  PRIVATE = 'PRIVATE',
-  ANNOUNCEMENT = 'ANNOUNCEMENT',
-}
-
-export enum ChannelMemberRole {
-  OWNER = 'OWNER',
-  ADMIN = 'ADMIN',
-  MODERATOR = 'MODERATOR',
-  MEMBER = 'MEMBER',
-}
-
-export enum MessageType {
-  TEXT = 'TEXT',
-  FILE = 'FILE',
-  IMAGE = 'IMAGE',
-  SYSTEM = 'SYSTEM',
-}
-
-// =============================================
 // INTERFACES DE REQUÊTE
 // =============================================
 
-export interface CreateChannelRequest {
-  name: string;
-  description?: string;
-  type: ChannelType;
-  isPrivate?: boolean;
-  icon?: string;
-  color?: string;
-  projectId?: string;
-  themeId?: string;
-  memberIds?: string[]; // IDs des membres à ajouter
-}
-
-export interface UpdateChannelRequest {
-  name?: string;
-  description?: string;
-  icon?: string;
-  color?: string;
-  isArchived?: boolean;
-}
-
 export interface CreateMessageRequest {
   content: string;
-  type?: MessageType;
-  parentMessageId?: string; // Pour les réponses
   fileUrl?: string;
   fileName?: string;
   fileSize?: number;
   fileMimeType?: string;
-  mentionedUserIds?: string[];
 }
 
 export interface UpdateMessageRequest {
   content: string;
 }
 
-export interface AddChannelMembersRequest {
-  userIds: string[];
-  role?: ChannelMemberRole;
-}
-
-export interface UpdateMemberRoleRequest {
-  role: ChannelMemberRole;
-}
-
 export interface AddReactionRequest {
   emoji: string;
-}
-
-export interface ChannelListQuery {
-  page?: number;
-  limit?: number;
-  type?: ChannelType;
-  search?: string;
-  includeArchived?: boolean;
-  projectId?: string;
-  themeId?: string;
 }
 
 export interface MessageListQuery {
@@ -95,7 +27,6 @@ export interface MessageListQuery {
   authorId?: string;
   startDate?: string;
   endDate?: string;
-  parentMessageId?: string; // Pour filtrer les réponses
 }
 
 // =============================================
@@ -111,40 +42,6 @@ export interface UserBasicInfo {
   profileImage?: string | null;
 }
 
-export interface ChannelMemberResponse {
-  id: string;
-  role: ChannelMemberRole;
-  isMuted: boolean;
-  lastReadAt?: Date | null;
-  lastReadMessageId?: string | null;
-  notificationsEnabled: boolean;
-  joinedAt: Date;
-  user: UserBasicInfo;
-}
-
-export interface ChannelResponse {
-  id: string;
-  name: string;
-  description?: string | null;
-  type: ChannelType;
-  isPrivate: boolean;
-  isArchived: boolean;
-  icon?: string | null;
-  color?: string | null;
-  projectId?: string | null;
-  themeId?: string | null;
-  creator: UserBasicInfo;
-  createdAt: Date;
-  updatedAt: Date;
-
-  // Informations supplémentaires
-  memberCount: number;
-  unreadCount?: number;
-  lastMessage?: MessageResponse | null;
-  currentUserRole?: ChannelMemberRole;
-  currentUserIsMember: boolean;
-}
-
 export interface MessageReactionResponse {
   emoji: string;
   count: number;
@@ -155,7 +52,6 @@ export interface MessageReactionResponse {
 export interface MessageResponse {
   id: string;
   content: string;
-  type: MessageType;
   isEdited: boolean;
   editedAt?: Date | null;
   isDeleted: boolean;
@@ -169,13 +65,9 @@ export interface MessageResponse {
 
   // Relations
   author: UserBasicInfo;
-  channelId: string;
-  parentMessageId?: string | null;
 
-  // Mentions et réactions
-  mentions: UserBasicInfo[];
+  // Réactions
   reactions: MessageReactionResponse[];
-  replyCount: number;
 
   // Permissions
   canEdit: boolean;
@@ -184,31 +76,6 @@ export interface MessageResponse {
   // Métadonnées
   createdAt: Date;
   updatedAt: Date;
-}
-
-export interface ChannelStatsResponse {
-  totalChannels: number;
-  byType: {
-    [key in ChannelType]: number;
-  };
-  totalMessages: number;
-  totalMembers: number;
-  activeChannels: number;
-  mostActiveChannels: Array<{
-    channelId: string;
-    channelName: string;
-    messageCount: number;
-  }>;
-}
-
-export interface UnreadMessagesResponse {
-  totalUnread: number;
-  byChannel: Array<{
-    channelId: string;
-    channelName: string;
-    unreadCount: number;
-    lastMessage?: MessageResponse;
-  }>;
 }
 
 // =============================================
@@ -224,11 +91,6 @@ export interface PaginationMeta {
   hasPrev: boolean;
 }
 
-export interface PaginatedChannelsResponse {
-  channels: ChannelResponse[];
-  pagination: PaginationMeta;
-}
-
 export interface PaginatedMessagesResponse {
   messages: MessageResponse[];
   pagination: PaginationMeta;
@@ -240,16 +102,7 @@ export interface PaginatedMessagesResponse {
 
 export interface WebSocketMessage {
   type: 'new_message' | 'message_updated' | 'message_deleted' |
-        'reaction_added' | 'reaction_removed' | 'user_typing' |
-        'user_joined' | 'user_left' | 'channel_updated';
-  channelId: string;
+        'reaction_added' | 'reaction_removed';
   data: any;
   timestamp: Date;
-}
-
-export interface TypingIndicator {
-  channelId: string;
-  userId: string;
-  userName: string;
-  isTyping: boolean;
 }

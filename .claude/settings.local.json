@@ -26,12 +26,7 @@
       "Bash(cmd //c taskkill //F //PID 24600)",
       "Bash(npm run build:*)",
       "Bash(npm install:*)",
-      "Bash(python:*)",
-      "Bash(openssl rand:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(git reset:*)"
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []
