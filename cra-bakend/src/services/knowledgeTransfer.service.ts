@@ -18,16 +18,11 @@ export class KnowledgeTransferService {
   ): Promise<KnowledgeTransferResponse> {
     // Vérifier que l'organisateur existe
     const organizer = await prisma.user.findUnique({
-      where: { id: data.organizerId }
+      where: { id: userId }
     });
 
     if (!organizer) {
-      throw new ValidationError('Organisateur non trouvé');
-    }
-
-    // Seul l'organisateur ou un admin peut créer pour quelqu'un
-    if (data.organizerId !== userId && userRole !== 'ADMINISTRATEUR') {
-      throw new AuthError('Vous ne pouvez créer un transfert que pour vous-même');
+      throw new ValidationError('Utilisateur non trouvé');
     }
 
     // Vérifier l'activité si spécifiée
@@ -52,7 +47,7 @@ export class KnowledgeTransferService {
         participants: data.participants,
         impact: data.impact,
         feedback: data.feedback,
-        organizerId: data.organizerId,
+        organizerId: userId,
         activityId: data.activityId,
       },
       include: {

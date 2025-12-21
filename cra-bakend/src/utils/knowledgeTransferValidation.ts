@@ -14,7 +14,7 @@ export const createKnowledgeTransferSchema = z.object({
   title: z.string().min(3, 'Le titre doit contenir au moins 3 caractères').max(200),
   description: z.string().max(2000).optional(),
   type: z.nativeEnum(TransferType, { message: "Type de transfert requis" }),
-  targetAudience: z.array(z.string().min(1)).min(1, 'Au moins un public cible est requis'),
+  targetAudience: z.array(z.string().min(1)).default([]),
   location: z.string().max(200).optional(),
   date: z.string().refine((val) => {
     const date = new Date(val);
@@ -23,7 +23,6 @@ export const createKnowledgeTransferSchema = z.object({
   participants: z.number().int().positive().optional(),
   impact: z.string().max(2000).optional(),
   feedback: z.string().max(2000).optional(),
-  organizerId: z.string().cuid('ID organisateur requis'),
   activityId: z.string().cuid().optional(),
 });
 
@@ -31,13 +30,12 @@ export const updateKnowledgeTransferSchema = z.object({
   title: z.string().min(3).max(200).optional(),
   description: z.string().max(2000).optional(),
   type: z.nativeEnum(TransferType).optional(),
-  targetAudience: z.array(z.string().min(1)).min(1).optional(),
+  targetAudience: z.array(z.string().min(1)).optional(),
   location: z.string().max(200).optional(),
   date: dateValidation.optional(),
   participants: z.number().int().positive().optional(),
   impact: z.string().max(2000).optional(),
   feedback: z.string().max(2000).optional(),
-  organizerId: z.string().cuid().optional(),
   activityId: z.string().cuid().optional(),
 });
 

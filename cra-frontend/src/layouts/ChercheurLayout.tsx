@@ -15,6 +15,8 @@ import {
   MessageCircle,
   ClipboardList,
   FileBarChart,
+  FileEdit,
+  Share2,
 } from 'lucide-react';
 
 // Import des pages
@@ -37,6 +39,9 @@ import Formations from '../pages/chercheur/Formations';
 import PublicationsList from '../pages/chercheur/PublicationsList';
 import PublicationDetail from '../pages/chercheur/PublicationDetail';
 import CreatePublication from '../pages/chercheur/CreatePublication';
+import KnowledgeTransfersList from '../pages/chercheur/KnowledgeTransfersList';
+import KnowledgeTransferDetail from '../pages/chercheur/KnowledgeTransferDetail';
+import CreateKnowledgeTransfer from '../pages/chercheur/CreateKnowledgeTransfer';
 import CompleteProfilePage from '../pages/chercheur/CompleteProfilePage';
 import SettingsPage from '../pages/chercheur/SettingsPage';
 import ChatPage from '../pages/ChatPage';
@@ -60,7 +65,15 @@ const ChercheurLayout: React.FC = () => {
     { name: 'Activités', href: '/chercheur/activities', icon: Activity },
     { name: 'Documents', href: '/chercheur/documents', icon: FileText },
     { name: 'Formulaires', href: '/chercheur/forms', icon: ClipboardList },
-    { name: 'Publications', href: '/chercheur/publications', icon: BookOpen },
+    {
+      name: 'Publications & Transferts',
+      href: '/chercheur/publications',
+      icon: BookOpen,
+      children: [
+        { name: 'Publications', href: '/chercheur/publications', icon: FileEdit },
+        { name: 'Transferts de connaissances', href: '/chercheur/knowledge-transfers', icon: Share2 }
+      ]
+    },
     { name: 'Calendrier', href: '/chercheur/calendar', icon: Calendar },
     { name: 'Formations', href: '/chercheur/formations', icon: GraduationCap },
     { name: 'Chat', href: '/chercheur/chat', icon: MessageCircle },
@@ -102,6 +115,12 @@ const ChercheurLayout: React.FC = () => {
                   <Route path="create" element={<CreatePublication />} />
                   <Route path=":id" element={<PublicationDetail />} />
                   <Route path=":id/edit" element={<CreatePublication />} />
+                </Route>
+                <Route path="knowledge-transfers">
+                  <Route index element={<KnowledgeTransfersList />} />
+                  <Route path="create" element={<CreateKnowledgeTransfer />} />
+                  <Route path=":id" element={<KnowledgeTransferDetail />} />
+                  <Route path=":id/edit" element={<CreateKnowledgeTransfer />} />
                 </Route>
                 <Route path="forms">
                   <Route index element={<FormsPage />} />
