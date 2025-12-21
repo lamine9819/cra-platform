@@ -35,22 +35,14 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copier les fichiers buildés
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Créer un utilisateur non-root
-RUN chown -R nginx:nginx /usr/share/nginx/html && \
-    chmod -R 755 /usr/share/nginx/html && \
-    chown -R nginx:nginx /var/cache/nginx && \
-    chown -R nginx:nginx /var/log/nginx && \
-    touch /var/run/nginx.pid && \
-    chown -R nginx:nginx /var/run/nginx.pid
+# --- LES CHANGEMENTS SONT ICI ---
 
-# Passer à l'utilisateur non-root
-USER nginx
+# 1. On expose le port 80 au lieu de 8080
+EXPOSE 80
 
-# Exposer le port
-EXPOSE 8080
-
-# Health check
+# 2. Health check mis à jour pour le port 80
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080 || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
 
+# 3. On ne met PAS de "USER nginx", on laisse Nginx tourner normalement
 CMD ["nginx", "-g", "daemon off;"]
