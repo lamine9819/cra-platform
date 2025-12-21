@@ -5,29 +5,16 @@ import { chatApi } from '../../services/chatApi';
 
 interface MessageInputProps {
   onSend: (content: string, fileUrl?: string, fileName?: string, fileSize?: number, fileMimeType?: string) => void;
-  onTyping?: () => void;
-  onStopTyping?: () => void;
   disabled?: boolean;
   placeholder?: string;
-  replyingTo?: {
-    id: string;
-    author: string;
-    content: string;
-  } | null;
-  onCancelReply?: () => void;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({
   onSend,
-  onTyping,
-  onStopTyping,
   disabled = false,
   placeholder = 'Écrivez votre message...',
-  replyingTo,
-  onCancelReply,
 }) => {
   const [message, setMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<{
     url: string;
     filename: string;
@@ -37,7 +24,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -55,22 +41,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setMessage(value);
-
-    // Handle typing indicator
-    if (value.trim() && !isTyping) {
-      setIsTyping(true);
-      onTyping?.();
-    }
-
-    // Reset typing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-      onStopTyping?.();
-    }, 3000);
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,12 +100,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
     setMessage('');
     setUploadedFile(null);
-    setIsTyping(false);
-    onStopTyping?.();
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
 
     // Focus back on textarea
     textareaRef.current?.focus();
@@ -164,31 +128,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
   return (
     <div className="border-t border-gray-200 bg-white">
-      {/* Reply preview */}
-      {replyingTo && (
-        <div className="px-4 pt-3 pb-2 bg-gray-50 border-b border-gray-200">
-          <div className="flex items-start gap-2">
-            <div className="flex-1 text-sm">
-              <div className="text-gray-600 font-medium mb-1">
-                Réponse à {replyingTo.author}
-              </div>
-              <div className="text-gray-500 truncate">
-                {replyingTo.content}
-              </div>
-            </div>
-            {onCancelReply && (
-              <button
-                onClick={onCancelReply}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded"
-                aria-label="Annuler la réponse"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* File preview */}
       {uploadedFile && (
         <div className="px-4 pt-3 pb-2 bg-green-50 border-b border-green-200">

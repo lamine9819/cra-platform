@@ -4,24 +4,13 @@ import { ValidationError, AuthError } from '../utils/errors';
 import { getChatWebSocketService } from './chatWebSocket.service';
 import { getNotificationService } from './notification.service';
 import {
-  CreateChannelRequest,
-  UpdateChannelRequest,
   CreateMessageRequest,
   UpdateMessageRequest,
-  AddChannelMembersRequest,
-  UpdateMemberRoleRequest,
   AddReactionRequest,
-  ChannelListQuery,
   MessageListQuery,
-  ChannelResponse,
   MessageResponse,
-  ChannelMemberResponse,
-  ChannelStatsResponse,
-  UnreadMessagesResponse,
   MessageReactionResponse,
   UserBasicInfo,
-  ChannelType,
-  ChannelMemberRole,
   PaginationMeta,
 } from '../types/chat.types';
 
@@ -30,662 +19,100 @@ const prisma = new PrismaClient();
 export class ChatService {
 
   // =============================================
-  // GESTION DES CANAUX
-  // =============================================
-
-  // Créer un canal
-  async createChannel(
-    channelData: CreateChannelRequest,
-    creatorId: string,
-    creatorRole: string
-  ): Promise<ChannelResponse> {
-    // Vérifier les permissions pour créer un canal
-    if (channelData.type === ChannelType.GENERAL && creatorRole !== 'ADMINISTRATEUR') {
-      throw new AuthError('Seuls les administrateurs peuvent créer des canaux généraux');
-    }
-
-    // Vérifier que le projet existe si c'est un canal de projet
-    if (channelData.projectId) {
-      const project = await prisma.project.findUnique({
-        where: { id: channelData.projectId },
-        include: {
-          participants: {
-            where: { userId: creatorId, isActive: true }
-          }
-        }
-      });
-
-      if (!project) {
-        throw new ValidationError('Projet non trouvé');
-      }
-
-      const isProjectMember = project.creatorId === creatorId ||
-                             project.participants.length > 0 ||
-                             creatorRole === 'ADMINISTRATEUR';
-
-      if (!isProjectMember) {
-        throw new AuthError('Vous devez être membre du projet pour créer un canal associé');
-      }
-    }
-
-    // Vérifier que le thème existe si c'est un canal de thème
-    if (channelData.themeId) {
-      const theme = await prisma.researchTheme.findUnique({
-        where: { id: channelData.themeId }
-      });
-
-      if (!theme) {
-        throw new ValidationError('Thème de recherche non trouvé');
-      }
-    }
-
-    // Créer le canal
-    const channel = await prisma.channel.create({
-      data: {
-        name: channelData.name,
-        description: channelData.description,
-        type: channelData.type,
-        isPrivate: channelData.isPrivate || false,
-        icon: channelData.icon,
-        color: channelData.color,
-        projectId: channelData.projectId,
-        themeId: channelData.themeId,
-        creatorId: creatorId,
-      },
-      include: this.getChannelIncludes()
-    });
-
-    // Ajouter le créateur comme membre avec le rôle OWNER
-    await prisma.channelMember.create({
-      data: {
-        channelId: channel.id,
-        userId: creatorId,
-        role: ChannelMemberRole.OWNER,
-      }
-    });
-
-    // Ajouter les autres membres si spécifiés
-    if (channelData.memberIds && channelData.memberIds.length > 0) {
-      await this.addMembersToChannel(
-        channel.id,
-        channelData.memberIds,
-        creatorId,
-        ChannelMemberRole.MEMBER
-      );
-    }
-
-    return this.formatChannelResponse(channel, creatorId);
-  }
-
-  // Lister les canaux accessibles
-  async listChannels(
-    userId: string,
-    userRole: string,
-    query: ChannelListQuery
-  ) {
-    const page = Number(query.page) || 1;
-    const limit = Number(query.limit) || 20;
-    const skip = (page - 1) * limit;
-
-    const where: any = {};
-
-    // Filtrer par type
-    if (query.type) {
-      where.type = query.type;
-    }
-
-    // Filtrer par projet ou thème
-    if (query.projectId) {
-      where.projectId = query.projectId;
-    }
-
-    if (query.themeId) {
-      where.themeId = query.themeId;
-    }
-
-    // Recherche par nom
-    if (query.search) {
-      where.name = {
-        contains: query.search,
-        mode: 'insensitive'
-      };
-    }
-
-    // Filtrer les canaux archivés
-    if (!query.includeArchived) {
-      where.isArchived = false;
-    }
-
-    // Filtrer selon les permissions d'accès
-    if (userRole !== 'ADMINISTRATEUR') {
-      where.OR = [
-        // Canaux publics
-        { isPrivate: false },
-        // Canaux dont l'utilisateur est membre
-        {
-          members: {
-            some: {
-              userId: userId,
-              leftAt: null
-            }
-          }
-        }
-      ];
-    }
-
-    const [channels, total] = await Promise.all([
-      prisma.channel.findMany({
-        where,
-        skip,
-        take: limit,
-        include: this.getChannelIncludes(),
-        orderBy: { updatedAt: 'desc' }
-      }),
-      prisma.channel.count({ where })
-    ]);
-
-    const formattedChannels = await Promise.all(
-      channels.map(channel => this.formatChannelResponse(channel, userId))
-    );
-
-    return {
-      channels: formattedChannels,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: page * limit < total,
-        hasPrev: page > 1,
-      } as PaginationMeta
-    };
-  }
-
-  // Obtenir un canal par ID
-  async getChannelById(
-    channelId: string,
-    userId: string,
-    userRole: string
-  ): Promise<ChannelResponse> {
-    const channel = await prisma.channel.findUnique({
-      where: { id: channelId },
-      include: this.getChannelIncludes()
-    });
-
-    if (!channel) {
-      throw new ValidationError('Canal non trouvé');
-    }
-
-    // Vérifier l'accès
-    await this.checkChannelAccess(channel, userId, userRole);
-
-    return this.formatChannelResponse(channel, userId);
-  }
-
-  // Mettre à jour un canal
-  async updateChannel(
-    channelId: string,
-    updateData: UpdateChannelRequest,
-    userId: string,
-    userRole: string
-  ): Promise<ChannelResponse> {
-    const channel = await prisma.channel.findUnique({
-      where: { id: channelId },
-      include: {
-        members: {
-          where: { userId: userId }
-        }
-      }
-    });
-
-    if (!channel) {
-      throw new ValidationError('Canal non trouvé');
-    }
-
-    // Vérifier les permissions
-    const member = channel.members[0];
-    const canEdit = userRole === 'ADMINISTRATEUR' ||
-                   member?.role === ChannelMemberRole.OWNER ||
-                   member?.role === ChannelMemberRole.ADMIN;
-
-    if (!canEdit) {
-      throw new AuthError('Permissions insuffisantes pour modifier ce canal');
-    }
-
-    const updatedChannel = await prisma.channel.update({
-      where: { id: channelId },
-      data: updateData,
-      include: this.getChannelIncludes()
-    });
-
-    return this.formatChannelResponse(updatedChannel, userId);
-  }
-
-  // Supprimer un canal
-  async deleteChannel(
-    channelId: string,
-    userId: string,
-    userRole: string
-  ): Promise<void> {
-    const channel = await prisma.channel.findUnique({
-      where: { id: channelId },
-      include: {
-        members: {
-          where: { userId: userId }
-        }
-      }
-    });
-
-    if (!channel) {
-      throw new ValidationError('Canal non trouvé');
-    }
-
-    // Seul le créateur ou un admin peut supprimer
-    const member = channel.members[0];
-    const canDelete = userRole === 'ADMINISTRATEUR' ||
-                     member?.role === ChannelMemberRole.OWNER;
-
-    if (!canDelete) {
-      throw new AuthError('Permissions insuffisantes pour supprimer ce canal');
-    }
-
-    await prisma.channel.delete({
-      where: { id: channelId }
-    });
-  }
-
-  // =============================================
-  // GESTION DES MEMBRES
-  // =============================================
-
-  // Ajouter des membres à un canal
-  async addMembersToChannel(
-    channelId: string,
-    userIds: string[],
-    requesterId: string,
-    role: ChannelMemberRole = ChannelMemberRole.MEMBER
-  ): Promise<ChannelMemberResponse[]> {
-    const channel = await prisma.channel.findUnique({
-      where: { id: channelId },
-      include: {
-        members: {
-          where: { userId: requesterId }
-        }
-      }
-    });
-
-    if (!channel) {
-      throw new ValidationError('Canal non trouvé');
-    }
-
-    // Vérifier les permissions
-    const requesterMember = channel.members[0];
-    const canAddMembers = requesterMember?.role === ChannelMemberRole.OWNER ||
-                         requesterMember?.role === ChannelMemberRole.ADMIN ||
-                         requesterMember?.role === ChannelMemberRole.MODERATOR;
-
-    if (!canAddMembers) {
-      throw new AuthError('Permissions insuffisantes pour ajouter des membres');
-    }
-
-    // Vérifier que tous les utilisateurs existent
-    const users = await prisma.user.findMany({
-      where: { id: { in: userIds } }
-    });
-
-    if (users.length !== userIds.length) {
-      throw new ValidationError('Un ou plusieurs utilisateurs n\'existent pas');
-    }
-
-    // Ajouter les membres
-    const members = await Promise.all(
-      userIds.map(userId =>
-        prisma.channelMember.upsert({
-          where: {
-            channelId_userId: {
-              channelId,
-              userId
-            }
-          },
-          create: {
-            channelId,
-            userId,
-            role,
-          },
-          update: {
-            leftAt: null, // Réactiver si l'utilisateur était parti
-            role,
-          },
-          include: {
-            user: {
-              select: this.getUserSelect()
-            }
-          }
-        })
-      )
-    );
-
-    return members.map(this.formatChannelMemberResponse);
-  }
-
-  // Retirer un membre d'un canal
-  async removeMemberFromChannel(
-    channelId: string,
-    userIdToRemove: string,
-    requesterId: string,
-    requesterRole: string
-  ): Promise<void> {
-    const channel = await prisma.channel.findUnique({
-      where: { id: channelId },
-      include: {
-        members: {
-          where: {
-            OR: [
-              { userId: requesterId },
-              { userId: userIdToRemove }
-            ]
-          }
-        }
-      }
-    });
-
-    if (!channel) {
-      throw new ValidationError('Canal non trouvé');
-    }
-
-    const requesterMember = channel.members.find(m => m.userId === requesterId);
-    const memberToRemove = channel.members.find(m => m.userId === userIdToRemove);
-
-    if (!memberToRemove) {
-      throw new ValidationError('Membre non trouvé dans ce canal');
-    }
-
-    // Vérifier les permissions
-    const canRemove = requesterRole === 'ADMINISTRATEUR' ||
-                     requesterId === userIdToRemove || // L'utilisateur peut se retirer lui-même
-                     requesterMember?.role === ChannelMemberRole.OWNER ||
-                     (requesterMember?.role === ChannelMemberRole.ADMIN &&
-                      memberToRemove.role !== ChannelMemberRole.OWNER);
-
-    if (!canRemove) {
-      throw new AuthError('Permissions insuffisantes pour retirer ce membre');
-    }
-
-    // Ne pas permettre de retirer le dernier propriétaire
-    if (memberToRemove.role === ChannelMemberRole.OWNER) {
-      const ownerCount = await prisma.channelMember.count({
-        where: {
-          channelId,
-          role: ChannelMemberRole.OWNER,
-          leftAt: null
-        }
-      });
-
-      if (ownerCount === 1) {
-        throw new ValidationError('Le dernier propriétaire ne peut pas être retiré');
-      }
-    }
-
-    await prisma.channelMember.update({
-      where: { id: memberToRemove.id },
-      data: { leftAt: new Date() }
-    });
-  }
-
-  // Mettre à jour le rôle d'un membre
-  async updateMemberRole(
-    channelId: string,
-    userIdToUpdate: string,
-    newRole: ChannelMemberRole,
-    requesterId: string,
-    requesterRole: string
-  ): Promise<ChannelMemberResponse> {
-    const channel = await prisma.channel.findUnique({
-      where: { id: channelId },
-      include: {
-        members: {
-          where: {
-            OR: [
-              { userId: requesterId },
-              { userId: userIdToUpdate }
-            ]
-          }
-        }
-      }
-    });
-
-    if (!channel) {
-      throw new ValidationError('Canal non trouvé');
-    }
-
-    const requesterMember = channel.members.find(m => m.userId === requesterId);
-    const memberToUpdate = channel.members.find(m => m.userId === userIdToUpdate);
-
-    if (!memberToUpdate) {
-      throw new ValidationError('Membre non trouvé');
-    }
-
-    // Vérifier les permissions
-    const canUpdate = requesterRole === 'ADMINISTRATEUR' ||
-                     requesterMember?.role === ChannelMemberRole.OWNER ||
-                     (requesterMember?.role === ChannelMemberRole.ADMIN &&
-                      memberToUpdate.role !== ChannelMemberRole.OWNER);
-
-    if (!canUpdate) {
-      throw new AuthError('Permissions insuffisantes');
-    }
-
-    const updated = await prisma.channelMember.update({
-      where: { id: memberToUpdate.id },
-      data: { role: newRole },
-      include: {
-        user: {
-          select: this.getUserSelect()
-        }
-      }
-    });
-
-    return this.formatChannelMemberResponse(updated);
-  }
-
-  // Lister les membres d'un canal
-  async getChannelMembers(
-    channelId: string,
-    userId: string,
-    userRole: string
-  ): Promise<ChannelMemberResponse[]> {
-    const channel = await prisma.channel.findUnique({
-      where: { id: channelId }
-    });
-
-    if (!channel) {
-      throw new ValidationError('Canal non trouvé');
-    }
-
-    await this.checkChannelAccess(channel, userId, userRole);
-
-    const members = await prisma.channelMember.findMany({
-      where: {
-        channelId,
-        leftAt: null
-      },
-      include: {
-        user: {
-          select: this.getUserSelect()
-        }
-      },
-      orderBy: [
-        { role: 'asc' },
-        { joinedAt: 'asc' }
-      ]
-    });
-
-    return members.map(this.formatChannelMemberResponse);
-  }
-
-  // Marquer les messages comme lus
-  async markChannelAsRead(
-    channelId: string,
-    userId: string
-  ): Promise<void> {
-    const member = await prisma.channelMember.findUnique({
-      where: {
-        channelId_userId: {
-          channelId,
-          userId
-        }
-      }
-    });
-
-    if (!member) {
-      throw new ValidationError('Vous n\'êtes pas membre de ce canal');
-    }
-
-    // Obtenir le dernier message
-    const lastMessage = await prisma.chatMessage.findFirst({
-      where: {
-        channelId,
-        isDeleted: false
-      },
-      orderBy: { createdAt: 'desc' }
-    });
-
-    await prisma.channelMember.update({
-      where: { id: member.id },
-      data: {
-        lastReadAt: new Date(),
-        lastReadMessageId: lastMessage?.id
-      }
-    });
-  }
-
-  // =============================================
-  // GESTION DES MESSAGES
+  // MESSAGES
   // =============================================
 
   // Envoyer un message
   async sendMessage(
-    channelId: string,
     messageData: CreateMessageRequest,
     authorId: string,
-    userRole: string
+    _userRole: string // Parameter kept for compatibility but not used
   ): Promise<MessageResponse> {
-    const channel = await prisma.channel.findUnique({
-      where: { id: channelId },
-      include: {
-        members: {
-          where: { userId: authorId, leftAt: null }
-        }
-      }
-    });
-
-    if (!channel) {
-      throw new ValidationError('Canal non trouvé');
-    }
-
-    // Vérifier que l'utilisateur est membre du canal
-    if (!channel.members[0] && userRole !== 'ADMINISTRATEUR') {
-      throw new AuthError('Vous devez être membre du canal pour envoyer des messages');
-    }
-
-    // Vérifier qu'il y a du contenu ou un fichier
-    const hasContent = messageData.content && messageData.content.trim().length > 0;
-    const hasFile = messageData.fileUrl && messageData.fileUrl.trim().length > 0;
-
-    if (!hasContent && !hasFile) {
+    // Validation: le message doit contenir du contenu OU un fichier
+    if (!messageData.content?.trim() && !messageData.fileUrl) {
       throw new ValidationError('Le message doit contenir du texte ou un fichier');
     }
 
-    // Vérifier les mentions
-    if (messageData.mentionedUserIds && messageData.mentionedUserIds.length > 0) {
-      const users = await prisma.user.findMany({
-        where: { id: { in: messageData.mentionedUserIds } }
-      });
-
-      if (users.length !== messageData.mentionedUserIds.length) {
-        throw new ValidationError('Un ou plusieurs utilisateurs mentionnés n\'existent pas');
-      }
+    // Validation de la taille du fichier (10 MB max)
+    if (messageData.fileSize && messageData.fileSize > 10 * 1024 * 1024) {
+      throw new ValidationError('La taille du fichier ne doit pas dépasser 10 MB');
     }
 
     // Créer le message
     const message = await prisma.chatMessage.create({
       data: {
-        content: messageData.content.trim() || '',
-        type: messageData.type || 'TEXT',
-        channelId,
-        authorId,
-        parentMessageId: messageData.parentMessageId,
+        content: messageData.content || '',
         fileUrl: messageData.fileUrl,
         fileName: messageData.fileName,
         fileSize: messageData.fileSize ? BigInt(messageData.fileSize) : null,
         fileMimeType: messageData.fileMimeType,
-        mentions: messageData.mentionedUserIds ? {
-          create: messageData.mentionedUserIds.map(userId => ({
-            userId
-          }))
-        } : undefined
+        authorId: authorId,
       },
-      include: this.getMessageIncludes()
+      include: {
+        author: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+            profileImage: true,
+          }
+        },
+        reactions: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                role: true,
+                profileImage: true,
+              }
+            }
+          }
+        }
+      }
     });
 
+    // Formater la réponse
     const formattedMessage = this.formatMessageResponse(message, authorId);
 
-    // Émettre le message via WebSocket
-    try {
-      const wsService = getChatWebSocketService();
-      wsService.emitNewMessage(channelId, formattedMessage);
-    } catch (error) {
-      console.error('Erreur lors de l\'émission WebSocket:', error);
-      // Ne pas faire échouer la création du message si WebSocket échoue
-    }
+    // Émettre via WebSocket
+    const wsService = getChatWebSocketService();
+    wsService.emitNewMessage(formattedMessage);
 
-    // Envoyer des notifications pour le nouveau message
-    try {
-      const notificationService = getNotificationService();
-      await notificationService.notifyNewChatMessage(
-        channelId,
-        channel.name,
-        message.id,
-        authorId,
-        messageData.mentionedUserIds
-      );
-    } catch (error) {
+    // Envoyer des notifications à tous les utilisateurs (sauf l'expéditeur)
+    const notificationService = getNotificationService();
+    const hasFile = !!messageData.fileUrl;
+    notificationService.notifyChatMessage(
+      message.id,
+      messageData.content || '',
+      authorId,
+      hasFile
+    ).catch(error => {
       console.error('Erreur lors de l\'envoi des notifications:', error);
-      // Ne pas faire échouer la création du message si les notifications échouent
-    }
+      // Ne pas bloquer l'envoi du message en cas d'erreur de notification
+    });
 
     return formattedMessage;
   }
 
-  // Lister les messages d'un canal
+  // Lister les messages
   async listMessages(
-    channelId: string,
-    userId: string,
-    userRole: string,
-    query: MessageListQuery
-  ) {
-    const channel = await prisma.channel.findUnique({
-      where: { id: channelId }
-    });
-
-    if (!channel) {
-      throw new ValidationError('Canal non trouvé');
-    }
-
-    await this.checkChannelAccess(channel, userId, userRole);
-
-    const page = Number(query.page) || 1;
-    const limit = Number(query.limit) || 50;
+    query: MessageListQuery = {},
+    _userId: string, // Parameter kept for compatibility but not used
+    _userRole: string // Parameter kept for compatibility but not used
+  ): Promise<{ messages: MessageResponse[], pagination: PaginationMeta }> {
+    const page = Math.max(1, query.page || 1);
+    const limit = Math.min(100, Math.max(1, query.limit || 50));
     const skip = (page - 1) * limit;
 
+    // Construire les filtres
     const where: any = {
-      channelId,
-      isDeleted: false
+      isDeleted: false,
     };
-
-    if (query.authorId) {
-      where.authorId = query.authorId;
-    }
 
     if (query.search) {
       where.content = {
@@ -694,15 +121,15 @@ export class ChatService {
       };
     }
 
-    if (query.parentMessageId) {
-      where.parentMessageId = query.parentMessageId;
-    } else if (query.parentMessageId === null) {
-      // Filtrer uniquement les messages de premier niveau
-      where.parentMessageId = null;
+    if (query.authorId) {
+      where.authorId = query.authorId;
     }
 
     if (query.startDate) {
-      where.createdAt = { gte: new Date(query.startDate) };
+      where.createdAt = {
+        ...where.createdAt,
+        gte: new Date(query.startDate)
+      };
     }
 
     if (query.endDate) {
@@ -712,30 +139,60 @@ export class ChatService {
       };
     }
 
+    // Récupérer les messages avec pagination
     const [messages, total] = await Promise.all([
       prisma.chatMessage.findMany({
         where,
+        include: {
+          author: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              role: true,
+              profileImage: true,
+            }
+          },
+          reactions: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                  role: true,
+                  profileImage: true,
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
         skip,
-        take: limit,
-        include: this.getMessageIncludes(),
-        orderBy: { createdAt: 'desc' }
+        take: limit
       }),
       prisma.chatMessage.count({ where })
     ]);
 
-    const formattedMessages = messages.map(msg => this.formatMessageResponse(msg, userId));
+    // Formater les messages
+    const formattedMessages = messages.map(msg => this.formatMessageResponse(msg, _userId));
 
-    return {
-      messages: formattedMessages,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: page * limit < total,
-        hasPrev: page > 1,
-      } as PaginationMeta
+    // Calculer la pagination
+    const totalPages = Math.ceil(total / limit);
+    const pagination: PaginationMeta = {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
     };
+
+    return { messages: formattedMessages, pagination };
   }
 
   // Modifier un message
@@ -743,11 +200,14 @@ export class ChatService {
     messageId: string,
     updateData: UpdateMessageRequest,
     userId: string,
-    userRole: string
+    _userRole: string // Parameter kept for compatibility but not used
   ): Promise<MessageResponse> {
+    // Vérifier que le message existe
     const message = await prisma.chatMessage.findUnique({
       where: { id: messageId },
-      include: this.getMessageIncludes()
+      include: {
+        author: true,
+      }
     });
 
     if (!message) {
@@ -755,33 +215,56 @@ export class ChatService {
     }
 
     if (message.isDeleted) {
-      throw new ValidationError('Ce message a été supprimé');
+      throw new ValidationError('Impossible de modifier un message supprimé');
     }
 
-    // Seul l'auteur ou un admin peut modifier
-    if (message.authorId !== userId && userRole !== 'ADMINISTRATEUR') {
-      throw new AuthError('Permissions insuffisantes');
+    // Vérifier les permissions: seul l'auteur peut modifier
+    if (message.authorId !== userId) {
+      throw new AuthError('Vous ne pouvez modifier que vos propres messages');
     }
 
-    const updated = await prisma.chatMessage.update({
+    // Mettre à jour le message
+    const updatedMessage = await prisma.chatMessage.update({
       where: { id: messageId },
       data: {
-        content: updateData.content.trim(),
+        content: updateData.content,
         isEdited: true,
-        editedAt: new Date()
+        editedAt: new Date(),
       },
-      include: this.getMessageIncludes()
+      include: {
+        author: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+            profileImage: true,
+          }
+        },
+        reactions: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                role: true,
+                profileImage: true,
+              }
+            }
+          }
+        }
+      }
     });
 
-    const formattedMessage = this.formatMessageResponse(updated, userId);
+    // Formater la réponse
+    const formattedMessage = this.formatMessageResponse(updatedMessage, userId);
 
-    // Émettre la mise à jour via WebSocket
-    try {
-      const wsService = getChatWebSocketService();
-      wsService.emitMessageUpdated(message.channelId, formattedMessage);
-    } catch (error) {
-      console.error('Erreur lors de l\'émission WebSocket:', error);
-    }
+    // Émettre via WebSocket
+    const wsService = getChatWebSocketService();
+    wsService.emitMessageUpdated(formattedMessage);
 
     return formattedMessage;
   }
@@ -792,83 +275,79 @@ export class ChatService {
     userId: string,
     userRole: string
   ): Promise<void> {
+    // Vérifier que le message existe
     const message = await prisma.chatMessage.findUnique({
       where: { id: messageId },
-      include: {
-        channel: {
-          include: {
-            members: {
-              where: { userId: userId, leftAt: null }
-            }
-          }
-        }
-      }
     });
 
     if (!message) {
       throw new ValidationError('Message non trouvé');
     }
 
-    const member = message.channel.members[0];
-    const canDelete = userRole === 'ADMINISTRATEUR' ||
-                     message.authorId === userId ||
-                     member?.role === ChannelMemberRole.OWNER ||
-                     member?.role === ChannelMemberRole.ADMIN ||
-                     member?.role === ChannelMemberRole.MODERATOR;
-
-    if (!canDelete) {
-      throw new AuthError('Permissions insuffisantes');
+    if (message.isDeleted) {
+      throw new ValidationError('Message déjà supprimé');
     }
 
+    // Vérifier les permissions: auteur ou administrateur
+    const canDelete = message.authorId === userId || userRole === 'ADMINISTRATEUR';
+
+    if (!canDelete) {
+      throw new AuthError('Vous n\'avez pas les permissions pour supprimer ce message');
+    }
+
+    // Soft delete
     await prisma.chatMessage.update({
       where: { id: messageId },
       data: {
         isDeleted: true,
         deletedAt: new Date(),
-        deletedBy: userId
       }
     });
 
-    // Émettre la suppression via WebSocket
-    try {
-      const wsService = getChatWebSocketService();
-      wsService.emitMessageDeleted(message.channelId, messageId);
-    } catch (error) {
-      console.error('Erreur lors de l\'émission WebSocket:', error);
-    }
+    // Émettre via WebSocket
+    const wsService = getChatWebSocketService();
+    wsService.emitMessageDeleted(messageId);
   }
+
+  // =============================================
+  // RÉACTIONS
+  // =============================================
 
   // Ajouter une réaction
   async addReaction(
     messageId: string,
-    emoji: string,
+    data: AddReactionRequest,
     userId: string
   ): Promise<void> {
+    // Vérifier que le message existe
     const message = await prisma.chatMessage.findUnique({
-      where: { id: messageId },
-      include: {
-        channel: true
-      }
+      where: { id: messageId }
     });
 
     if (!message || message.isDeleted) {
       throw new ValidationError('Message non trouvé');
     }
 
-    const reaction = await prisma.messageReaction.upsert({
+    // Ajouter ou mettre à jour la réaction (upsert pour éviter les doublons)
+    await prisma.messageReaction.upsert({
       where: {
         messageId_userId_emoji: {
           messageId,
           userId,
-          emoji
+          emoji: data.emoji
         }
       },
       create: {
         messageId,
         userId,
-        emoji
+        emoji: data.emoji
       },
-      update: {},
+      update: {} // Pas de changement si existe déjà
+    });
+
+    // Récupérer les réactions mises à jour
+    const reactions = await prisma.messageReaction.findMany({
+      where: { messageId },
       include: {
         user: {
           select: {
@@ -877,377 +356,89 @@ export class ChatService {
             lastName: true,
             email: true,
             role: true,
-            profileImage: true
+            profileImage: true,
           }
         }
       }
     });
 
-    // Émettre la réaction via WebSocket
-    try {
-      const wsService = getChatWebSocketService();
-      wsService.emitReactionAdded(message.channelId, messageId, reaction);
-    } catch (error) {
-      console.error('Erreur lors de l\'émission WebSocket:', error);
-    }
+    // Grouper les réactions par emoji
+    const groupedReactions = this.groupReactions(reactions, userId);
+
+    // Émettre via WebSocket
+    const wsService = getChatWebSocketService();
+    wsService.emitReactionAdded(messageId, {
+      emoji: data.emoji,
+      userId,
+      reactions: groupedReactions
+    });
   }
 
   // Retirer une réaction
   async removeReaction(
     messageId: string,
-    emoji: string,
+    data: AddReactionRequest,
     userId: string
   ): Promise<void> {
+    // Vérifier que le message existe
     const message = await prisma.chatMessage.findUnique({
-      where: { id: messageId },
-      select: { channelId: true }
+      where: { id: messageId }
     });
 
-    if (!message) {
+    if (!message || message.isDeleted) {
       throw new ValidationError('Message non trouvé');
     }
 
+    // Supprimer la réaction
     await prisma.messageReaction.deleteMany({
       where: {
         messageId,
         userId,
-        emoji
+        emoji: data.emoji
       }
     });
 
-    // Émettre le retrait de réaction via WebSocket
-    try {
-      const wsService = getChatWebSocketService();
-      wsService.emitReactionRemoved(message.channelId, messageId, { emoji, userId });
-    } catch (error) {
-      console.error('Erreur lors de l\'émission WebSocket:', error);
-    }
-  }
-
-  // =============================================
-  // STATISTIQUES ET MESSAGES NON LUS
-  // =============================================
-
-  // Obtenir les statistiques des canaux
-  async getChannelStats(
-    userId: string,
-    userRole: string
-  ): Promise<ChannelStatsResponse> {
-    const whereClause = this.buildAccessWhere(userId, userRole);
-
-    const [
-      totalChannels,
-      channelsByType,
-      totalMessages,
-      totalMembers,
-      activeChannels,
-      mostActive
-    ] = await Promise.all([
-      prisma.channel.count({ where: whereClause }),
-
-      prisma.channel.groupBy({
-        by: ['type'],
-        where: whereClause,
-        _count: true
-      }),
-
-      prisma.chatMessage.count({
-        where: {
-          channel: whereClause,
-          isDeleted: false
-        }
-      }),
-
-      prisma.channelMember.count({
-        where: {
-          channel: whereClause,
-          leftAt: null
-        }
-      }),
-
-      prisma.channel.count({
-        where: {
-          ...whereClause,
-          isArchived: false
-        }
-      }),
-
-      prisma.channel.findMany({
-        where: whereClause,
-        include: {
-          _count: {
-            select: { messages: true }
-          }
-        },
-        orderBy: {
-          messages: {
-            _count: 'desc'
-          }
-        },
-        take: 5
-      })
-    ]);
-
-    const byType: any = {
-      GENERAL: 0,
-      PROJECT: 0,
-      THEME: 0,
-      PRIVATE: 0,
-      ANNOUNCEMENT: 0
-    };
-
-    channelsByType.forEach((item: any) => {
-      byType[item.type] = item._count;
-    });
-
-    return {
-      totalChannels,
-      byType,
-      totalMessages,
-      totalMembers,
-      activeChannels,
-      mostActiveChannels: mostActive.map(ch => ({
-        channelId: ch.id,
-        channelName: ch.name,
-        messageCount: ch._count.messages
-      }))
-    };
-  }
-
-  // Obtenir les messages non lus
-  async getUnreadMessages(userId: string): Promise<UnreadMessagesResponse> {
-    const memberships = await prisma.channelMember.findMany({
-      where: {
-        userId,
-        leftAt: null
-      },
+    // Récupérer les réactions mises à jour
+    const reactions = await prisma.messageReaction.findMany({
+      where: { messageId },
       include: {
-        channel: {
-          include: {
-            messages: {
-              where: {
-                isDeleted: false
-              },
-              orderBy: { createdAt: 'desc' },
-              take: 1,
-              include: this.getMessageIncludes()
-            }
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+            profileImage: true,
           }
         }
       }
     });
-
-    const byChannel = await Promise.all(
-      memberships.map(async (membership) => {
-        const unreadCount = await prisma.chatMessage.count({
-          where: {
-            channelId: membership.channelId,
-            isDeleted: false,
-            createdAt: membership.lastReadAt
-              ? { gt: membership.lastReadAt }
-              : undefined
-          }
-        });
-
-        return {
-          channelId: membership.channelId,
-          channelName: membership.channel.name,
-          unreadCount,
-          lastMessage: membership.channel.messages[0]
-            ? this.formatMessageResponse(membership.channel.messages[0], userId)
-            : undefined
-        };
-      })
-    );
-
-    const totalUnread = byChannel.reduce((sum, ch) => sum + ch.unreadCount, 0);
-
-    return {
-      totalUnread,
-      byChannel: byChannel.filter(ch => ch.unreadCount > 0)
-    };
-  }
-
-  // =============================================
-  // MÉTHODES UTILITAIRES PRIVÉES
-  // =============================================
-
-  private async checkChannelAccess(channel: any, userId: string, userRole: string): Promise<void> {
-    if (userRole === 'ADMINISTRATEUR') {
-      return;
-    }
-
-    if (channel.isPrivate) {
-      const member = await prisma.channelMember.findFirst({
-        where: {
-          channelId: channel.id,
-          userId,
-          leftAt: null
-        }
-      });
-
-      if (!member) {
-        throw new AuthError('Accès refusé à ce canal privé');
-      }
-    }
-  }
-
-  private buildAccessWhere(userId: string, userRole: string): any {
-    if (userRole === 'ADMINISTRATEUR') {
-      return {};
-    }
-
-    return {
-      OR: [
-        { isPrivate: false },
-        {
-          members: {
-            some: {
-              userId,
-              leftAt: null
-            }
-          }
-        }
-      ]
-    };
-  }
-
-  private getChannelIncludes() {
-    return {
-      creator: {
-        select: this.getUserSelect()
-      },
-      members: {
-        where: { leftAt: null },
-        include: {
-          user: {
-            select: this.getUserSelect()
-          }
-        }
-      },
-      messages: {
-        where: { isDeleted: false },
-        orderBy: { createdAt: 'desc' as const },
-        take: 1,
-        include: this.getMessageIncludes()
-      }
-    };
-  }
-
-  private getMessageIncludes() {
-    return {
-      author: {
-        select: this.getUserSelect()
-      },
-      mentions: {
-        include: {
-          user: {
-            select: this.getUserSelect()
-          }
-        }
-      },
-      reactions: {
-        include: {
-          user: {
-            select: this.getUserSelect()
-          }
-        }
-      },
-      _count: {
-        select: { replies: true }
-      }
-    };
-  }
-
-  private getUserSelect() {
-    return {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      role: true,
-      profileImage: true
-    };
-  }
-
-  private async formatChannelResponse(channel: any, userId: string): Promise<ChannelResponse> {
-    const memberCount = channel.members?.length || await prisma.channelMember.count({
-      where: {
-        channelId: channel.id,
-        leftAt: null
-      }
-    });
-
-    const currentMember = channel.members?.find((m: any) => m.userId === userId);
-
-    let unreadCount = 0;
-    if (currentMember) {
-      unreadCount = await prisma.chatMessage.count({
-        where: {
-          channelId: channel.id,
-          isDeleted: false,
-          createdAt: currentMember.lastReadAt
-            ? { gt: currentMember.lastReadAt }
-            : undefined
-        }
-      });
-    }
-
-    return {
-      id: channel.id,
-      name: channel.name,
-      description: channel.description,
-      type: channel.type,
-      isPrivate: channel.isPrivate,
-      isArchived: channel.isArchived,
-      icon: channel.icon,
-      color: channel.color,
-      projectId: channel.projectId,
-      themeId: channel.themeId,
-      creator: channel.creator,
-      createdAt: channel.createdAt,
-      updatedAt: channel.updatedAt,
-      memberCount,
-      unreadCount,
-      lastMessage: channel.messages?.[0]
-        ? this.formatMessageResponse(channel.messages[0], userId)
-        : null,
-      currentUserRole: currentMember?.role,
-      currentUserIsMember: !!currentMember
-    };
-  }
-
-  private formatMessageResponse(message: any, userId: string): MessageResponse {
-    const canEdit = message.authorId === userId;
-    const canDelete = message.authorId === userId;
 
     // Grouper les réactions par emoji
-    const reactionsByEmoji: Map<string, MessageReactionResponse> = new Map();
+    const groupedReactions = this.groupReactions(reactions, userId);
 
-    if (message.reactions) {
-      message.reactions.forEach((reaction: any) => {
-        if (!reactionsByEmoji.has(reaction.emoji)) {
-          reactionsByEmoji.set(reaction.emoji, {
-            emoji: reaction.emoji,
-            count: 0,
-            users: [],
-            currentUserReacted: false
-          });
-        }
+    // Émettre via WebSocket
+    const wsService = getChatWebSocketService();
+    wsService.emitReactionRemoved(messageId, {
+      emoji: data.emoji,
+      userId,
+      reactions: groupedReactions
+    });
+  }
 
-        const reactionData = reactionsByEmoji.get(reaction.emoji)!;
-        reactionData.count++;
-        reactionData.users.push(reaction.user);
-        if (reaction.userId === userId) {
-          reactionData.currentUserReacted = true;
-        }
-      });
-    }
+  // =============================================
+  // MÉTHODES PRIVÉES
+  // =============================================
+
+  // Formater un message pour la réponse
+  private formatMessageResponse(message: any, currentUserId: string): MessageResponse {
+    // Grouper les réactions par emoji
+    const groupedReactions = this.groupReactions(message.reactions || [], currentUserId);
 
     return {
       id: message.id,
       content: message.content,
-      type: message.type,
       isEdited: message.isEdited,
       editedAt: message.editedAt,
       isDeleted: message.isDeleted,
@@ -1256,29 +447,59 @@ export class ChatService {
       fileName: message.fileName,
       fileSize: message.fileSize,
       fileMimeType: message.fileMimeType,
-      author: message.author,
-      channelId: message.channelId,
-      parentMessageId: message.parentMessageId,
-      mentions: message.mentions?.map((m: any) => m.user) || [],
-      reactions: Array.from(reactionsByEmoji.values()),
-      replyCount: message._count?.replies || 0,
-      canEdit,
-      canDelete,
+      author: this.formatUserBasicInfo(message.author),
+      reactions: groupedReactions,
+      canEdit: message.authorId === currentUserId,
+      canDelete: message.authorId === currentUserId,
       createdAt: message.createdAt,
-      updatedAt: message.updatedAt
+      updatedAt: message.updatedAt,
     };
   }
 
-  private formatChannelMemberResponse(member: any): ChannelMemberResponse {
+  // Grouper les réactions par emoji
+  private groupReactions(reactions: any[], currentUserId: string): MessageReactionResponse[] {
+    const grouped = new Map<string, { users: UserBasicInfo[], currentUserReacted: boolean }>();
+
+    reactions.forEach(reaction => {
+      if (!grouped.has(reaction.emoji)) {
+        grouped.set(reaction.emoji, { users: [], currentUserReacted: false });
+      }
+
+      const group = grouped.get(reaction.emoji)!;
+      group.users.push(this.formatUserBasicInfo(reaction.user));
+
+      if (reaction.userId === currentUserId) {
+        group.currentUserReacted = true;
+      }
+    });
+
+    return Array.from(grouped.entries()).map(([emoji, data]) => ({
+      emoji,
+      count: data.users.length,
+      users: data.users,
+      currentUserReacted: data.currentUserReacted
+    }));
+  }
+
+  // Formater les informations basiques d'un utilisateur
+  private formatUserBasicInfo(user: any): UserBasicInfo {
     return {
-      id: member.id,
-      role: member.role,
-      isMuted: member.isMuted,
-      lastReadAt: member.lastReadAt,
-      lastReadMessageId: member.lastReadMessageId,
-      notificationsEnabled: member.notificationsEnabled,
-      joinedAt: member.joinedAt,
-      user: member.user
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      profileImage: user.profileImage
     };
   }
 }
+
+// Singleton pattern
+let chatServiceInstance: ChatService | null = null;
+
+export const getChatService = (): ChatService => {
+  if (!chatServiceInstance) {
+    chatServiceInstance = new ChatService();
+  }
+  return chatServiceInstance;
+};

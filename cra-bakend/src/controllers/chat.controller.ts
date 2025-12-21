@@ -1,237 +1,11 @@
 // src/controllers/chat.controller.ts
 import { Request, Response, NextFunction } from 'express';
-import { ChatService } from '../services/chat.service';
+import { getChatService } from '../services/chat.service';
 import { AuthenticatedRequest } from '../types/auth.types';
 
-const chatService = new ChatService();
+const chatService = getChatService();
 
 export class ChatController {
-
-  // =============================================
-  // CANAUX
-  // =============================================
-
-  // Créer un canal
-  createChannel = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-
-      const channel = await chatService.createChannel(req.body, userId, userRole);
-
-      res.status(201).json({
-        success: true,
-        message: 'Canal créé avec succès',
-        data: channel,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Lister les canaux
-  listChannels = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-
-      const result = await chatService.listChannels(userId, userRole, req.query);
-
-      res.status(200).json({
-        success: true,
-        data: result.channels,
-        pagination: result.pagination,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Obtenir un canal par ID
-  getChannelById = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const { channelId } = req.params;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-
-      const channel = await chatService.getChannelById(channelId, userId, userRole);
-
-      res.status(200).json({
-        success: true,
-        data: channel,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Mettre à jour un canal
-  updateChannel = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const { channelId } = req.params;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-
-      const channel = await chatService.updateChannel(channelId, req.body, userId, userRole);
-
-      res.status(200).json({
-        success: true,
-        message: 'Canal mis à jour avec succès',
-        data: channel,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Supprimer un canal
-  deleteChannel = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const { channelId } = req.params;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-
-      await chatService.deleteChannel(channelId, userId, userRole);
-
-      res.status(200).json({
-        success: true,
-        message: 'Canal supprimé avec succès',
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // =============================================
-  // MEMBRES
-  // =============================================
-
-  // Ajouter des membres à un canal
-  addMembers = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const { channelId } = req.params;
-      const userId = authenticatedReq.user.userId;
-      const { userIds, role } = req.body;
-
-      const members = await chatService.addMembersToChannel(channelId, userIds, userId, role);
-
-      res.status(200).json({
-        success: true,
-        message: 'Membres ajoutés avec succès',
-        data: members,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Retirer un membre
-  removeMember = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const { channelId, userId: userIdToRemove } = req.params;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-
-      await chatService.removeMemberFromChannel(channelId, userIdToRemove, userId, userRole);
-
-      res.status(200).json({
-        success: true,
-        message: 'Membre retiré avec succès',
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Mettre à jour le rôle d'un membre
-  updateMemberRole = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const { channelId, userId: userIdToUpdate } = req.params;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-      const { role } = req.body;
-
-      const member = await chatService.updateMemberRole(
-        channelId,
-        userIdToUpdate,
-        role,
-        userId,
-        userRole
-      );
-
-      res.status(200).json({
-        success: true,
-        message: 'Rôle mis à jour avec succès',
-        data: member,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Lister les membres d'un canal
-  listMembers = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const { channelId } = req.params;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-
-      const members = await chatService.getChannelMembers(channelId, userId, userRole);
-
-      res.status(200).json({
-        success: true,
-        data: members,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Quitter un canal
-  leaveChannel = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const { channelId } = req.params;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-
-      await chatService.removeMemberFromChannel(channelId, userId, userId, userRole);
-
-      res.status(200).json({
-        success: true,
-        message: 'Vous avez quitté le canal',
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Marquer comme lu
-  markAsRead = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const { channelId } = req.params;
-      const userId = authenticatedReq.user.userId;
-
-      await chatService.markChannelAsRead(channelId, userId);
-
-      res.status(200).json({
-        success: true,
-        message: 'Canal marqué comme lu',
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
 
   // =============================================
   // MESSAGES
@@ -241,11 +15,10 @@ export class ChatController {
   sendMessage = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
-      const { channelId } = req.params;
       const userId = authenticatedReq.user.userId;
       const userRole = authenticatedReq.user.role;
 
-      const message = await chatService.sendMessage(channelId, req.body, userId, userRole);
+      const message = await chatService.sendMessage(req.body, userId, userRole);
 
       res.status(201).json({
         success: true,
@@ -257,15 +30,14 @@ export class ChatController {
     }
   };
 
-  // Lister les messages d'un canal
+  // Lister les messages
   listMessages = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
-      const { channelId } = req.params;
       const userId = authenticatedReq.user.userId;
       const userRole = authenticatedReq.user.role;
 
-      const result = await chatService.listMessages(channelId, userId, userRole, req.query);
+      const result = await chatService.listMessages(req.query, userId, userRole);
 
       res.status(200).json({
         success: true,
@@ -316,19 +88,22 @@ export class ChatController {
     }
   };
 
+  // =============================================
+  // RÉACTIONS
+  // =============================================
+
   // Ajouter une réaction
   addReaction = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authenticatedReq = req as AuthenticatedRequest;
       const { messageId } = req.params;
       const userId = authenticatedReq.user.userId;
-      const { emoji } = req.body;
 
-      await chatService.addReaction(messageId, emoji, userId);
+      await chatService.addReaction(messageId, req.body, userId);
 
       res.status(200).json({
         success: true,
-        message: 'Réaction ajoutée',
+        message: 'Réaction ajoutée avec succès',
       });
     } catch (error) {
       next(error);
@@ -341,13 +116,12 @@ export class ChatController {
       const authenticatedReq = req as AuthenticatedRequest;
       const { messageId } = req.params;
       const userId = authenticatedReq.user.userId;
-      const { emoji } = req.body;
 
-      await chatService.removeReaction(messageId, emoji, userId);
+      await chatService.removeReaction(messageId, req.body, userId);
 
       res.status(200).json({
         success: true,
-        message: 'Réaction retirée',
+        message: 'Réaction retirée avec succès',
       });
     } catch (error) {
       next(error);
@@ -355,72 +129,38 @@ export class ChatController {
   };
 
   // =============================================
-  // UPLOAD DE FICHIERS
+  // UPLOAD
   // =============================================
 
-  // Uploader un fichier
+  // Upload de fichier
   uploadFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.file) {
         return res.status(400).json({
           success: false,
-          message: 'Aucun fichier fourni'
+          message: 'Aucun fichier fourni',
         });
       }
 
-      // Retourner les informations du fichier
-      const fileUrl = `/uploads/chat/${req.file.filename}`;
+      // Construire l'URL du fichier
+      const baseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 3001}`;
+      const fileUrl = `${baseUrl}/${req.file.path.replace(/\\/g, '/')}`;
 
       res.status(200).json({
         success: true,
+        message: 'Fichier uploadé avec succès',
         data: {
           url: fileUrl,
-          filename: req.file.originalname,
+          filename: req.file.filename,
           size: req.file.size,
-          mimeType: req.file.mimetype
-        }
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // =============================================
-  // STATISTIQUES
-  // =============================================
-
-  // Obtenir les statistiques
-  getStats = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const userId = authenticatedReq.user.userId;
-      const userRole = authenticatedReq.user.role;
-
-      const stats = await chatService.getChannelStats(userId, userRole);
-
-      res.status(200).json({
-        success: true,
-        data: stats,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Obtenir les messages non lus
-  getUnreadMessages = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const authenticatedReq = req as AuthenticatedRequest;
-      const userId = authenticatedReq.user.userId;
-
-      const unread = await chatService.getUnreadMessages(userId);
-
-      res.status(200).json({
-        success: true,
-        data: unread,
+          mimeType: req.file.mimetype,
+        },
       });
     } catch (error) {
       next(error);
     }
   };
 }
+
+// Export d'une instance unique
+export const chatController = new ChatController();

@@ -118,71 +118,6 @@ export class NotificationService {
     }
   }
 
-  /**
-   * Notification pour un nouveau message dans un canal
-   */
-  async notifyNewChatMessage(
-    channelId: string,
-    channelName: string,
-    messageId: string,
-    authorId: string,
-    mentionedUserIds?: string[]
-  ) {
-    try {
-      const author = await prisma.user.findUnique({
-        where: { id: authorId },
-        select: { firstName: true, lastName: true }
-      });
-
-      if (!author) return;
-
-      // Obtenir tous les membres du canal sauf l'auteur
-      const channelMembers = await prisma.channelMember.findMany({
-        where: {
-          channelId,
-          userId: { not: authorId },
-          leftAt: null,
-          notificationsEnabled: true
-        },
-        select: { userId: true }
-      });
-
-      // Créer des notifications pour tous les membres
-      const notificationPromises = channelMembers.map(member =>
-        this.createNotification({
-          receiverId: member.userId,
-          senderId: authorId,
-          title: 'Nouveau message',
-          message: `${author.firstName} ${author.lastName} a envoyé un message dans #${channelName}`,
-          type: NotificationType.CHAT_MESSAGE,
-          actionUrl: `/chercheur/chat?channel=${channelId}`,
-          entityType: 'chat_message',
-          entityId: messageId
-        })
-      );
-
-      // Créer des notifications spéciales pour les mentions
-      if (mentionedUserIds && mentionedUserIds.length > 0) {
-        const mentionPromises = mentionedUserIds.map(userId =>
-          this.createNotification({
-            receiverId: userId,
-            senderId: authorId,
-            title: 'Vous avez été mentionné',
-            message: `${author.firstName} ${author.lastName} vous a mentionné dans #${channelName}`,
-            type: NotificationType.CHAT_MENTION,
-            actionUrl: `/chercheur/chat?channel=${channelId}&message=${messageId}`,
-            entityType: 'chat_message',
-            entityId: messageId
-          })
-        );
-        notificationPromises.push(...mentionPromises);
-      }
-
-      await Promise.allSettled(notificationPromises);
-    } catch (error) {
-      console.error('Erreur lors de la notification de nouveau message:', error);
-    }
-  }
 
   /**
    * Notification pour un document partagé
@@ -248,6 +183,76 @@ export class NotificationService {
       });
     } catch (error) {
       console.error('Erreur lors de la notification d\'ajout à l\'activité:', error);
+    }
+  }
+
+  /**
+   * Notification pour un nouveau message dans le chat
+   */
+  async notifyChatMessage(
+    messageId: string,
+    messageContent: string,
+    senderId: string,
+    hasFile: boolean = false
+  ) {
+    try {
+      // Récupérer l'expéditeur
+      const sender = await prisma.user.findUnique({
+        where: { id: senderId },
+        select: {
+          firstName: true,
+          lastName: true,
+          role: true
+        }
+      });
+
+      if (!sender) return;
+
+      // Récupérer tous les utilisateurs actifs sauf l'expéditeur
+      const allUsers = await prisma.user.findMany({
+        where: {
+          id: { not: senderId },
+          isActive: true
+        },
+        select: { id: true }
+      });
+
+      // Tronquer le message s'il est trop long
+      const truncatedContent = messageContent.length > 100
+        ? messageContent.substring(0, 100) + '...'
+        : messageContent;
+
+      // Déterminer le message de notification
+      let notificationMessage: string;
+      if (hasFile && !messageContent.trim()) {
+        notificationMessage = `${sender.firstName} ${sender.lastName} a partagé un fichier`;
+      } else if (hasFile && messageContent.trim()) {
+        notificationMessage = `${sender.firstName} ${sender.lastName} a envoyé un fichier: ${truncatedContent}`;
+      } else {
+        notificationMessage = `${sender.firstName} ${sender.lastName}: ${truncatedContent}`;
+      }
+
+      // Créer une notification pour chaque utilisateur
+      const notificationPromises = allUsers.map(user =>
+        this.createNotification({
+          receiverId: user.id,
+          senderId: senderId,
+          title: 'Nouveau message',
+          message: notificationMessage,
+          type: NotificationType.CHAT_MESSAGE,
+          actionUrl: '/chat',
+          entityType: 'chat_message',
+          entityId: messageId
+        }).catch(error => {
+          console.error(`Erreur lors de la création de notification pour l'utilisateur ${user.id}:`, error);
+        })
+      );
+
+      await Promise.all(notificationPromises);
+
+      console.log(`✅ Notifications envoyées à ${allUsers.length} utilisateurs pour le message ${messageId}`);
+    } catch (error) {
+      console.error('Erreur lors de la notification de message chat:', error);
     }
   }
 

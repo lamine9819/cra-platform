@@ -84,9 +84,10 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
       // Si l'URL ne commence pas déjà par un rôle (chercheur, coordonateur, admin)
       if (!finalUrl.match(/^\/(chercheur|coordonateur|admin)\//)) {
         // Mapper le rôle vers le préfixe de route correct
+        // Note: COORDONATEUR_PROJET utilise aussi les routes /chercheur/ (même layout)
         const roleToPrefix: Record<string, string> = {
           'CHERCHEUR': 'chercheur',
-          'COORDONATEUR_PROJET': 'coordonateur',
+          'COORDONATEUR_PROJET': 'chercheur', // Même layout que chercheur
           'ADMINISTRATEUR': 'admin'
         };
         const rolePrefix = roleToPrefix[user?.role || 'CHERCHEUR'] || 'chercheur';
@@ -295,7 +296,10 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
                     <button
                       onClick={() => {
                         setIsNotificationOpen(false);
-                        navigate(`/${user?.role?.toLowerCase().replace('_', '-')}/notifications`);
+                        // COORDONATEUR_PROJET utilise aussi /chercheur/ (même layout)
+                        const rolePrefix = user?.role === 'COORDONATEUR_PROJET' ? 'chercheur' :
+                                          user?.role?.toLowerCase().replace('_', '-') || 'chercheur';
+                        navigate(`/${rolePrefix}/notifications`);
                       }}
                       className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                     >
@@ -366,7 +370,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
                 
                 <div className="py-2">
                   <Link
-                    to={`/${user?.role?.toLowerCase().replace('_', '-')}/profile`}
+                    to={`/${user?.role === 'COORDONATEUR_PROJET' ? 'chercheur' : user?.role?.toLowerCase().replace('_', '-') || 'chercheur'}/profile`}
                     className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                     onClick={() => setIsProfileDropdownOpen(false)}
                   >
@@ -374,7 +378,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
                     Mon profil
                   </Link>
                   <Link
-                    to={`/${user?.role?.toLowerCase().replace('_', '-')}/settings`}
+                    to={`/${user?.role === 'COORDONATEUR_PROJET' ? 'chercheur' : user?.role?.toLowerCase().replace('_', '-') || 'chercheur'}/settings`}
                     className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                     onClick={() => setIsProfileDropdownOpen(false)}
                   >

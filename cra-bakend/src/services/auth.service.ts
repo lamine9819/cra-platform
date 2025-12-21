@@ -4,7 +4,6 @@ import { hashPassword, comparePassword } from '../utils/bcrypt';
 import { generateToken } from '../config/jwt';
 import { AuthError, ValidationError } from '../utils/errors';
 import { RegisterRequest, LoginRequest, ChangePasswordRequest } from '../types/auth.types';
-import { addUserToGeneralChannel } from '../utils/channelHelper';
 
 const prisma = new PrismaClient();
 
@@ -39,9 +38,6 @@ export class AuthService {
         createdAt: true,
       }
     });
-
-    // Ajouter automatiquement l'utilisateur au canal général
-    await addUserToGeneralChannel(user.id);
 
     // Générer le token JWT
     const token = generateToken({
