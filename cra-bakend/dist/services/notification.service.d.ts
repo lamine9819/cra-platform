@@ -32,11 +32,11 @@ export declare class NotificationService {
             profileImage: string;
         };
     } & {
-        id: string;
         type: string;
+        message: string;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
-        message: string;
         title: string;
         isRead: boolean;
         readAt: Date | null;
@@ -51,10 +51,6 @@ export declare class NotificationService {
      */
     notifyProjectAddition(projectId: string, projectTitle: string, addedUserId: string, addedByUserId: string): Promise<void>;
     /**
-     * Notification pour un nouveau message dans un canal
-     */
-    notifyNewChatMessage(channelId: string, channelName: string, messageId: string, authorId: string, mentionedUserIds?: string[]): Promise<void>;
-    /**
      * Notification pour un document partagé
      */
     notifyDocumentShare(documentId: string, documentTitle: string, sharedWithUserId: string, sharedByUserId: string, canEdit: boolean): Promise<void>;
@@ -62,6 +58,10 @@ export declare class NotificationService {
      * Notification quand un chercheur est ajouté à une activité
      */
     notifyActivityAddition(activityId: string, activityTitle: string, addedUserId: string, addedByUserId: string): Promise<void>;
+    /**
+     * Notification pour un nouveau message dans le chat
+     */
+    notifyChatMessage(messageId: string, messageContent: string, senderId: string, hasFile?: boolean): Promise<void>;
     listUserNotifications(userId: string, query: NotificationListQuery): Promise<{
         notifications: NotificationResponse[];
         pagination: {

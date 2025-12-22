@@ -5,7 +5,7 @@
 // src/pages/auth/LoginPage.tsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Eye, EyeOff, Globe, ArrowLeft, Leaf, Microscope, Shield, Users, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Globe, ArrowLeft, Shield, Users, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { authService } from '../../services/auth.service';
 import toast from 'react-hot-toast';
@@ -94,19 +94,11 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen flex">
       {/* Partie gauche - Formulaire de connexion */}
       <div className="flex-1 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-6 relative">
-        {/* Éléments décoratifs flottants pour la partie gauche */}
-        <div className="absolute top-20 left-20 opacity-10">
-          <div className="w-32 h-32 bg-green-400 rounded-full animate-pulse"></div>
-        </div>
-        <div className="absolute bottom-20 right-20 opacity-10">
-          <div className="w-24 h-24 bg-blue-400 rounded-full animate-bounce"></div>
-        </div>
-
         <div className="max-w-md w-full relative z-10">
           {/* Retour à l'accueil */}
           <div className="mb-8">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="inline-flex items-center text-green-400 hover:text-green-300 transition-colors group"
             >
               <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
@@ -114,11 +106,10 @@ const LoginPage: React.FC = () => {
             </Link>
           </div>
 
-          {/* Header */}
+          {/* Header simplifié */}
           <div className="mb-8">
-            <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-green-700 rounded-xl flex items-center justify-center mb-6">
-              <Globe className="w-8 h-8 text-white" />
-            </div>
+            <h1 className="text-3xl font-bold text-white mb-2">Connexion</h1>
+            <p className="text-gray-400">Accédez à votre espace CRA</p>
           </div>
 
           {/* Affichage des erreurs */}
@@ -256,85 +247,64 @@ const LoginPage: React.FC = () => {
               </span>
             </div>
           </div>
-
-          {/* Footer */}
-          <div className="mt-8 text-center text-xs text-gray-500">
-            <p>© CRA 2025</p>
-          </div>
         </div>
       </div>
 
       {/* Partie droite - Image et message */}
-      <div className="flex-1 bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center p-6 relative overflow-hidden">
-        {/* Éléments décoratifs pour la partie droite */}
-        <div className="absolute top-20 right-20 opacity-20">
-          <Leaf className="w-24 h-24 text-white animate-pulse" />
-        </div>
-        <div className="absolute bottom-20 left-20 opacity-20">
-          <Microscope className="w-20 h-20 text-white animate-bounce" />
-        </div>
-        
-        {/* Orbites et satellite décoratifs */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative">
-            {/* Orbites */}
-            <div className="absolute w-96 h-96 border border-white/20 rounded-full animate-spin" style={{animationDuration: '20s'}}></div>
-            <div className="absolute w-80 h-80 border border-white/20 rounded-full animate-spin" style={{animationDuration: '15s', animationDirection: 'reverse'}}></div>
-            <div className="absolute w-64 h-64 border border-white/20 rounded-full animate-spin" style={{animationDuration: '10s'}}></div>
-            
-            {/* Points satellites */}
-            <div className="absolute w-4 h-4 bg-white rounded-full top-0 left-1/2 transform -translate-x-2 animate-pulse"></div>
-            <div className="absolute w-3 h-3 bg-white/80 rounded-full bottom-4 right-1/3 transform animate-pulse" style={{animationDelay: '1s'}}></div>
-            <div className="absolute w-3 h-3 bg-white/80 rounded-full top-1/3 right-0 transform animate-pulse" style={{animationDelay: '2s'}}></div>
-            
-            {/* Icône satellite central */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                <Globe className="w-8 h-8 text-white" />
-              </div>
-            </div>
-          </div>
+      <div className="flex-1 flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Image de fond */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/industries-4.jpg)',
+          }}
+        >
+          {/* Overlay sombre pour améliorer la lisibilité du texte */}
+          <div className="absolute inset-0 bg-black/50"></div>
         </div>
 
         {/* Contenu principal de la partie droite */}
-        <div className="relative z-10 text-center text-white max-w-md">
-          <h2 className="text-4xl font-bold mb-6 leading-tight">
-            CRA Platform, proche de vous pour des données fiables et mesurables
-          </h2>
-          
-          {/* Vous pouvez remplacer cette section par votre propre image */}
-          <div className="mt-8 p-8 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/20">
-            <div className="w-32 h-32 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
-              {/* Remplacez cette icône par votre image */}
-              <Microscope className="w-16 h-16 text-white" />
-            </div>
-            <p className="text-lg font-medium mb-2">Centre de Recherches Agricoles</p>
-            <p className="text-white/80">Saint-Louis, Sénégal</p>
+        <div className="relative z-10 w-full h-full flex flex-col items-center justify-start pt-20 px-6">
+          {/* Titre principal avec style artistique */}
+          <div className="text-center mb-12">
+            <h2 className="text-5xl md:text-6xl font-extrabold leading-tight mb-4" style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif",
+              textShadow: '0 4px 20px rgba(0,0,0,0.5), 0 2px 10px rgba(0,0,0,0.3)',
+              letterSpacing: '-0.02em'
+            }}>
+              <span className="block bg-gradient-to-r from-white via-green-50 to-white bg-clip-text text-transparent">
+                CRA Plateforme
+              </span>
+            </h2>
+            <p className="text-xl md:text-2xl text-white/95 font-light italic" style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif",
+              textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+              letterSpacing: '0.02em'
+            }}>
+              Proche de vous pour mieux vous servir
+            </p>
           </div>
 
-          {/* Indicateurs de fonctionnalités */}
-          <div className="mt-8 flex justify-center space-x-6 text-sm">
-            <div className="flex items-center">
-              <Shield className="w-4 h-4 mr-2" />
-              <span>Sécurisé</span>
-            </div>
-            <div className="flex items-center">
-              <Users className="w-4 h-4 mr-2" />
-              <span>Collaboratif</span>
-            </div>
-            <div className="flex items-center">
-              <Globe className="w-4 h-4 mr-2" />
-              <span>Accessible</span>
-            </div>
-          </div>
-        </div>
+          {/* Carte d'information */}
+          <div className="mt-auto mb-20 p-8 bg-white/10 rounded-2xl backdrop-blur-md border border-white/20 max-w-md">
+            <p className="text-lg font-medium mb-2 text-white">Centre de Recherches Agricoles</p>
+            <p className="text-white/90">Saint-Louis, Sénégal</p>
 
-        {/* Effet de grille décorative */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="grid grid-cols-12 grid-rows-8 h-full w-full">
-            {Array.from({ length: 96 }).map((_, i) => (
-              <div key={i} className="border border-white"></div>
-            ))}
+            {/* Indicateurs de fonctionnalités */}
+            <div className="mt-6 flex justify-center space-x-6 text-sm text-white/90">
+              <div className="flex items-center">
+                <Shield className="w-4 h-4 mr-2" />
+                <span>Sécurisé</span>
+              </div>
+              <div className="flex items-center">
+                <Users className="w-4 h-4 mr-2" />
+                <span>Collaboratif</span>
+              </div>
+              <div className="flex items-center">
+                <Globe className="w-4 h-4 mr-2" />
+                <span>Accessible</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -13,7 +13,7 @@ router.use(auth_1.authenticate);
 // ROUTES PRINCIPALES DE GESTION DES PROJETS
 // =============================================
 // Créer un projet (Chercheur ou Admin)
-router.post('/', (0, authorization_1.authorize)(['CHERCHEUR', 'ADMINISTRATEUR']), projectController.createProject);
+router.post('/', (0, authorization_1.authorize)(['CHERCHEUR', 'COORDONATEUR_PROJET', 'ADMINISTRATEUR']), projectController.createProject);
 // Lister les projets accessibles (avec filtres CRA)
 router.get('/', projectController.listProjects);
 // Recherche avancée de projets

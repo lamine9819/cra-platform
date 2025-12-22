@@ -16,8 +16,8 @@ class ProjectService {
         if (!creator) {
             throw new errors_1.ValidationError('Créateur non trouvé');
         }
-        if (creator.role !== 'CHERCHEUR' && creator.role !== 'ADMINISTRATEUR') {
-            throw new errors_1.AuthError('Seuls les chercheurs et administrateurs peuvent créer des projets');
+        if (creator.role !== 'CHERCHEUR' && creator.role !== 'COORDONATEUR_PROJET' && creator.role !== 'ADMINISTRATEUR') {
+            throw new errors_1.AuthError('Seuls les chercheurs, coordinateurs et administrateurs peuvent créer des projets');
         }
         // Vérifier que le thème existe
         const theme = await prisma.researchTheme.findUnique({
@@ -169,8 +169,8 @@ class ProjectService {
         if (query.endDate) {
             where.endDate = { lte: new Date(query.endDate) };
         }
-        // Filtrer selon les droits d'accès
-        if (userRole !== 'ADMINISTRATEUR') {
+        // Filtrer selon les droits d'accès - ADMINISTRATEUR et COORDONATEUR_PROJET voient tous les projets
+        if (userRole !== 'ADMINISTRATEUR' && userRole !== 'COORDONATEUR_PROJET') {
             where.OR = [
                 { creatorId: userId },
                 {
@@ -730,7 +730,7 @@ class ProjectService {
     }
     // Vérifier l'accès à un projet
     checkProjectAccess(project, userId, userRole) {
-        if (userRole === 'ADMINISTRATEUR')
+        if (userRole === 'ADMINISTRATEUR' || userRole === 'COORDONATEUR_PROJET')
             return true;
         if (project.creatorId === userId)
             return true;

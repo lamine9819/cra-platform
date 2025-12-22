@@ -145,7 +145,7 @@ export class NotificationService {
         title: 'Document partagé',
         message: `${sharedBy.firstName} ${sharedBy.lastName} a partagé le document "${documentTitle}" avec vous ${permission}`,
         type: NotificationType.DOCUMENT_SHARED,
-        actionUrl: `/chercheur/documents/${documentId}`,
+        actionUrl: `/documents?highlight=${documentId}`,
         entityType: 'document',
         entityId: documentId
       });

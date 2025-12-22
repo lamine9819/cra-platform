@@ -3,7 +3,7 @@
 # ============================================
 FROM node:20-alpine AS builder
 
-# Installer les dépendances système pour Prisma et Sharp
+# Installer les dépendances système pour Prisma, Sharp et Puppeteer
 RUN apk add --no-cache \
     python3 \
     make \
@@ -11,7 +11,18 @@ RUN apk add --no-cache \
     cairo-dev \
     jpeg-dev \
     pango-dev \
-    giflib-dev
+    giflib-dev \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
+
+# Variables d'environnement pour Puppeteer
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 WORKDIR /app
 
@@ -39,7 +50,17 @@ FROM node:20-alpine AS runtime
 # Installer uniquement les dépendances runtime nécessaires
 RUN apk add --no-cache \
     dumb-init \
-    curl
+    curl \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
+
+# Variables d'environnement pour Puppeteer
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # Créer un utilisateur non-root pour la sécurité
 RUN addgroup -g 1001 -S nodejs && \

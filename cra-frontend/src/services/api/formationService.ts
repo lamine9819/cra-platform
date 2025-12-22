@@ -179,10 +179,10 @@ export const formationService = {
   },
 
   /**
-   * Télécharger un rapport de formation en PDF
+   * Télécharger un rapport de formation en Word (.docx)
    */
   async downloadFormationReport(userId?: string): Promise<Blob> {
-    const url = userId ? `/reports/download?format=pdf&userId=${userId}` : '/reports/download?format=pdf';
+    const url = userId ? `/reports/download?userId=${userId}` : '/reports/download';
     const response = await api.get(url, {
       responseType: 'blob',
     });

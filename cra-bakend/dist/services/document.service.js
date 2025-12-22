@@ -90,7 +90,7 @@ class DocumentService {
             ];
         }
         // Filtrer selon les droits d'accès
-        if (userRole !== 'ADMINISTRATEUR') {
+        if (userRole !== 'ADMINISTRATEUR' && userRole !== 'COORDONATEUR_PROJET') {
             where.OR = [
                 { ownerId: userId },
                 { isPublic: true },
@@ -341,7 +341,7 @@ class DocumentService {
     }
     // Vérifier l'accès à un document
     async checkDocumentAccess(document, userId, userRole) {
-        if (userRole === 'ADMINISTRATEUR')
+        if (userRole === 'ADMINISTRATEUR' || userRole === 'COORDONATEUR_PROJET')
             return true;
         if (document.ownerId === userId)
             return true;

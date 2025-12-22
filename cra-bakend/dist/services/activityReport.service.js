@@ -190,11 +190,9 @@ class ActivityReportService {
             : 'Fiches techniques, Rapports d\'étude';
     }
     checkReportAccess(activity, userId, userRole) {
-        if (userRole === 'ADMINISTRATEUR')
+        if (userRole === 'ADMINISTRATEUR' || userRole === 'COORDONATEUR_PROJET')
             return true;
         if (activity.responsibleId === userId)
-            return true;
-        if (userRole === 'COORDONATEUR_PROJET' && activity.project?.creatorId === userId)
             return true;
         return false;
     }

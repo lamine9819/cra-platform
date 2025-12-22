@@ -28,11 +28,11 @@ export declare class ProjectService {
         message: string;
         partnership: {
             partner: {
-                email: string | null;
-                id: string;
                 name: string;
                 description: string | null;
                 type: import(".prisma/client").$Enums.PartnerType;
+                email: string | null;
+                id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 expertise: string[];
@@ -48,12 +48,12 @@ export declare class ProjectService {
             };
         } & {
             id: string;
-            projectId: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             startDate: Date;
             endDate: Date | null;
+            projectId: string;
             partnerType: string;
             contribution: string | null;
             benefits: string | null;
@@ -136,10 +136,10 @@ export declare class ProjectService {
         message: string;
     }>;
     searchPotentialPartners(projectId: string, query?: string, expertise?: string[], type?: string): Promise<{
-        id: string;
         name: string;
         description: string;
         type: import(".prisma/client").$Enums.PartnerType;
+        id: string;
         expertise: string[];
         category: string;
         contactPerson: string;

@@ -337,7 +337,7 @@ export function useDownloadFormationReport() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `rapport-formation-${userId || 'personnel'}-${new Date().toISOString().split('T')[0]}.pdf`;
+      link.download = `rapport-formation-${userId || 'personnel'}-${new Date().toISOString().split('T')[0]}.docx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

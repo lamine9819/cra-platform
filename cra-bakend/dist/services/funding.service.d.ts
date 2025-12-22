@@ -99,9 +99,9 @@ export declare class FundingService {
      */
     getFundingById(id: string, userId: string, userRole: string): Promise<{
         convention: {
-            id: string;
             description: string | null;
             type: import(".prisma/client").$Enums.ConventionType;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             title: string;
@@ -128,9 +128,9 @@ export declare class FundingService {
                 userId: string;
                 role: import(".prisma/client").$Enums.ParticipantRole;
                 id: string;
+                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
-                isActive: boolean;
                 startDate: Date;
                 endDate: Date | null;
                 timeAllocation: number | null;
@@ -145,11 +145,9 @@ export declare class FundingService {
                 lastName: string;
             };
         } & {
-            id: string;
             description: string | null;
             type: import(".prisma/client").$Enums.ActivityType;
-            projectId: string | null;
-            themeId: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             code: string | null;
@@ -162,6 +160,7 @@ export declare class FundingService {
             strategicAxis: string | null;
             subAxis: string | null;
             conventionId: string | null;
+            themeId: string;
             methodology: string | null;
             location: string | null;
             results: string | null;
@@ -180,6 +179,7 @@ export declare class FundingService {
             constraints: string[];
             expectedResults: string[];
             transferMethods: string[];
+            projectId: string | null;
             stationId: string | null;
             responsibleId: string;
         };

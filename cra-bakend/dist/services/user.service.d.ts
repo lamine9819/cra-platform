@@ -71,8 +71,8 @@ export declare class UserService {
     getProjectCoordinators(): Promise<{
         activeProjects: number;
         programs: {
-            id: string;
             name: string;
+            id: string;
             isActive: boolean;
         }[];
         id: string;

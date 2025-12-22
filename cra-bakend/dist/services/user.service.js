@@ -5,7 +5,6 @@ exports.UserService = void 0;
 const client_1 = require("@prisma/client");
 const bcrypt_1 = require("../utils/bcrypt");
 const errors_1 = require("../utils/errors");
-const channelHelper_1 = require("../utils/channelHelper");
 const prisma = new client_1.PrismaClient();
 class UserService {
     /**
@@ -88,8 +87,6 @@ class UserService {
                 individualProfile: true,
             }
         });
-        // Ajouter automatiquement l'utilisateur au canal général
-        await (0, channelHelper_1.addUserToGeneralChannel)(user.id);
         return this.formatUserResponse(user);
     }
     /**

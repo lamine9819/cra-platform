@@ -23,6 +23,6 @@ export declare class FormationController {
     getAllUsersFormationReport: (req: AuthenticatedRequest, res: Response) => Promise<void>;
     getUserFormationReport: (req: AuthenticatedRequest, res: Response) => Promise<void>;
     downloadFormationReport: (req: AuthenticatedRequest, res: Response) => Promise<void>;
-    private generatePDFReport;
+    private generateWordReport;
 }
 //# sourceMappingURL=formation.controller.d.ts.map

@@ -9,7 +9,6 @@ export interface CreateKnowledgeTransferRequest {
     participants?: number;
     impact?: string;
     feedback?: string;
-    organizerId: string;
     activityId?: string;
 }
 export interface UpdateKnowledgeTransferRequest {

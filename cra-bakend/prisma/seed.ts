@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Début du seeding pour le CRA Saint-Louis...');
 
-  // Nettoyage des données existantes
+  // Nettoyage des données existantes (ordre important pour respecter les contraintes de clés étrangères)
   await prisma.auditLog.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.comment.deleteMany();
@@ -22,10 +22,10 @@ async function main() {
   await prisma.activity.deleteMany();
   await prisma.projectParticipant.deleteMany();
   await prisma.project.deleteMany();
+  await prisma.researchTheme.deleteMany();
+  await prisma.researchProgram.deleteMany(); // Supprimer AVANT user car coordinatorId fait référence à user
   await prisma.individualProfile.deleteMany();
   await prisma.user.deleteMany();
-  await prisma.researchTheme.deleteMany();
-  await prisma.researchProgram.deleteMany();
   await prisma.strategicSubAxis.deleteMany();
   await prisma.strategicAxis.deleteMany();
   await prisma.strategicPlan.deleteMany();

@@ -10,6 +10,8 @@ const compression_1 = tslib_1.__importDefault(require("compression"));
 const morgan_1 = tslib_1.__importDefault(require("morgan"));
 const cookie_parser_1 = tslib_1.__importDefault(require("cookie-parser"));
 const path_1 = tslib_1.__importDefault(require("path"));
+const swagger_ui_express_1 = tslib_1.__importDefault(require("swagger-ui-express"));
+const swagger_auto_generator_1 = require("./utils/swagger-auto-generator");
 // Import des routes
 const auth_routes_1 = tslib_1.__importDefault(require("./routes/auth.routes"));
 const user_routes_1 = tslib_1.__importDefault(require("./routes/user.routes"));
@@ -76,8 +78,9 @@ app.use((0, cors_1.default)({
         const allowedOrigins = [
             FRONTEND_URL,
             'http://localhost:5173',
-            'http://localhost:5173',
-            'http://127.0.0.1:5173'
+            'http://127.0.0.1:5173',
+            'http://localhost:3001', // Backend pour Swagger UI
+            'http://127.0.0.1:3001' // Backend pour Swagger UI
         ];
         if (allowedOrigins.includes(origin)) {
             callback(null, true);
@@ -99,7 +102,7 @@ app.use(express_1.default.urlencoded({ extended: true, limit: '50mb' }));
 // Rate limiting général
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: NODE_ENV === 'production' ? 100 : 1000, // limite par IP
+    max: NODE_ENV === 'production' ? 100 : 10000, // limite par IP (très élevée en dev)
     message: {
         success: false,
         message: 'Trop de requêtes depuis cette IP, réessayez plus tard.',
@@ -110,6 +113,10 @@ const limiter = (0, express_rate_limit_1.default)({
     // Fonction skip corrigée pour éviter les conflits path-to-regexp
     skip: (req) => {
         const path = req.path;
+        // En développement, désactiver le rate limiting pour les routes API
+        if (NODE_ENV !== 'production' && path.startsWith('/api/')) {
+            return true;
+        }
         return path === '/health' ||
             path === '/api/auth/refresh' ||
             path.startsWith('/uploads/') ||
@@ -363,11 +370,52 @@ app.get('/api', (_req, res) => {
             supervisions: '/api/supervisions'
         },
         documentation: {
+            swagger: '/api-docs',
+            swaggerJson: '/api-docs.json',
             health: '/health',
             detailedHealth: '/health/detailed',
             metrics: '/metrics'
         }
     });
+});
+// =============================================
+// DOCUMENTATION SWAGGER
+// =============================================
+// Générer automatiquement la documentation Swagger depuis les routes
+let openApiDocument = null;
+// Route pour le JSON de la spécification OpenAPI
+app.get('/api-docs.json', async (_req, res) => {
+    if (!openApiDocument) {
+        const routesDir = path_1.default.join(__dirname, 'routes');
+        openApiDocument = await (0, swagger_auto_generator_1.generateSwaggerDocs)(routesDir);
+    }
+    res.setHeader('Content-Type', 'application/json');
+    res.send(openApiDocument);
+});
+// Interface Swagger UI (Documentation générée automatiquement depuis vos routes Express)
+app.use('/api-docs', swagger_ui_express_1.default.serve);
+app.get('/api-docs', async (req, res, next) => {
+    if (!openApiDocument) {
+        console.log('🔄 Génération automatique de la documentation Swagger...');
+        const routesDir = path_1.default.join(__dirname, 'routes');
+        openApiDocument = await (0, swagger_auto_generator_1.generateSwaggerDocs)(routesDir);
+        console.log('✅ Documentation Swagger générée automatiquement');
+    }
+    const swaggerSetup = swagger_ui_express_1.default.setup(openApiDocument, {
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'CRA Platform API - Documentation Auto-générée',
+        customfavIcon: '/favicon.ico',
+        swaggerOptions: {
+            persistAuthorization: true,
+            displayRequestDuration: true,
+            filter: true,
+            syntaxHighlight: {
+                activate: true,
+                theme: 'monokai'
+            }
+        }
+    });
+    swaggerSetup(req, res, next);
 });
 // Routes avec rate limiting spécial pour l'auth
 app.use('/api/auth', authLimiter, auth_routes_1.default);

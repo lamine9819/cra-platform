@@ -642,10 +642,10 @@ class FormController {
                 // Générer le buffer selon le format
                 let buffer;
                 if (validatedQuery.format === 'csv') {
-                    buffer = await workbook.csv.writeBuffer();
+                    buffer = Buffer.from(await workbook.csv.writeBuffer());
                 }
                 else {
-                    buffer = await workbook.xlsx.writeBuffer();
+                    buffer = Buffer.from(await workbook.xlsx.writeBuffer());
                 }
                 res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
                 res.setHeader('Content-Type', validatedQuery.format === 'csv'

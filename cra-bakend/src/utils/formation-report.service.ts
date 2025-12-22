@@ -154,10 +154,10 @@ export class FormationReportService {
     const rows = trainings.map(training => `
       <tr>
         <td>${training.title}</td>
-        <td>${training.objectives.join('; ')}</td>
+        <td>${Array.isArray(training.objectives) ? training.objectives.join('; ') : ''}</td>
         <td>${training.period || 'Non spécifiée'}</td>
         <td>${training.location}</td>
-        <td>${training.beneficiaries.length > 0 ? training.beneficiaries.join(', ') : 'Agent connecté'}</td>
+        <td>${Array.isArray(training.beneficiaries) && training.beneficiaries.length > 0 ? training.beneficiaries.join(', ') : 'Agent connecté'}</td>
       </tr>
     `).join('');
 

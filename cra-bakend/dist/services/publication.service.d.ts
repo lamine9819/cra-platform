@@ -3,14 +3,14 @@ import { CreatePublicationInput, UpdatePublicationInput, PublicationQuery } from
 export declare class PublicationService {
     createPublication(data: CreatePublicationInput, userId: string): Promise<{
         document: {
-            id: string;
             description: string | null;
             type: import(".prisma/client").$Enums.DocumentType;
-            projectId: string | null;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             version: number;
             title: string;
+            projectId: string | null;
             activityId: string | null;
             size: bigint;
             filename: string;
@@ -64,8 +64,8 @@ export declare class PublicationService {
             title: string;
         }[];
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.PublicationType;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
@@ -130,8 +130,8 @@ export declare class PublicationService {
                 title: string;
             }[];
         } & {
-            id: string;
             type: import(".prisma/client").$Enums.PublicationType;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             title: string;
@@ -166,14 +166,14 @@ export declare class PublicationService {
     }>;
     getPublicationById(id: string): Promise<{
         document: {
-            id: string;
             description: string | null;
             type: import(".prisma/client").$Enums.DocumentType;
-            projectId: string | null;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             version: number;
             title: string;
+            projectId: string | null;
             activityId: string | null;
             size: bigint;
             filename: string;
@@ -218,8 +218,8 @@ export declare class PublicationService {
             publicationId: string;
         })[];
         linkedActivities: {
-            id: string;
             type: import(".prisma/client").$Enums.ActivityType;
+            id: string;
             code: string;
             title: string;
         }[];
@@ -230,8 +230,8 @@ export declare class PublicationService {
             status: import(".prisma/client").$Enums.ProjectStatus;
         }[];
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.PublicationType;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
@@ -259,14 +259,14 @@ export declare class PublicationService {
     }>;
     updatePublication(id: string, data: UpdatePublicationInput, userId: string): Promise<{
         document: {
-            id: string;
             description: string | null;
             type: import(".prisma/client").$Enums.DocumentType;
-            projectId: string | null;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             version: number;
             title: string;
+            projectId: string | null;
             activityId: string | null;
             size: bigint;
             filename: string;
@@ -320,8 +320,8 @@ export declare class PublicationService {
             title: string;
         }[];
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.PublicationType;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
@@ -374,8 +374,8 @@ export declare class PublicationService {
             publicationId: string;
         })[];
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.PublicationType;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
@@ -419,14 +419,14 @@ export declare class PublicationService {
     private groupByYear;
     attachDocument(publicationId: string, file: Express.Multer.File, userId: string): Promise<{
         document: {
-            id: string;
             description: string | null;
             type: import(".prisma/client").$Enums.DocumentType;
-            projectId: string | null;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             version: number;
             title: string;
+            projectId: string | null;
             activityId: string | null;
             size: bigint;
             filename: string;
@@ -468,8 +468,8 @@ export declare class PublicationService {
             publicationId: string;
         })[];
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.PublicationType;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
@@ -496,14 +496,14 @@ export declare class PublicationService {
         abstract: string | null;
     }>;
     downloadDocument(publicationId: string): Promise<{
-        id: string;
         description: string | null;
         type: import(".prisma/client").$Enums.DocumentType;
-        projectId: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
         title: string;
+        projectId: string | null;
         activityId: string | null;
         size: bigint;
         filename: string;

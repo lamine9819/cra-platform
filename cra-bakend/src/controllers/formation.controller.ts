@@ -10,7 +10,7 @@ import {
 } from '../types/formation.types';
 import { AuthenticatedRequest } from '../types/auth.types';
 import { z } from 'zod';
-import puppeteer from 'puppeteer';
+import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel } from 'docx';
 
 export class FormationController {
   private formationService: FormationService;
@@ -576,13 +576,10 @@ export class FormationController {
         return;
       }
 
-      if (!format || format !== 'pdf') {
-        res.status(400).json({ error: 'Format invalide. Seul le PDF est supporté actuellement' });
-        return;
-      }
+      // Par défaut on utilise docx
+      const reportFormat = 'docx';
 
       let reportData;
-      let htmlContent: string;
       let filename: string;
 
       // Déterminer quel userId utiliser
@@ -592,8 +589,7 @@ export class FormationController {
       if (isGlobalReport) {
         // Rapport global pour admin/coordinateur
         reportData = await this.formationService.getAllUsersFormationReport();
-        htmlContent = this.reportService.generateGlobalHTMLContent(reportData);
-        filename = this.reportService.generateFilename(reportData, 'pdf');
+        filename = this.reportService.generateFilename(reportData, reportFormat);
       } else {
         // Rapport individuel
         const userId = effectiveUserId as string;
@@ -611,11 +607,11 @@ export class FormationController {
           supervisions
         };
 
-        htmlContent = this.reportService.generateHTMLContent(reportData);
-        filename = this.reportService.generateFilename(reportData, 'pdf');
+        filename = this.reportService.generateFilename(reportData, reportFormat);
       }
 
-      await this.generatePDFReport(res, htmlContent, filename);
+      // Générer le rapport Word
+      await this.generateWordReport(res, reportData, filename);
 
     } catch (error) {
       console.error('Erreur lors du téléchargement du rapport:', error);
@@ -626,42 +622,270 @@ export class FormationController {
     }
   };
 
-  // ============= MÉTHODE PRIVÉE POUR GÉNÉRATION PDF =============
+  // ============= MÉTHODE PRIVÉE POUR GÉNÉRATION WORD =============
 
-  private async generatePDFReport(res: Response, htmlContent: string, filename: string): Promise<void> {
-    let browser;
+  private async generateWordReport(res: Response, reportData: any, filename: string): Promise<void> {
     try {
-      browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-      });
-      
-      const page = await browser.newPage();
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-      
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: {
-          top: '1cm',
-          right: '1cm',
-          bottom: '1cm',
-          left: '1cm'
-        }
+      const { user, shortTrainingsReceived, diplomaticTrainingsReceived, trainingsGiven, supervisions } = reportData;
+
+      // Helper pour créer des cellules d'en-tête en gras
+      const createHeaderCell = (text: string) => new TableCell({
+        children: [new Paragraph({ children: [new TextRun({ text, bold: true })] })]
       });
 
-      res.setHeader('Content-Type', 'application/pdf');
+      const sections = [];
+
+      // En-tête du document
+      sections.push(
+        new Paragraph({
+          text: "RAPPORT DE FORMATION ET ENCADREMENT",
+          heading: HeadingLevel.HEADING_1,
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 200 }
+        }),
+        new Paragraph({
+          text: "Centre de Recherche Agricole (CRA)",
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 }
+        })
+      );
+
+      // Informations du chercheur
+      sections.push(
+        new Paragraph({
+          text: "Informations du Chercheur",
+          heading: HeadingLevel.HEADING_2,
+          spacing: { before: 200, after: 200 }
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: "Nom: ", bold: true }),
+            new TextRun(`${user.firstName} ${user.lastName}`)
+          ],
+          spacing: { after: 100 }
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: "Email: ", bold: true }),
+            new TextRun(user.email)
+          ],
+          spacing: { after: 100 }
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: "Date de génération: ", bold: true }),
+            new TextRun(new Date().toLocaleDateString('fr-FR'))
+          ],
+          spacing: { after: 400 }
+        })
+      );
+
+      // Résumé
+      sections.push(
+        new Paragraph({
+          text: "Résumé",
+          heading: HeadingLevel.HEADING_2,
+          spacing: { before: 200, after: 200 }
+        }),
+        new Paragraph({
+          text: `Formations courtes reçues: ${shortTrainingsReceived?.length || 0}`,
+          spacing: { after: 100 }
+        }),
+        new Paragraph({
+          text: `Formations diplômantes reçues: ${diplomaticTrainingsReceived?.length || 0}`,
+          spacing: { after: 100 }
+        }),
+        new Paragraph({
+          text: `Formations dispensées: ${trainingsGiven?.length || 0}`,
+          spacing: { after: 100 }
+        }),
+        new Paragraph({
+          text: `Encadrements: ${supervisions?.length || 0}`,
+          spacing: { after: 400 }
+        })
+      );
+
+      // Tableau des formations courtes reçues
+      if (shortTrainingsReceived && shortTrainingsReceived.length > 0) {
+        sections.push(
+          new Paragraph({
+            text: "Tableau 11: Formations de courtes durées reçues par les agents",
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 400, after: 200 }
+          })
+        );
+
+        const shortTrainingRows = [
+          new TableRow({
+            tableHeader: true,
+            children: [
+              createHeaderCell("Intitulé de la formation"),
+              createHeaderCell("Objectifs"),
+              createHeaderCell("Période/Durée"),
+              createHeaderCell("Lieu"),
+              createHeaderCell("Bénéficiaires")
+            ]
+          }),
+          ...shortTrainingsReceived.map((training: any) => new TableRow({
+            children: [
+              new TableCell({ children: [new Paragraph(training.title)] }),
+              new TableCell({ children: [new Paragraph(Array.isArray(training.objectives) ? training.objectives.join('; ') : '')] }),
+              new TableCell({ children: [new Paragraph(training.period || 'Non spécifiée')] }),
+              new TableCell({ children: [new Paragraph(training.location)] }),
+              new TableCell({ children: [new Paragraph(Array.isArray(training.beneficiaries) && training.beneficiaries.length > 0 ? training.beneficiaries.join(', ') : 'Agent connecté')] })
+            ]
+          }))
+        ];
+
+        sections.push(new Table({ rows: shortTrainingRows, width: { size: 100, type: WidthType.PERCENTAGE } }));
+      }
+
+      // Tableau des formations diplômantes
+      if (diplomaticTrainingsReceived && diplomaticTrainingsReceived.length > 0) {
+        sections.push(
+          new Paragraph({
+            text: "c. Formations diplômantes reçues par les agents",
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 400, after: 200 }
+          })
+        );
+
+        const diplomaticRows = [
+          new TableRow({
+            tableHeader: true,
+            children: [
+              createHeaderCell("Prénom et nom"),
+              createHeaderCell("Niveau"),
+              createHeaderCell("Spécialité"),
+              createHeaderCell("Universités/Écoles"),
+              createHeaderCell("Période"),
+              createHeaderCell("Diplôme obtenu")
+            ]
+          }),
+          ...diplomaticTrainingsReceived.map((training: any) => new TableRow({
+            children: [
+              new TableCell({ children: [new Paragraph(training.studentName)] }),
+              new TableCell({ children: [new Paragraph(training.level)] }),
+              new TableCell({ children: [new Paragraph(training.specialty)] }),
+              new TableCell({ children: [new Paragraph(training.university)] }),
+              new TableCell({ children: [new Paragraph(training.period)] }),
+              new TableCell({ children: [new Paragraph(training.diplomaObtained === 'OUI' ? 'Oui' : training.diplomaObtained === 'EN_COURS' ? 'Non (en cours)' : 'Non')] })
+            ]
+          }))
+        ];
+
+        sections.push(new Table({ rows: diplomaticRows, width: { size: 100, type: WidthType.PERCENTAGE } }));
+      }
+
+      // Tableau des formations dispensées
+      if (trainingsGiven && trainingsGiven.length > 0) {
+        sections.push(
+          new Paragraph({
+            text: "b. Enseignements dispensés dans les universités et grandes écoles",
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 400, after: 200 }
+          })
+        );
+
+        const trainingsGivenRows = [
+          new TableRow({
+            tableHeader: true,
+            children: [
+              createHeaderCell("Intitulé cours"),
+              createHeaderCell("Niveau"),
+              createHeaderCell("Université/Institut/École"),
+              createHeaderCell("Département/Faculté"),
+              createHeaderCell("Volume horaire (h)"),
+              createHeaderCell("Chercheurs concernés")
+            ]
+          }),
+          ...trainingsGiven.map((training: any) => new TableRow({
+            children: [
+              new TableCell({ children: [new Paragraph(training.title)] }),
+              new TableCell({ children: [new Paragraph(training.type || '-')] }),
+              new TableCell({ children: [new Paragraph(training.institution)] }),
+              new TableCell({ children: [new Paragraph(training.department || '-')] }),
+              new TableCell({ children: [new Paragraph(`${training.duration || '-'} heures`)] }),
+              new TableCell({ children: [new Paragraph('1')] })
+            ]
+          }))
+        ];
+
+        sections.push(new Table({ rows: trainingsGivenRows, width: { size: 100, type: WidthType.PERCENTAGE } }));
+      }
+
+      // Tableau des encadrements
+      if (supervisions && supervisions.length > 0) {
+        sections.push(
+          new Paragraph({
+            text: "Tableau 8: Encadrements",
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 400, after: 200 }
+          })
+        );
+
+        const supervisionRows = [
+          new TableRow({
+            tableHeader: true,
+            children: [
+              createHeaderCell("Nom étudiant"),
+              createHeaderCell("Intitulé thèse"),
+              createHeaderCell("Spécialité"),
+              createHeaderCell("Type"),
+              createHeaderCell("Université"),
+              createHeaderCell("Période"),
+              createHeaderCell("Date soutenance prévue"),
+              createHeaderCell("Doctorant"),
+              createHeaderCell("Soutenu")
+            ]
+          }),
+          ...supervisions.map((supervision: any) => new TableRow({
+            children: [
+              new TableCell({ children: [new Paragraph(supervision.studentName)] }),
+              new TableCell({ children: [new Paragraph(supervision.title)] }),
+              new TableCell({ children: [new Paragraph(supervision.specialty)] }),
+              new TableCell({ children: [new Paragraph(supervision.type)] }),
+              new TableCell({ children: [new Paragraph(supervision.university)] }),
+              new TableCell({ children: [new Paragraph(`${new Date(supervision.startDate).getFullYear()} - ${supervision.endDate ? new Date(supervision.endDate).getFullYear() : 'En cours'}`)] }),
+              new TableCell({ children: [new Paragraph(supervision.expectedDefenseDate ? new Date(supervision.expectedDefenseDate).toLocaleDateString('fr-FR') : 'À définir')] }),
+              new TableCell({ children: [new Paragraph(`Dr. ${supervision.studentName}`)] }),
+              new TableCell({ children: [new Paragraph(supervision.status === 'SOUTENU' ? 'OUI' : 'NON')] })
+            ]
+          }))
+        ];
+
+        sections.push(new Table({ rows: supervisionRows, width: { size: 100, type: WidthType.PERCENTAGE } }));
+      }
+
+      // Pied de page
+      sections.push(
+        new Paragraph({
+          text: `Rapport généré automatiquement le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}`,
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 600 }
+        })
+      );
+
+      // Créer le document
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: sections
+        }]
+      });
+
+      // Générer le buffer
+      const buffer = await Packer.toBuffer(doc);
+
+      // Envoyer la réponse
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.setHeader('Content-Length', pdfBuffer.length.toString());
-      res.send(pdfBuffer);
+      res.setHeader('Content-Length', buffer.length.toString());
+      res.send(buffer);
 
     } catch (error) {
-      console.error('Erreur lors de la génération PDF:', error);
+      console.error('Erreur lors de la génération Word:', error);
       throw error;
-    } finally {
-      if (browser) {
-        await browser.close();
-      }
     }
   }
 }

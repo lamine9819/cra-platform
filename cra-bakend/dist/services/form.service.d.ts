@@ -16,16 +16,16 @@ export declare class FormService {
                 lastName: string;
             };
         } & {
-            id: string;
             description: string | null;
-            creatorId: string;
+            schema: import("@prisma/client/runtime/library").JsonValue;
+            id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             title: string;
+            creatorId: string;
             activityId: string | null;
             isPublic: boolean;
-            schema: import("@prisma/client/runtime/library").JsonValue;
             shareToken: string | null;
             shareCount: number;
             allowMultipleSubmissions: boolean;

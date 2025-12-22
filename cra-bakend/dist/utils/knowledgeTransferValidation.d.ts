@@ -13,13 +13,12 @@ export declare const createKnowledgeTransferSchema: z.ZodObject<{
         SITE_WEB: "SITE_WEB";
         RESEAUX_SOCIAUX: "RESEAUX_SOCIAUX";
     }>;
-    targetAudience: z.ZodArray<z.ZodString>;
+    targetAudience: z.ZodDefault<z.ZodArray<z.ZodString>>;
     location: z.ZodOptional<z.ZodString>;
     date: z.ZodString;
     participants: z.ZodOptional<z.ZodNumber>;
     impact: z.ZodOptional<z.ZodString>;
     feedback: z.ZodOptional<z.ZodString>;
-    organizerId: z.ZodString;
     activityId: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 export declare const updateKnowledgeTransferSchema: z.ZodObject<{
@@ -42,7 +41,6 @@ export declare const updateKnowledgeTransferSchema: z.ZodObject<{
     participants: z.ZodOptional<z.ZodNumber>;
     impact: z.ZodOptional<z.ZodString>;
     feedback: z.ZodOptional<z.ZodString>;
-    organizerId: z.ZodOptional<z.ZodString>;
     activityId: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 export declare const knowledgeTransferListQuerySchema: z.ZodObject<{
