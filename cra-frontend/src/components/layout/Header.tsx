@@ -16,7 +16,8 @@ import {
   X,
   Check,
   CheckCheck,
-  Trash2
+  Trash2,
+  MessageCircle
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotifications } from '../../hooks/useNotifications';
@@ -45,6 +46,18 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
   const [imageError, setImageError] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+  // Filtrer les notifications pour exclure celles du chat (affichées dans la page Chat)
+  const nonChatNotifications = notifications.filter(
+    notif => notif.type !== 'CHAT_MESSAGE' && notif.type !== 'CHAT_MENTION'
+  );
+  const nonChatUnreadCount = nonChatNotifications.filter(n => !n.isRead).length;
+
+  // Compteur pour les notifications de chat uniquement
+  const chatNotifications = notifications.filter(
+    notif => notif.type === 'CHAT_MESSAGE' || notif.type === 'CHAT_MENTION'
+  );
+  const chatUnreadCount = chatNotifications.filter(n => !n.isRead).length;
 
   const handleLogout = async () => {
     try {
@@ -171,8 +184,26 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
           </div>
         </div>
 
-        {/* Droite: Notifications + Profil */}
+        {/* Droite: Chat + Notifications + Profil */}
         <div className="flex items-center space-x-4">
+          {/* Chat */}
+          <button
+            onClick={() => {
+              const rolePrefix = user?.role === 'COORDONATEUR_PROJET' ? 'chercheur' :
+                                user?.role?.toLowerCase().replace('_', '-') || 'chercheur';
+              navigate(`/${rolePrefix}/chat`);
+            }}
+            className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Chat"
+          >
+            <MessageCircle className="w-6 h-6" />
+            {chatUnreadCount > 0 && (
+              <span className="absolute top-0 right-0 flex items-center justify-center min-w-[20px] h-5 px-1 bg-red-500 text-white text-xs font-bold rounded-full">
+                {chatUnreadCount > 99 ? '99+' : chatUnreadCount}
+              </span>
+            )}
+          </button>
+
           {/* Notifications */}
           <div className="relative">
             <button
@@ -180,9 +211,9 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
               className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <Bell className="w-6 h-6" />
-              {unreadCount > 0 && (
+              {nonChatUnreadCount > 0 && (
                 <span className="absolute top-0 right-0 flex items-center justify-center min-w-[20px] h-5 px-1 bg-red-500 text-white text-xs font-bold rounded-full">
-                  {unreadCount > 99 ? '99+' : unreadCount}
+                  {nonChatUnreadCount > 99 ? '99+' : nonChatUnreadCount}
                 </span>
               )}
             </button>
@@ -192,13 +223,16 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
                 {/* Header */}
                 <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900">
-                    Notifications {unreadCount > 0 && `(${unreadCount})`}
+                    Notifications {nonChatUnreadCount > 0 && `(${nonChatUnreadCount})`}
                   </h3>
-                  {unreadCount > 0 && (
+                  {nonChatUnreadCount > 0 && (
                     <button
                       onClick={async (e) => {
                         e.stopPropagation();
-                        await markAllAsRead();
+                        // Marquer toutes les notifications non-chat comme lues
+                        for (const notif of nonChatNotifications.filter(n => !n.isRead)) {
+                          await markAsRead(notif.id);
+                        }
                       }}
                       className="flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-700"
                       title="Tout marquer comme lu"
@@ -211,18 +245,18 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
 
                 {/* Body */}
                 <div className="overflow-y-auto flex-1">
-                  {loading && notifications.length === 0 ? (
+                  {loading && nonChatNotifications.length === 0 ? (
                     <div className="p-4 text-center text-gray-500">
                       Chargement...
                     </div>
-                  ) : notifications.length === 0 ? (
+                  ) : nonChatNotifications.length === 0 ? (
                     <div className="p-8 text-center">
                       <Bell className="w-12 h-12 mx-auto text-gray-300 mb-2" />
                       <p className="text-gray-500">Aucune notification</p>
                     </div>
                   ) : (
                     <div className="divide-y divide-gray-100">
-                      {notifications.slice(0, 10).map((notification) => (
+                      {nonChatNotifications.slice(0, 10).map((notification) => (
                         <div
                           key={notification.id}
                           onClick={() => handleNotificationClick(notification)}
@@ -291,7 +325,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuToggle, isSidebarOp
                 </div>
 
                 {/* Footer */}
-                {notifications.length > 10 && (
+                {nonChatNotifications.length > 10 && (
                   <div className="p-3 border-t border-gray-200 text-center">
                     <button
                       onClick={() => {

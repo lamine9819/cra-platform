@@ -119,7 +119,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
                 ${
                   disabled || isSubmitting || !content.trim()
                     ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                    : 'bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
                 }
               `}
             >

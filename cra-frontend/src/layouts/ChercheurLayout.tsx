@@ -8,15 +8,14 @@ import {
   Briefcase,
   FileText,
   Users,
-  Calendar,
   Activity,
   GraduationCap,
   BookOpen,
-  MessageCircle,
   ClipboardList,
   FileBarChart,
   FileEdit,
   Share2,
+  Calendar,
 } from 'lucide-react';
 
 // Import des pages
@@ -76,7 +75,6 @@ const ChercheurLayout: React.FC = () => {
     },
     { name: 'Calendrier', href: '/chercheur/calendar', icon: Calendar },
     { name: 'Formations', href: '/chercheur/formations', icon: GraduationCap },
-    { name: 'Chat', href: '/chercheur/chat', icon: MessageCircle },
   ];
 
   const navigation = isCoordinator

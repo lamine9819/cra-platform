@@ -359,9 +359,18 @@ const FormRenderer: React.FC<FormRendererProps> = ({
     <div className="max-w-2xl mx-auto">
       {/* En-tête du formulaire */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          {form.title}
-        </h1>
+        <div className="flex items-center mb-4">
+          <img
+            src="/isra.png"
+            alt="ISRA Logo"
+            className="w-16 h-16 rounded-xl object-cover mr-4"
+          />
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {form.title}
+            </h1>
+          </div>
+        </div>
         {form.description && (
           <p className="text-gray-600 text-lg">
             {form.description}
@@ -381,8 +390,8 @@ const FormRenderer: React.FC<FormRendererProps> = ({
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            <div
+              className="bg-green-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
             />
           </div>

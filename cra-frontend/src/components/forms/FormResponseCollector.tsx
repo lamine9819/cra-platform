@@ -227,8 +227,8 @@ export const FormResponseCollector: React.FC<FormResponseCollectorProps> = ({
 
         toast.success('Réponse soumise avec succès');
       } else {
-        // Sauvegarder en mode offline
-        offlineFormService.saveOfflineResponse(form.id, responseData);
+        // Sauvegarder en mode offline avec le schema du formulaire
+        await offlineFormService.saveOfflineResponse(form.id, responseData, form.schema);
         toast.success('Réponse sauvegardée (sera synchronisée en ligne)');
       }
 
@@ -274,7 +274,7 @@ export const FormResponseCollector: React.FC<FormResponseCollectorProps> = ({
               value={formData[field.id] || ''}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
               placeholder={field.placeholder}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 ${
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
                 hasError ? 'border-red-500' : 'border-gray-300'
               }`}
             />
@@ -304,7 +304,7 @@ export const FormResponseCollector: React.FC<FormResponseCollectorProps> = ({
               placeholder={field.placeholder}
               min={field.validation?.min}
               max={field.validation?.max}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 ${
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
                 hasError ? 'border-red-500' : 'border-gray-300'
               }`}
             />
@@ -332,7 +332,7 @@ export const FormResponseCollector: React.FC<FormResponseCollectorProps> = ({
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
               placeholder={field.placeholder}
               rows={4}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 ${
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
                 hasError ? 'border-red-500' : 'border-gray-300'
               }`}
             />
@@ -358,7 +358,7 @@ export const FormResponseCollector: React.FC<FormResponseCollectorProps> = ({
             <select
               value={formData[field.id] || ''}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 ${
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
                 hasError ? 'border-red-500' : 'border-gray-300'
               }`}
             >
@@ -465,7 +465,7 @@ export const FormResponseCollector: React.FC<FormResponseCollectorProps> = ({
               type="date"
               value={formData[field.id] || ''}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 ${
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
                 hasError ? 'border-red-500' : 'border-gray-300'
               }`}
             />
@@ -493,7 +493,7 @@ export const FormResponseCollector: React.FC<FormResponseCollectorProps> = ({
             <button
               type="button"
               onClick={() => handleCapturePhoto(field)}
-              className="mb-4 flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              className="mb-4 flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
             >
               <Camera className="w-5 h-5 mr-2" />
               Prendre une photo
@@ -568,27 +568,36 @@ export const FormResponseCollector: React.FC<FormResponseCollectorProps> = ({
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-lg shadow p-6">
-      {/* Indicateur de connexion */}
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">{form.title}</h2>
-        <div className="flex items-center">
-          {isOnline ? (
-            <div className="flex items-center text-green-600">
-              <Wifi className="w-5 h-5 mr-1" />
-              <span className="text-sm">En ligne</span>
-            </div>
-          ) : (
-            <div className="flex items-center text-orange-600">
-              <WifiOff className="w-5 h-5 mr-1" />
-              <span className="text-sm">Mode offline</span>
-            </div>
-          )}
+      {/* En-tête avec logo */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <img
+              src="/isra.png"
+              alt="ISRA Logo"
+              className="w-16 h-16 rounded-xl object-cover mr-4"
+            />
+            <h2 className="text-2xl font-bold text-gray-900">{form.title}</h2>
+          </div>
+          <div className="flex items-center">
+            {isOnline ? (
+              <div className="flex items-center text-green-600">
+                <Wifi className="w-5 h-5 mr-1" />
+                <span className="text-sm">En ligne</span>
+              </div>
+            ) : (
+              <div className="flex items-center text-orange-600">
+                <WifiOff className="w-5 h-5 mr-1" />
+                <span className="text-sm">Mode offline</span>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      {form.description && (
-        <p className="text-gray-600 mb-6">{form.description}</p>
-      )}
+        {form.description && (
+          <p className="text-gray-600">{form.description}</p>
+        )}
+      </div>
 
       <form onSubmit={handleSubmit}>
         {/* Informations du collecteur (pour formulaire public) */}
@@ -642,7 +651,7 @@ export const FormResponseCollector: React.FC<FormResponseCollectorProps> = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <>

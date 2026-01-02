@@ -286,7 +286,7 @@ const LoginPage: React.FC = () => {
           </div>
 
           {/* Carte d'information */}
-          <div className="mt-auto mb-20 p-8 bg-white/10 rounded-2xl backdrop-blur-md border border-white/20 max-w-md">
+          <div className="mt-auto mb-15 p-8 bg-white/10 rounded-2xl backdrop-blur-md border border-white/20 max-w-md">
             <p className="text-lg font-medium mb-2 text-white">Centre de Recherches Agricoles</p>
             <p className="text-white/90">Saint-Louis, Sénégal</p>
 

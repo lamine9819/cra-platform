@@ -1,7 +1,7 @@
 // src/components/layout/Sidebar.tsx
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Globe, LucideIcon } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 import clsx from 'clsx';
 
 export interface SidebarItem {
@@ -46,9 +46,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ navigation, isOpen, onClose })
           {/* Logo */}
           <div className="flex items-center px-6 py-6 border-b border-gray-200">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-green-700 rounded-xl flex items-center justify-center">
-                <Globe className="w-6 h-6 text-white" />
-              </div>
+              <img
+                src="/isra.png"
+                alt="CRA Saint-Louis Logo"
+                className="w-16 h-16 rounded-xl object-cover"
+              />
               <div className="ml-3">
                 <h2 className="text-lg font-bold text-green-900">ISRA</h2>
                 <p className="text-xs text-gray-500">CRA Saint-Louis</p>

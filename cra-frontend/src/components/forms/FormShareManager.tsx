@@ -1,6 +1,6 @@
 // src/components/forms/FormShareManager.tsx - Gestionnaire de partages
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Form,
   FormShare,
@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import formApi from '../../services/formApi';
+import usersApi, { User } from '../../services/usersApi';
 
 interface FormShareManagerProps {
   form: Form;
@@ -53,6 +54,28 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
     const [maxSubmissions, setMaxSubmissions] = useState<number | undefined>();
     const [expiresAt, setExpiresAt] = useState('');
     const [loading, setLoading] = useState(false);
+    const [users, setUsers] = useState<User[]>([]);
+    const [loadingUsers, setLoadingUsers] = useState(true);
+
+    // Charger la liste des utilisateurs
+    useEffect(() => {
+      const loadUsers = async () => {
+        try {
+          setLoadingUsers(true);
+          const response = await usersApi.listUsers({});
+          // Filtrer les utilisateurs actifs côté client
+          const activeUsers = response.users.filter(user => user.isActive);
+          setUsers(activeUsers);
+        } catch (error) {
+          console.error('Erreur lors du chargement des utilisateurs:', error);
+          toast.error('Impossible de charger la liste des utilisateurs');
+        } finally {
+          setLoadingUsers(false);
+        }
+      };
+
+      loadUsers();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -106,16 +129,27 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Utilisateur
                 </label>
-                <input
-                  type="text"
-                  value={targetUserId}
-                  onChange={(e) => setTargetUserId(e.target.value)}
-                  placeholder="ID ou email de l'utilisateur"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
+                {loadingUsers ? (
+                  <div className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500">
+                    Chargement des utilisateurs...
+                  </div>
+                ) : (
+                  <select
+                    value={targetUserId}
+                    onChange={(e) => setTargetUserId(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    required
+                  >
+                    <option value="">Sélectionnez un utilisateur</option>
+                    {users.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.firstName} {user.lastName} ({user.email}) - {user.role}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <p className="mt-1 text-sm text-gray-500">
-                  Entrez l'ID ou l'email de l'utilisateur
+                  Sélectionnez l'utilisateur avec qui partager le formulaire
                 </p>
               </div>
 
@@ -165,7 +199,7 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
                     )
                   }
                   placeholder="Illimité"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
               </div>
 
@@ -177,7 +211,7 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
                   type="datetime-local"
                   value={expiresAt}
                   onChange={(e) => setExpiresAt(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
               </div>
 
@@ -192,7 +226,7 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                 >
                   {loading ? 'Partage...' : 'Partager'}
                 </button>
@@ -274,7 +308,7 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
                     />
                     <button
                       onClick={() => copyToClipboard(publicLink.shareUrl)}
-                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                     >
                       <Copy className="w-5 h-5" />
                     </button>
@@ -317,7 +351,7 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
                       )
                     }
                     placeholder="Illimité"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
 
@@ -329,12 +363,12 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
                     type="datetime-local"
                     value={expiresAt}
                     onChange={(e) => setExpiresAt(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-900">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-sm text-green-900">
                     <strong>Note:</strong> Les personnes avec ce lien pourront
                     soumettre des réponses sans se connecter.
                   </p>
@@ -351,7 +385,7 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                   >
                     {loading ? 'Création...' : 'Créer le lien'}
                   </button>
@@ -370,7 +404,7 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
       <div className="flex space-x-4">
         <button
           onClick={() => setShowShareDialog(true)}
-          className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
         >
           <Users className="w-5 h-5 mr-2" />
           Partager avec un utilisateur
@@ -409,7 +443,7 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
                   <div className="flex-1">
                     <div className="flex items-center mb-2">
                       {share.shareType === 'INTERNAL' ? (
-                        <Users className="w-5 h-5 text-indigo-600 mr-2" />
+                        <Users className="w-5 h-5 text-green-600 mr-2" />
                       ) : (
                         <Globe className="w-5 h-5 text-green-600 mr-2" />
                       )}
@@ -431,7 +465,7 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
                     {/* Permissions */}
                     <div className="flex flex-wrap gap-2 mb-2">
                       {share.canCollect && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                           Peut collecter
                         </span>
                       )}
@@ -477,7 +511,7 @@ export const FormShareManager: React.FC<FormShareManagerProps> = ({
                               `${window.location.origin}/forms/public/${share.shareToken}`
                             )
                           }
-                          className="p-2 text-indigo-600 hover:bg-indigo-50 rounded"
+                          className="p-2 text-green-600 hover:bg-green-50 rounded"
                         >
                           <Copy className="w-4 h-4" />
                         </button>

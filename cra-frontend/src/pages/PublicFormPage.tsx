@@ -42,9 +42,9 @@ export const PublicFormPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
         <div className="text-center">
-          <Loader className="w-16 h-16 animate-spin text-indigo-600 mx-auto mb-6" />
+          <Loader className="w-16 h-16 animate-spin text-green-600 mx-auto mb-6" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Chargement du formulaire...
           </h2>
@@ -96,12 +96,12 @@ export const PublicFormPage: React.FC = () => {
 
           {formData.form.schema.settings?.allowMultipleSubmissions && (
             <div className="space-y-4">
-              <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-900">
+              <div className="bg-green-50 rounded-lg p-4 text-sm text-green-900">
                 Vous pouvez soumettre une nouvelle réponse si vous le souhaitez.
               </div>
               <button
                 onClick={() => setSubmitted(false)}
-                className="w-full px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
                 Soumettre une nouvelle réponse
               </button>
@@ -141,16 +141,18 @@ export const PublicFormPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-50 to-green-100">
       {/* En-tête */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
-                  <ExternalLink className="w-6 h-6 text-white" />
-                </div>
+                <img
+                  src="/isra.png"
+                  alt="ISRA Logo"
+                  className="w-16 h-16 rounded-xl object-cover"
+                />
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">
                     Formulaire partagé
@@ -167,7 +169,7 @@ export const PublicFormPage: React.FC = () => {
                 <div className="text-sm text-gray-600">
                   Soumissions restantes
                 </div>
-                <div className="text-2xl font-bold text-indigo-600">
+                <div className="text-2xl font-bold text-green-600">
                   {formData.remainingSubmissions}
                 </div>
               </div>
@@ -179,10 +181,10 @@ export const PublicFormPage: React.FC = () => {
       {/* Contenu */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Bannière d'informations */}
-        <div className="mb-6 bg-white rounded-lg border border-blue-200 p-4 flex items-start space-x-3">
+        <div className="mb-6 bg-white rounded-lg border border-green-200 p-4 flex items-start space-x-3">
           <div className="flex-shrink-0">
             <svg
-              className="w-6 h-6 text-blue-600"
+              className="w-6 h-6 text-green-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -196,10 +198,10 @@ export const PublicFormPage: React.FC = () => {
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="text-sm font-medium text-blue-900 mb-1">
+            <h3 className="text-sm font-medium text-green-900 mb-1">
               Formulaire public
             </h3>
-            <p className="text-sm text-blue-700">
+            <p className="text-sm text-green-700">
               Vous accédez à ce formulaire via un lien de partage. Vos réponses
               seront collectées de manière anonyme ou avec les informations que
               vous fournirez.

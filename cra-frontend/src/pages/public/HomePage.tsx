@@ -280,7 +280,7 @@ const HomePage: React.FC = () => {
               </div>
               <div className="relative">
                 <img
-                  src="/438841574_751862543798680_3458349495517208121_n-1.jpg"
+                  src="/cra-saint-louis-LOGO50-copie-scaled.jpg"
                   alt="CRA Saint-Louis"
                   className="rounded-2xl shadow-2xl w-full h-80 object-cover"
                 />

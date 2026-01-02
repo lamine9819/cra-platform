@@ -372,15 +372,43 @@ export const offlineFormService = {
   /**
    * Sauvegarder une réponse en mode offline
    */
-  saveOfflineResponse: (
+  saveOfflineResponse: async (
     formId: string,
-    response: SubmitFormResponseRequest
-  ): void => {
+    response: SubmitFormResponseRequest,
+    formSchema?: FormSchema
+  ): Promise<void> => {
     const storage = getOfflineStorage();
-    const formData = storage[formId];
+    let formData = storage[formId];
 
+    // Si le formulaire n'est pas disponible offline, le télécharger d'abord ou utiliser le schema fourni
     if (!formData) {
-      throw new Error('Formulaire non disponible offline');
+      if (formSchema) {
+        // Utiliser le schema fourni
+        formData = {
+          formId: formId,
+          schema: formSchema,
+          responses: [],
+          lastSync: new Date(),
+        };
+        storage[formId] = formData;
+      } else {
+        // Essayer de télécharger le formulaire
+        try {
+          await offlineFormService.downloadFormForOffline(formId);
+          const updatedStorage = getOfflineStorage();
+          formData = updatedStorage[formId];
+        } catch (error) {
+          console.error('Erreur lors du téléchargement du formulaire:', error);
+          // Si on ne peut pas télécharger, créer une entrée minimale
+          formData = {
+            formId: formId,
+            schema: { fields: [] } as any,
+            responses: [],
+            lastSync: new Date(),
+          };
+          storage[formId] = formData;
+        }
+      }
     }
 
     formData.responses.push({

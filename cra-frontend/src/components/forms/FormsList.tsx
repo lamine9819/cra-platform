@@ -80,7 +80,7 @@ export const FormsList: React.FC<FormsListProps> = ({
         <div className="text-red-500 mb-4">Erreur : {error}</div>
         <button
           onClick={refreshForms}
-          className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
         >
           Réessayer
         </button>
@@ -102,7 +102,7 @@ export const FormsList: React.FC<FormsListProps> = ({
 
           <button
             onClick={onCreateForm}
-            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
             <Plus className="w-5 h-5 mr-2" />
             Nouveau formulaire
@@ -138,7 +138,7 @@ export const FormsList: React.FC<FormsListProps> = ({
           </p>
           <button
             onClick={onCreateForm}
-            className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
           >
             Créer un formulaire
           </button>

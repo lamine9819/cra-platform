@@ -12,7 +12,6 @@ RUN apk add --no-cache \
     jpeg-dev \
     pango-dev \
     giflib-dev \
-    chromium \
     nss \
     freetype \
     freetype-dev \

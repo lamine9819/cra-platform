@@ -582,7 +582,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
                   <button
                     type="button"
                     onClick={addField}
-                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Ajouter un champ
@@ -597,7 +597,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
                     <button
                       type="button"
                       onClick={addField}
-                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                     >
                       Ajouter le premier champ
                     </button>
@@ -745,11 +745,18 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
 
           <div className="space-y-4">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                {schema.title || 'Titre du formulaire'}
-              </h2>
+              <div className="flex items-center mb-4">
+                <img
+                  src="/isra.png"
+                  alt="ISRA Logo"
+                  className="w-16 h-16 rounded-xl object-cover mr-4"
+                />
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {schema.title || 'Titre du formulaire'}
+                </h2>
+              </div>
               {schema.description && (
-                <p className="text-gray-600 mt-2">{schema.description}</p>
+                <p className="text-gray-600">{schema.description}</p>
               )}
             </div>
 
@@ -834,7 +841,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
             <button
               type="button"
               disabled
-              className="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg opacity-50 cursor-not-allowed"
+              className="w-full px-4 py-3 bg-green-600 text-white rounded-lg opacity-50 cursor-not-allowed"
             >
               {schema.settings?.submitButtonText || 'Soumettre'}
             </button>
@@ -856,7 +863,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
         <button
           type="button"
           onClick={handleSave}
-          className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
         >
           Enregistrer le formulaire
         </button>

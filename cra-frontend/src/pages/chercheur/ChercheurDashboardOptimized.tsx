@@ -2,16 +2,12 @@
 import React, { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate } from 'react-router-dom';
-import { 
-   
-  Briefcase, 
-  CheckSquare, 
-  FileText, 
-  AlertCircle,
+import {
+  Briefcase,
+  CheckSquare,
+  FileText,
   RefreshCw,
-  Filter,
-  Download,
- 
+  Activity,
 } from 'lucide-react';
 
 import { useDashboard } from '../../hooks/useDashboard';
@@ -19,14 +15,9 @@ import ErrorMessage from '../../components/ui/ErrorMessage';
 
 
 // Import des composants du dashboard
-import { 
-  StatsCard, 
-  ProductivityScore, 
-  PerformanceChart, 
-  TasksOverview, 
-  ProjectsOverview, 
-  RecentActivities, 
-  DocumentsOverview 
+import {
+  StatsCard,
+  ProductivityScore
 } from '../../components/dashboard';
 
 interface DashboardErrorFallbackProps {
@@ -104,117 +95,6 @@ const ChercheurDashboardOptimized: React.FC = () => {
     initialPeriod: 'month'
   });
 
-const handleExportData = async () => {
-  try {
-    if (!dashboardData) return;
-    
-    // Préparer les données CSV
-    const csvData = [
-      ['Métrique', 'Valeur', 'Catégorie'],
-      
-      // Informations utilisateur
-      ['Nom complet', `${dashboardData.user.firstName} ${dashboardData.user.lastName}`, 'Utilisateur'],
-      ['Rôle', dashboardData.user.role, 'Utilisateur'],
-      ['Département', dashboardData.user.department || 'Non spécifié', 'Utilisateur'],
-      
-      // Score de productivité
-      ['Score de productivité', `${dashboardData.summary.productivityScore}%`, 'Performance'],
-      ['Taux completion tâches', `${dashboardData.summary.taskCompletionRate}%`, 'Performance'],
-      ['Participation projets', `${dashboardData.summary.projectParticipation}%`, 'Performance'],
-      ['Contribution documents', `${dashboardData.summary.documentContribution}%`, 'Performance'],
-      ['Engagement formulaires', `${dashboardData.summary.formEngagement}%`, 'Performance'],
-      
-      // Statistiques générales
-      ['Total projets', dashboardData.projects.total.toString(), 'Projets'],
-      ['Mes projets', dashboardData.projects.userProjects.toString(), 'Projets'],
-      ['Projets planifiés', dashboardData.projects.byStatus.PLANIFIE.toString(), 'Projets'],
-      ['Projets en cours', dashboardData.projects.byStatus.EN_COURS.toString(), 'Projets'],
-      ['Projets terminés', dashboardData.projects.byStatus.TERMINE.toString(), 'Projets'],
-      
-      // Tâches
-      ['Total tâches', dashboardData.tasks.total.toString(), 'Tâches'],
-      ['Tâches à faire', dashboardData.tasks.byStatus.A_FAIRE.toString(), 'Tâches'],
-      ['Tâches en cours', dashboardData.tasks.byStatus.EN_COURS.toString(), 'Tâches'],
-      ['Tâches terminées', dashboardData.tasks.byStatus.TERMINEE.toString(), 'Tâches'],
-      ['Tâches en retard', dashboardData.tasks.overdue.toString(), 'Tâches'],
-      ['Tâches dues aujourd\'hui', dashboardData.tasks.dueToday.toString(), 'Tâches'],
-      ['Tâches dues cette semaine', dashboardData.tasks.dueThisWeek.toString(), 'Tâches'],
-      
-      // Documents
-      ['Total documents', dashboardData.documents.total.toString(), 'Documents'],
-      ['Mes documents', dashboardData.documents.userDocuments.toString(), 'Documents'],
-      ['Documents partagés', dashboardData.documents.sharedWithUser.toString(), 'Documents'],
-      ['Taille totale (MB)', dashboardData.documents.totalSizeMB.toString(), 'Documents'],
-      
-      // Activités
-      ['Total activités', dashboardData.activities.total.toString(), 'Activités'],
-      ['Activités avec résultats', dashboardData.activities.withResults.toString(), 'Activités'],
-      ['Moyenne par mois', dashboardData.activities.averagePerMonth.toString(), 'Activités'],
-    ];
-
-    // Ajouter les données de formulaires si disponibles
-    if (dashboardData.forms) {
-      if (dashboardData.forms.created) {
-        csvData.push(
-          ['Formulaires créés', dashboardData.forms.created.total.toString(), 'Formulaires'],
-          ['Formulaires actifs', dashboardData.forms.created.active.toString(), 'Formulaires'],
-          ['Réponses reçues', dashboardData.forms.created.totalResponses.toString(), 'Formulaires'],
-          ['Moyenne réponses/formulaire', dashboardData.forms.created.averageResponsesPerForm.toString(), 'Formulaires']
-        );
-      }
-      
-      if (dashboardData.forms.participation) {
-        csvData.push(
-          ['Formulaires à compléter', dashboardData.forms.participation.formsToComplete.toString(), 'Formulaires'],
-          ['Réponses soumises', dashboardData.forms.participation.responsesSubmitted.toString(), 'Formulaires']
-        );
-      }
-    }
-
-    // Ajouter les métriques de performance si disponibles
-    if (performanceMetrics) {
-      csvData.push(
-        ['Tâches ce mois', performanceMetrics.taskTrend.thisMonth.toString(), 'Tendances'],
-        ['Tâches mois dernier', performanceMetrics.taskTrend.lastMonth.toString(), 'Tendances'],
-        ['Évolution tâches (%)', performanceMetrics.taskTrend.change.toString(), 'Tendances'],
-        ['Activités ce mois', performanceMetrics.activityTrend.thisMonth.toString(), 'Tendances'],
-        ['Activités mois dernier', performanceMetrics.activityTrend.lastMonth.toString(), 'Tendances'],
-        ['Évolution activités (%)', performanceMetrics.activityTrend.change.toString(), 'Tendances']
-      );
-    }
-
-    // Convertir en CSV
-    const csvString = csvData.map(row => 
-      row.map(cell => {
-        // Échapper les guillemets et encapsuler si nécessaire
-        if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
-          return `"${cell.replace(/"/g, '""')}"`;
-        }
-        return cell;
-      }).join(',')
-    ).join('\n');
-
-    // Créer et télécharger le fichier
-    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
-    const filename = `dashboard_chercheur_${timestamp}.csv`;
-    
-    const dataBlob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-  } catch (err) {
-    console.error('Erreur lors de l\'export CSV:', err);
-    alert('Erreur lors de l\'export des données');
-  }
-};
-
   // Affichage des erreurs critiques
   if (error && !dashboardData) {
     return (
@@ -262,22 +142,7 @@ const handleExportData = async () => {
           </div>
           
           <div className="flex items-center gap-3">
-            {/* Sélecteur de période */}
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-gray-500" />
-              <select
-                value={period}
-                onChange={(e) => setPeriod(e.target.value as any)}
-                className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="week">Cette semaine</option>
-                <option value="month">Ce mois</option>
-                <option value="quarter">Ce trimestre</option>
-                <option value="year">Cette année</option>
-              </select>
-            </div>
-
-            {/* Boutons d'action */}
+            {/* Bouton d'action */}
             <button
               onClick={refresh}
               disabled={refreshing}
@@ -285,14 +150,6 @@ const handleExportData = async () => {
             >
               <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
               Actualiser
-            </button>
-
-            <button
-              onClick={handleExportData}
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-            >
-              <Download className="h-4 w-4" />
-              Exporter
             </button>
           </div>
         </div>
@@ -358,18 +215,27 @@ const DashboardContent: React.FC<DashboardContentProps> = React.memo(({
           subtitle="projets en cours"
           onClick={() => navigate('/chercheur/projects')}
         />
-        
+
         <StatsCard
           title="Tâches actives"
           value={quickStats.activeTasks || 0}
           icon={CheckSquare}
           color="green"
           subtitle="tâches à traiter"
-          onClick={() => navigate('/chercheur/tasks')}
+          onClick={() => navigate('/chercheur/activities')}
           trend={performanceMetrics.taskTrend?.direction}
           trendValue={performanceMetrics.taskTrend?.change}
         />
-        
+
+        <StatsCard
+          title="Mes activités"
+          value={dashboardData.activities?.total || 0}
+          icon={Activity}
+          color="orange"
+          subtitle="activités totales"
+          onClick={() => navigate('/chercheur/activities')}
+        />
+
         <StatsCard
           title="Mes documents"
           value={quickStats.myDocuments || 0}
@@ -378,111 +244,6 @@ const DashboardContent: React.FC<DashboardContentProps> = React.memo(({
           subtitle="documents créés"
           onClick={() => navigate('/chercheur/documents')}
         />
-        
-        <StatsCard
-          title="Notifications"
-          value={quickStats.unreadNotifications || 0}
-          icon={AlertCircle}
-          color={quickStats.unreadNotifications > 0 ? "red" : "gray"}
-          subtitle="non lues"
-          onClick={() => navigate('/chercheur/notifications')}
-        />
-      </div>
-
-      {/* Graphiques et métriques */}
-      {performanceMetrics && dashboardData.activities && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PerformanceChart
-            taskMetrics={performanceMetrics.taskTrend}
-            activityMetrics={performanceMetrics.activityTrend}
-            period="month"
-          />
-          
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Activités récentes
-            </h3>
-            <RecentActivities activities={dashboardData.activities.recentActivities || []} />
-          </div>
-        </div>
-      )}
-
-      {/* Vue d'ensemble des projets et tâches */}
-      {dashboardData.projects && dashboardData.tasks && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ProjectsOverview
-            projects={dashboardData.projects}
-            onViewAll={() => navigate('/chercheur/projects')}
-            onCreateNew={() => navigate('/chercheur/projects/new')}
-          />
-          
-          <TasksOverview
-            tasks={dashboardData.tasks}
-            onViewAll={() => navigate('/chercheur/tasks')}
-            onCreateNew={() => navigate('/chercheur/tasks/new')}
-          />
-        </div>
-      )}
-
-      {/* Documents et formulaires */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {dashboardData.documents && (
-          <DocumentsOverview
-            documents={dashboardData.documents}
-            onViewAll={() => navigate('/chercheur/documents')}
-          />
-        )}
-        
-        {/* Formulaires - Section conditionnelle selon le rôle */}
-        {dashboardData.forms && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Formulaires
-              </h3>
-              <button
-                onClick={() => navigate('/chercheur/forms')}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                Voir tout →
-              </button>
-            </div>
-            
-            {dashboardData.forms.created && (
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Formulaires créés</span>
-                  <span className="text-lg font-semibold">{dashboardData.forms.created.total}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Réponses reçues</span>
-                  <span className="text-lg font-semibold">{dashboardData.forms.created.totalResponses}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Moyenne par formulaire</span>
-                  <span className="text-lg font-semibold">{dashboardData.forms.created.averageResponsesPerForm}</span>
-                </div>
-              </div>
-            )}
-            
-            {dashboardData.forms.participation && (
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">À compléter</span>
-                  <span className="text-lg font-semibold text-orange-600">
-                    {dashboardData.forms.participation.formsToComplete}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Réponses soumises</span>
-                  <span className="text-lg font-semibold text-green-600">
-                    {dashboardData.forms.participation.responsesSubmitted}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Informations de mise à jour */}
