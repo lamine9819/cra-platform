@@ -9,9 +9,17 @@ import {
   SyncSummary,
 } from '../types/form.types';
 import formApi from './formApi';
+import indexedDBService from './indexedDBService';
+import encryptionService, { EncryptedData } from './encryptionService';
 
 const OFFLINE_STORAGE_KEY = 'offline_forms';
 const DEVICE_ID_KEY = 'device_id';
+const STORAGE_VERSION_KEY = 'offline_storage_version';
+const CURRENT_STORAGE_VERSION = 1; // Incrémenter lors de changements majeurs
+const MAX_RESPONSES_PER_FORM = 100; // Limite de réponses par formulaire
+const MAX_PHOTOS_PER_RESPONSE = 10; // Limite de photos par réponse
+const MAX_PHOTO_SIZE = 2 * 1024 * 1024; // 2MB par photo
+const SYNC_CONCURRENCY = 3; // Nombre de requêtes simultanées lors de la sync
 
 // =============================================
 // GESTION DU DEVICE ID
@@ -27,11 +35,53 @@ function getDeviceId(): string {
 }
 
 // =============================================
+// VERSIONING DU STOCKAGE
+// =============================================
+
+function checkAndMigrateStorage(): void {
+  const currentVersion = parseInt(localStorage.getItem(STORAGE_VERSION_KEY) || '0', 10);
+
+  if (currentVersion === 0) {
+    // Première installation, définir la version
+    localStorage.setItem(STORAGE_VERSION_KEY, CURRENT_STORAGE_VERSION.toString());
+    return;
+  }
+
+  if (currentVersion < CURRENT_STORAGE_VERSION) {
+    console.log(`Migration du stockage de v${currentVersion} vers v${CURRENT_STORAGE_VERSION}`);
+
+    // Logique de migration ici selon les versions
+    try {
+      const rawData = localStorage.getItem(OFFLINE_STORAGE_KEY);
+      const storage = rawData ? JSON.parse(rawData) : {};
+
+      // Ajouter des métadonnées de version à chaque formulaire si manquantes
+      Object.values(storage).forEach((formData: any) => {
+        if (!formData.version) {
+          formData.version = CURRENT_STORAGE_VERSION;
+        }
+      });
+
+      localStorage.setItem(OFFLINE_STORAGE_KEY, JSON.stringify(storage));
+      localStorage.setItem(STORAGE_VERSION_KEY, CURRENT_STORAGE_VERSION.toString());
+      console.log('Migration réussie');
+    } catch (error) {
+      console.error('Erreur lors de la migration:', error);
+      // En cas d'erreur critique, on peut choisir de vider le cache
+      // localStorage.removeItem(OFFLINE_STORAGE_KEY);
+    }
+  }
+}
+
+// =============================================
 // STOCKAGE LOCAL
 // =============================================
 
 function getOfflineStorage(): Record<string, LocalFormData> {
   try {
+    // Vérifier et migrer si nécessaire
+    checkAndMigrateStorage();
+
     const data = localStorage.getItem(OFFLINE_STORAGE_KEY);
     return data ? JSON.parse(data) : {};
   } catch (error) {
@@ -42,11 +92,106 @@ function getOfflineStorage(): Record<string, LocalFormData> {
 
 function saveOfflineStorage(data: Record<string, LocalFormData>): void {
   try {
-    localStorage.setItem(OFFLINE_STORAGE_KEY, JSON.stringify(data));
-  } catch (error) {
+    const jsonData = JSON.stringify(data);
+    const estimatedSize = new Blob([jsonData]).size;
+    const maxSize = 5 * 1024 * 1024; // 5MB limite recommandée pour localStorage
+
+    if (estimatedSize > maxSize) {
+      throw new Error(`Taille des données (${(estimatedSize / 1024 / 1024).toFixed(2)}MB) dépasse la limite de ${maxSize / 1024 / 1024}MB. Veuillez synchroniser vos données ou supprimer des formulaires.`);
+    }
+
+    localStorage.setItem(OFFLINE_STORAGE_KEY, jsonData);
+  } catch (error: any) {
     console.error('Erreur sauvegarde stockage offline:', error);
-    throw new Error('Espace de stockage insuffisant');
+
+    // Gestion spécifique de QuotaExceededError
+    if (error.name === 'QuotaExceededError' || error.code === 22) {
+      throw new Error('Espace de stockage insuffisant. Veuillez synchroniser vos données en ligne ou libérer de l\'espace.');
+    }
+
+    // Propager l'erreur custom si déjà formatée
+    if (error.message && error.message.includes('dépasse la limite')) {
+      throw error;
+    }
+
+    throw new Error('Erreur lors de la sauvegarde des données offline');
   }
+}
+
+// =============================================
+// RETRY AVEC BACKOFF EXPONENTIEL
+// =============================================
+
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelay: number = 1000
+): Promise<T> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Erreur inconnue');
+
+      // Ne pas retry si c'est une erreur client (4xx)
+      if (error && typeof error === 'object' && 'response' in error) {
+        const status = (error as any).response?.status;
+        if (status && status >= 400 && status < 500) {
+          throw error; // Erreur client, pas de retry
+        }
+      }
+
+      // Dernier essai, lancer l'erreur
+      if (attempt === maxRetries - 1) {
+        break;
+      }
+
+      // Calculer le délai avec backoff exponentiel et jitter
+      const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
+      console.log(`Tentative ${attempt + 1}/${maxRetries} échouée. Nouvelle tentative dans ${Math.round(delay)}ms...`);
+
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError || new Error('Échec après plusieurs tentatives');
+}
+
+// =============================================
+// POOL DE CONCURRENCE POUR LIMITER LES REQUÊTES PARALLÈLES
+// =============================================
+
+async function runWithConcurrencyLimit<T, R>(
+  items: T[],
+  fn: (item: T, index: number) => Promise<R>,
+  concurrency: number
+): Promise<PromiseSettledResult<R>[]> {
+  const results: PromiseSettledResult<R>[] = [];
+  const executing: Promise<void>[] = [];
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const promise = fn(item, i).then(
+      (value) => {
+        results[i] = { status: 'fulfilled', value };
+      },
+      (reason) => {
+        results[i] = { status: 'rejected', reason };
+      }
+    );
+
+    executing.push(promise);
+
+    if (executing.length >= concurrency) {
+      await Promise.race(executing);
+      executing.splice(executing.findIndex(p => p === promise), 1);
+    }
+  }
+
+  await Promise.all(executing);
+  return results;
 }
 
 // =============================================
@@ -332,6 +477,79 @@ export async function capturePhoto(options?: {
 }
 
 // =============================================
+// GESTION DES PHOTOS AVEC INDEXEDDB
+// =============================================
+
+/**
+ * Sauvegarder une photo dans IndexedDB (plus efficace que base64)
+ */
+async function savePhotoToIndexedDB(
+  formId: string,
+  fieldId: string,
+  responseIndex: number,
+  photoData: PhotoData
+): Promise<string> {
+  if (!indexedDBService.isAvailable()) {
+    console.warn('IndexedDB non disponible, utilisation du stockage base64');
+    return photoData.base64; // Fallback
+  }
+
+  try {
+    // Convertir base64 en Blob pour stockage optimisé
+    const blob = indexedDBService.base64ToBlob(photoData.base64, photoData.mimeType);
+
+    const photoId = await indexedDBService.savePhoto({
+      formId,
+      fieldId,
+      responseIndex,
+      blob,
+      filename: photoData.filename,
+      mimeType: photoData.mimeType,
+      takenAt: photoData.takenAt,
+      latitude: photoData.latitude,
+      longitude: photoData.longitude,
+      caption: photoData.caption,
+    });
+
+    return photoId; // Retourne l'ID au lieu du base64
+  } catch (error) {
+    console.error('Erreur sauvegarde photo IndexedDB:', error);
+    return photoData.base64; // Fallback sur base64
+  }
+}
+
+/**
+ * Récupérer une photo depuis IndexedDB et la convertir en PhotoData
+ */
+async function getPhotoFromIndexedDB(photoId: string): Promise<PhotoData | null> {
+  if (!indexedDBService.isAvailable()) {
+    return null;
+  }
+
+  try {
+    const photo = await indexedDBService.getPhoto(photoId);
+    if (!photo) return null;
+
+    const base64 = await indexedDBService.blobToBase64(photo.blob);
+
+    return {
+      type: 'photo',
+      base64,
+      filename: photo.filename,
+      mimeType: photo.mimeType,
+      takenAt: photo.takenAt,
+      latitude: photo.latitude,
+      longitude: photo.longitude,
+      caption: photo.caption,
+      fieldId: photo.fieldId,
+    };
+  } catch (error) {
+    console.error('Erreur récupération photo IndexedDB:', error);
+    return null;
+  }
+}
+
+// =============================================
 // SERVICE OFFLINE
 // =============================================
 
@@ -411,11 +629,96 @@ export const offlineFormService = {
       }
     }
 
-    formData.responses.push({
+    // Vérifier les limites
+    if (formData.responses.length >= MAX_RESPONSES_PER_FORM) {
+      throw new Error(`Limite atteinte : ${MAX_RESPONSES_PER_FORM} réponses maximum par formulaire. Veuillez synchroniser vos données.`);
+    }
+
+    // Vérifier le nombre de photos
+    if (response.photos && response.photos.length > MAX_PHOTOS_PER_RESPONSE) {
+      throw new Error(`Limite atteinte : ${MAX_PHOTOS_PER_RESPONSE} photos maximum par réponse.`);
+    }
+
+    // Vérifier la taille des photos
+    if (response.photos) {
+      for (const photo of response.photos) {
+        const photoSize = photo.base64 ? new Blob([photo.base64]).size : 0;
+        if (photoSize > MAX_PHOTO_SIZE) {
+          throw new Error(`Photo trop volumineuse : ${(photoSize / 1024 / 1024).toFixed(2)}MB. Maximum autorisé : ${MAX_PHOTO_SIZE / 1024 / 1024}MB.`);
+        }
+      }
+    }
+
+    const responseIndex = formData.responses.length;
+
+    // Sauvegarder les photos dans IndexedDB si disponible
+    const photoIds: string[] = [];
+    if (response.photos && indexedDBService.isAvailable()) {
+      try {
+        for (const photo of response.photos) {
+          const photoId = await savePhotoToIndexedDB(
+            formId,
+            photo.fieldId || '',
+            responseIndex,
+            photo
+          );
+          photoIds.push(photoId);
+        }
+      } catch (error) {
+        console.error('Erreur sauvegarde photos IndexedDB:', error);
+        // Continue avec base64 si IndexedDB échoue
+      }
+    }
+
+    // Chiffrer les données sensibles si le chiffrement est disponible
+    let responseData: any = {
       ...response,
       isOffline: true,
       deviceId: getDeviceId(),
-    });
+      offlineTimestamp: new Date().toISOString(),
+      schemaVersion: (formSchema as any)?.version || formData.schema.version || CURRENT_STORAGE_VERSION,
+    };
+
+    // Si photos stockées dans IndexedDB, ne garder que les IDs
+    if (photoIds.length > 0) {
+      responseData.photoIds = photoIds;
+      responseData.photos = []; // Vider les photos base64
+      responseData.useIndexedDB = true;
+    }
+
+    // Chiffrer les champs sensibles (email, nom, données personnelles)
+    if (encryptionService.isAvailable()) {
+      try {
+        // Définir les champs sensibles à chiffrer
+        const sensitiveFields = ['collectorEmail', 'collectorName'];
+
+        // Chiffrer aussi les données du formulaire si elles contiennent des emails
+        if (responseData.data) {
+          const dataKeys = Object.keys(responseData.data);
+          dataKeys.forEach(key => {
+            // Détecter les champs email ou personnels
+            if (key.toLowerCase().includes('email') ||
+                key.toLowerCase().includes('phone') ||
+                key.toLowerCase().includes('telephone') ||
+                key.toLowerCase().includes('nom') ||
+                key.toLowerCase().includes('prenom')) {
+              sensitiveFields.push(`data.${key}`);
+            }
+          });
+        }
+
+        responseData = await encryptionService.encryptSensitiveFields(
+          responseData,
+          sensitiveFields
+        );
+      } catch (error) {
+        console.error('Erreur chiffrement données sensibles:', error);
+        // Continue sans chiffrement si erreur
+      }
+    }
+
+    // Ajouter métadonnées pour détection de conflits
+    formData.responses.push(responseData);
 
     saveOfflineStorage(storage);
   },
@@ -435,12 +738,54 @@ export const offlineFormService = {
   },
 
   /**
-   * Synchroniser toutes les réponses offline
+   * Détecter les conflits potentiels (réponses trop anciennes ou schéma obsolète)
+   */
+  detectConflicts: (): {
+    formId: string;
+    responseIndex: number;
+    issue: string;
+  }[] => {
+    const storage = getOfflineStorage();
+    const conflicts: { formId: string; responseIndex: number; issue: string }[] = [];
+    const maxAgeHours = 72; // 3 jours maximum
+
+    Object.entries(storage).forEach(([formId, formData]) => {
+      formData.responses.forEach((response: any, index: number) => {
+        // Vérifier l'âge de la réponse
+        if (response.offlineTimestamp) {
+          const ageMs = Date.now() - new Date(response.offlineTimestamp).getTime();
+          const ageHours = ageMs / (1000 * 60 * 60);
+
+          if (ageHours > maxAgeHours) {
+            conflicts.push({
+              formId,
+              responseIndex: index,
+              issue: `Réponse vieille de ${Math.round(ageHours)}h (risque de conflit)`,
+            });
+          }
+        }
+
+        // Vérifier la version du schéma
+        if (response.schemaVersion && response.schemaVersion < CURRENT_STORAGE_VERSION) {
+          conflicts.push({
+            formId,
+            responseIndex: index,
+            issue: `Version du schéma obsolète (v${response.schemaVersion} vs v${CURRENT_STORAGE_VERSION})`,
+          });
+        }
+      });
+    });
+
+    return conflicts;
+  },
+
+  /**
+   * Synchroniser toutes les réponses offline (optimisé avec concurrence limitée)
    */
   syncAllOfflineData: async (): Promise<SyncSummary> => {
     const storage = getOfflineStorage();
     const deviceId = getDeviceId();
-    const results: any[] = [];
+    const allResults: any[] = [];
     let successful = 0;
     let failed = 0;
 
@@ -449,29 +794,95 @@ export const offlineFormService = {
 
       if (formData.responses.length === 0) continue;
 
-      for (const response of formData.responses) {
-        try {
-          await formApi.submitFormResponse(formId, response);
+      // Synchroniser les réponses en parallèle avec limite de concurrence
+      const syncResults = await runWithConcurrencyLimit(
+        formData.responses,
+        async (response: any, index) => {
+          // Préparer la réponse pour envoi
+          let preparedResponse = { ...response };
+
+          // Déchiffrer les données sensibles si nécessaire
+          if (preparedResponse._encrypted && encryptionService.isAvailable()) {
+            try {
+              preparedResponse = await encryptionService.decryptSensitiveFields(preparedResponse);
+            } catch (error) {
+              console.error('Erreur déchiffrement:', error);
+              // Continue avec données chiffrées si erreur
+            }
+          }
+
+          // Récupérer les photos depuis IndexedDB si nécessaire
+          if (preparedResponse.useIndexedDB && preparedResponse.photoIds && indexedDBService.isAvailable()) {
+            try {
+              const photos = [];
+              for (const photoId of preparedResponse.photoIds) {
+                const photo = await getPhotoFromIndexedDB(photoId);
+                if (photo) {
+                  photos.push(photo);
+                }
+              }
+              preparedResponse.photos = photos;
+              delete preparedResponse.photoIds;
+              delete preparedResponse.useIndexedDB;
+            } catch (error) {
+              console.error('Erreur récupération photos IndexedDB:', error);
+              // Continue sans photos si erreur
+            }
+          }
+
+          // Nettoyer les métadonnées offline (garder isOffline et deviceId car acceptés par le backend)
+          delete preparedResponse.offlineTimestamp;
+          delete preparedResponse.schemaVersion;
+          delete preparedResponse._encrypted; // Supprimer le marqueur de chiffrement
+
+          // Utiliser retry avec backoff exponentiel
+          await retryWithBackoff(
+            () => formApi.submitFormResponse(formId, preparedResponse),
+            3, // 3 tentatives maximum
+            1000 // 1s délai de base
+          );
+
+          // Supprimer les photos d'IndexedDB après sync réussie
+          if (response.photoIds && indexedDBService.isAvailable()) {
+            for (const photoId of response.photoIds) {
+              try {
+                await indexedDBService.deletePhoto(photoId);
+              } catch (error) {
+                console.error('Erreur suppression photo IndexedDB:', error);
+              }
+            }
+          }
+
+          return { response, index };
+        },
+        SYNC_CONCURRENCY
+      );
+
+      // Analyser les résultats et garder uniquement les réponses échouées
+      const responsesToKeep: any[] = [];
+
+      syncResults.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
           successful++;
-          results.push({
-            syncId: `${formId}_${Date.now()}`,
+          allResults.push({
+            syncId: `${formId}_${Date.now()}_${index}`,
             success: true,
           });
-        } catch (error) {
+        } else {
           failed++;
-          results.push({
-            syncId: `${formId}_${Date.now()}`,
+          allResults.push({
+            syncId: `${formId}_${Date.now()}_${index}`,
             success: false,
-            error: error instanceof Error ? error.message : 'Erreur inconnue',
+            error: result.reason instanceof Error ? result.reason.message : 'Erreur inconnue',
           });
+          // Garder cette réponse pour retry ultérieur
+          responsesToKeep.push(formData.responses[index]);
         }
-      }
+      });
 
-      // Vider les réponses synchronisées
-      if (failed === 0) {
-        formData.responses = [];
-        formData.lastSync = new Date();
-      }
+      // Mettre à jour avec uniquement les réponses qui ont échoué
+      formData.responses = responsesToKeep;
+      formData.lastSync = new Date();
     }
 
     saveOfflineStorage(storage);
@@ -480,7 +891,7 @@ export const offlineFormService = {
       totalProcessed: successful + failed,
       successful,
       failed,
-      results,
+      results: allResults,
     };
   },
 

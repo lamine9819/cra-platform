@@ -134,7 +134,7 @@ const PublicationsList: React.FC = () => {
         <div className="flex justify-between items-center mb-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <BookOpen className="h-8 w-8 text-blue-600" />
+              <BookOpen className="h-8 w-8 text-green-600" />
               Publications Scientifiques
             </h1>
             <p className="text-gray-600 mt-1">
@@ -143,7 +143,7 @@ const PublicationsList: React.FC = () => {
           </div>
           <Link
             to="/chercheur/publications/create"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
           >
             <Plus className="h-5 w-5" />
             Nouvelle Publication
@@ -160,13 +160,13 @@ const PublicationsList: React.FC = () => {
                 placeholder="Rechercher par titre, abstract, journal..."
                 value={filters.search || ''}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`px-4 py-2 border rounded-lg flex items-center gap-2 ${
-                showFilters ? 'bg-blue-50 border-blue-500 text-blue-600' : 'border-gray-300 text-gray-700'
+                showFilters ? 'bg-green-50 border-green-500 text-green-600' : 'border-gray-300 text-gray-700'
               }`}
             >
               <Filter className="h-5 w-5" />
@@ -184,7 +184,7 @@ const PublicationsList: React.FC = () => {
                 <select
                   value={filters.type || ''}
                   onChange={(e) => setFilters({ ...filters, type: e.target.value as PublicationType || undefined, page: 1 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 >
                   <option value="">Tous les types</option>
                   {Object.entries(PublicationTypeLabels).map(([key, label]) => (
@@ -200,7 +200,7 @@ const PublicationsList: React.FC = () => {
                 <select
                   value={filters.status || ''}
                   onChange={(e) => setFilters({ ...filters, status: e.target.value as PublicationStatus || undefined, page: 1 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 >
                   <option value="">Tous les statuts</option>
                   {Object.entries(PublicationStatusLabels).map(([key, label]) => (
@@ -218,7 +218,7 @@ const PublicationsList: React.FC = () => {
                   placeholder="Ex: 2024"
                   value={filters.year || ''}
                   onChange={(e) => setFilters({ ...filters, year: e.target.value ? parseInt(e.target.value) : undefined, page: 1 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 />
               </div>
 
@@ -229,7 +229,7 @@ const PublicationsList: React.FC = () => {
                 <select
                   value={filters.quartile || ''}
                   onChange={(e) => setFilters({ ...filters, quartile: e.target.value as Quartile || undefined, page: 1 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 >
                   <option value="">Tous les quartiles</option>
                   {Object.entries(QuartileLabels).map(([key, label]) => (
@@ -249,7 +249,7 @@ const PublicationsList: React.FC = () => {
                     isInternational: e.target.value === '' ? undefined : e.target.value === 'true',
                     page: 1
                   })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 >
                   <option value="">Toutes</option>
                   <option value="true">International</option>
@@ -282,7 +282,7 @@ const PublicationsList: React.FC = () => {
 
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
         </div>
       ) : publications.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-12 text-center">
@@ -295,7 +295,7 @@ const PublicationsList: React.FC = () => {
           </p>
           <Link
             to="/chercheur/publications/create"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
           >
             <Plus className="h-5 w-5" />
             Créer une publication
@@ -386,7 +386,7 @@ const PublicationsList: React.FC = () => {
                   <div className="flex gap-2 ml-4">
                     <button
                       onClick={() => navigate(`/chercheur/publications/${publication.id}`)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
                       title="Voir les détails"
                     >
                       <Eye className="h-5 w-5" />
@@ -470,7 +470,7 @@ const PublicationsList: React.FC = () => {
                           onClick={() => setFilters({ ...filters, page })}
                           className={`px-4 py-2 rounded-lg ${
                             page === pagination.page
-                              ? 'bg-blue-600 text-white'
+                              ? 'bg-green-600 text-white'
                               : 'border border-gray-300 hover:bg-gray-50'
                           }`}
                         >
