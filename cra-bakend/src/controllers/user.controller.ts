@@ -571,6 +571,24 @@ export class UserController {
   };
 
   /**
+   * Récupérer les allocations de temps d'un utilisateur (pour coordonateur/admin)
+   */
+  getUserTimeAllocations = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { userId } = req.params;
+
+      const allocations = await userService.getTimeAllocations(userId);
+
+      res.status(200).json({
+        success: true,
+        data: allocations,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
    * Upload d'une photo de profil
    */
   uploadProfileImage = async (req: Request, res: Response, next: NextFunction) => {

@@ -183,6 +183,12 @@ router.post('/:userId/individual-profile/validate',
 // ROUTES POUR L'ALLOCATION DE TEMPS
 // =============================================
 
+// Récupérer les allocations de temps d'un utilisateur
+router.get('/:userId/time-allocations',
+  authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']),
+  userController.getUserTimeAllocations
+);
+
 // Mettre à jour l'allocation de temps
 router.patch('/:userId/time-allocation',
   authorize(['ADMINISTRATEUR', 'COORDONATEUR_PROJET']),

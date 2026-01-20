@@ -340,6 +340,81 @@ class UsersApiService {
       throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des statistiques');
     }
   }
+
+  // =============================================
+  // GESTION DES FICHES INDIVIDUELLES (COORDONATEUR/ADMIN)
+  // =============================================
+
+  // Lister les chercheurs avec leurs profils individuels
+  async getResearchersWithProfiles(filters: UserFilters = {}): Promise<{
+    users: User[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
+    try {
+      const params = new URLSearchParams({
+        role: 'CHERCHEUR',
+        ...Object.fromEntries(
+          Object.entries(filters).filter(([_, value]) => value !== undefined && value !== null && value !== '')
+            .map(([key, value]) => [key, value.toString()])
+        )
+      });
+
+      const response = await api.get(`${this.baseUrl}?${params.toString()}`);
+      return {
+        users: response.data.data,
+        pagination: response.data.pagination
+      };
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des chercheurs');
+    }
+  }
+
+  // Télécharger la fiche individuelle d'un chercheur
+  async downloadIndividualProfile(userId: string, format: 'pdf' | 'word' = 'pdf'): Promise<Blob> {
+    try {
+      const response = await api.get(`${this.baseUrl}/${userId}/individual-profile/download`, {
+        params: { format },
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors du téléchargement de la fiche individuelle');
+    }
+  }
+
+  // Récupérer les allocations de temps d'un utilisateur
+  async getUserTimeAllocations(userId: string): Promise<any[]> {
+    try {
+      const response = await api.get(`${this.baseUrl}/${userId}/time-allocations`);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des allocations de temps');
+    }
+  }
+
+  // Valider un profil individuel ou une allocation de temps
+  async validateIndividualProfile(userId: string, year?: number): Promise<void> {
+    try {
+      await api.post(`${this.baseUrl}/${userId}/individual-profile/validate`, { year });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la validation');
+    }
+  }
+
+  // Mettre à jour le profil individuel d'un chercheur
+  async updateIndividualProfile(userId: string, profileData: any): Promise<any> {
+    try {
+      const response = await api.patch(`${this.baseUrl}/${userId}/individual-profile`, profileData);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du profil individuel');
+    }
+  }
 }
 
 // Export singleton

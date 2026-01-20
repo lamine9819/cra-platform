@@ -450,10 +450,10 @@ export class UserService {
     validatorId: string
   ): Promise<void> {
     const validator = await prisma.user.findUnique({ where: { id: validatorId } });
-    
-    // Seuls les administrateurs peuvent valider les profils
-    if (validator?.role !== 'ADMINISTRATEUR') {
-      throw new AuthError('Seuls les administrateurs peuvent valider les profils individuels');
+
+    // Les administrateurs et coordonnateurs de projet peuvent valider les profils
+    if (!validator || !['ADMINISTRATEUR', 'COORDONATEUR_PROJET'].includes(validator.role)) {
+      throw new AuthError('Seuls les administrateurs et coordonnateurs de projet peuvent valider les profils individuels');
     }
 
     const user = await prisma.user.findUnique({

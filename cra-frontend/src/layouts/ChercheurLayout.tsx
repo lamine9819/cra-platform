@@ -16,6 +16,7 @@ import {
   FileEdit,
   Share2,
   Calendar,
+  UserCheck,
 } from 'lucide-react';
 
 // Import des pages
@@ -49,6 +50,7 @@ import FormCreatePage from '../pages/chercheur/FormCreatePage';
 import FormEditPage from '../pages/chercheur/FormEditPage';
 import FormDetailPage from '../pages/chercheur/FormDetailPage';
 import ReportsPage from '../pages/chercheur/ReportsPage';
+import ResearcherProfilesManagement from '../pages/coordonateur/ResearcherProfilesManagement';
 import { DocumentProvider } from '../contexts/DocumentContext';
 import { useAuth } from '../hooks/useAuth';
 
@@ -78,7 +80,11 @@ const ChercheurLayout: React.FC = () => {
   ];
 
   const navigation = isCoordinator
-    ? [...baseNavigation, { name: 'Rapports', href: '/chercheur/reports', icon: FileBarChart }]
+    ? [
+        ...baseNavigation,
+        { name: 'Fiches Individuelles', href: '/chercheur/researcher-profiles', icon: UserCheck },
+        { name: 'Rapports', href: '/chercheur/reports', icon: FileBarChart }
+      ]
     : baseNavigation;
 
   const headerTitle = isCoordinator ? 'Espace Coordinateur de Projet' : 'Espace Chercheur';
@@ -131,6 +137,7 @@ const ChercheurLayout: React.FC = () => {
                 <Route path="profile" element={<CompleteProfilePage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="chat" element={<ChatPage currentUserId={user?.id || ''} />} />
+                {isCoordinator && <Route path="researcher-profiles" element={<ResearcherProfilesManagement />} />}
                 {isCoordinator && <Route path="reports" element={<ReportsPage />} />}
                 <Route path="*" element={<div className="text-center py-12"><h3 className="text-lg font-medium text-gray-900 mb-2">Page non trouvée</h3><p className="text-gray-600">La page que vous cherchez n'existe pas.</p></div>} />
               </Routes>
