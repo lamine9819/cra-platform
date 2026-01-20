@@ -231,7 +231,7 @@ const DashboardContent: React.FC<DashboardContentProps> = React.memo(({
           title="Mes activités"
           value={dashboardData.activities?.total || 0}
           icon={Activity}
-          color="orange"
+          color="yellow"
           subtitle="activités totales"
           onClick={() => navigate('/chercheur/activities')}
         />

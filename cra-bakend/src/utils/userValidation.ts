@@ -202,6 +202,36 @@ export const downloadIndividualProfileSchema = z.object({
     .default('pdf'),
 });
 
+// =============================================
+// CRÉATION PROFIL INDIVIDUEL
+// =============================================
+
+export const createIndividualProfileSchema = z.object({
+  matricule: z.string().min(1, 'Le matricule est requis'),
+  grade: z.string().optional(),
+  classe: z.string().optional(),
+  dateNaissance: z.string().transform(str => str ? new Date(str) : undefined).optional(),
+  dateRecrutement: z.string().transform(str => str ? new Date(str) : undefined).optional(),
+  localite: z.string().optional(),
+  diplome: z.string().optional(),
+
+  // Répartition du temps (optionnel à la création)
+  tempsRecherche: z.number().min(0).max(100).optional().default(0),
+  tempsEnseignement: z.number().min(0).max(100).optional().default(0),
+  tempsFormation: z.number().min(0).max(100).optional().default(0),
+  tempsConsultation: z.number().min(0).max(100).optional().default(0),
+  tempsGestionScientifique: z.number().min(0).max(100).optional().default(0),
+  tempsAdministration: z.number().min(0).max(100).optional().default(0),
+});
+
+// =============================================
+// RÉCUPÉRATION ALLOCATION DE TEMPS PAR ANNÉE
+// =============================================
+
+export const getTimeAllocationSchema = z.object({
+  year: z.string().transform(Number).pipe(z.number().min(2020).max(2050)),
+});
+
 
 // =============================================
 // TYPES TYPESCRIPT
@@ -214,3 +244,5 @@ export type UserListQueryInput = z.infer<typeof userListQuerySchema>;
 export type CreateTimeAllocationInput = z.infer<typeof createTimeAllocationSchema>;
 export type CreatePersonnelRequestInput = z.infer<typeof createPersonnelRequestSchema>;
 export type DownloadIndividualProfileInput = z.infer<typeof downloadIndividualProfileSchema>;
+export type CreateIndividualProfileInput = z.infer<typeof createIndividualProfileSchema>;
+export type GetTimeAllocationInput = z.infer<typeof getTimeAllocationSchema>;

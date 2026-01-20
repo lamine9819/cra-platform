@@ -30,7 +30,6 @@ import tasksApi, { Task} from '../../services/tasksApi';
 import { CommentSection } from '../../components/comments/CommentSection';
 import { useTaskDocuments } from '../../hooks/documents/useDocuments';
 import { UploadDocumentModal } from '../../components/documents/modals/UploadDocumentModal';
-import { DocumentPreviewModal } from '../../components/documents/modals/DocumentPreviewModal';
 import { DocumentCard } from '../../components/documents/DocumentCard';
 import { DocumentResponse } from '../../types/document.types';
 import { documentService } from '../../services/api/documentService';
@@ -103,7 +102,6 @@ const TaskDetail: React.FC = () => {
 
   // États pour les documents
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<DocumentResponse | null>(null);
 
   // Charger les documents de la tâche
@@ -112,8 +110,9 @@ const TaskDetail: React.FC = () => {
 
   // Handlers pour les documents
   const handleViewDocument = (document: DocumentResponse) => {
-    setSelectedDocument(document);
-    setShowPreviewModal(true);
+    // Ouvrir le document dans un nouvel onglet du navigateur
+    const previewUrl = `/api/documents/${document.id}/preview`;
+    window.open(previewUrl, '_blank');
   };
 
   const handleDownloadDocument = async (document: DocumentResponse) => {
@@ -852,18 +851,6 @@ const TaskDetail: React.FC = () => {
           setShowUploadModal(false);
         }}
       />
-
-      {/* Modal de prévisualisation */}
-      {selectedDocument && (
-        <DocumentPreviewModal
-          isOpen={showPreviewModal}
-          onClose={() => {
-            setShowPreviewModal(false);
-            setSelectedDocument(null);
-          }}
-          document={selectedDocument}
-        />
-      )}
     </div>
   );
 };

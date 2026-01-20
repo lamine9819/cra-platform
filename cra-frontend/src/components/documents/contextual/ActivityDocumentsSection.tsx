@@ -5,7 +5,6 @@ import { useActivityDocuments, useDeleteDocument, useDownloadDocument } from '..
 import { DocumentType, DocumentResponse, formatDocumentSize, getMimeTypeIcon } from '../../../types/document.types';
 import { Button } from '../../ui/Button';
 import { UploadDocumentModal } from '../modals/UploadDocumentModal';
-import { DocumentPreviewModal } from '../modals/DocumentPreviewModal';
 import { ShareDocumentModal } from '../modals/ShareDocumentModal';
 import toast from 'react-hot-toast';
 
@@ -15,7 +14,6 @@ interface ActivityDocumentsSectionProps {
 
 const ActivityDocumentsSection: React.FC<ActivityDocumentsSectionProps> = ({ activityId }) => {
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<DocumentResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -34,8 +32,9 @@ const ActivityDocumentsSection: React.FC<ActivityDocumentsSectionProps> = ({ act
   });
 
   const handlePreview = (doc: DocumentResponse) => {
-    setSelectedDocument(doc);
-    setShowPreviewModal(true);
+    // Ouvrir le document dans un nouvel onglet du navigateur
+    const previewUrl = `/api/documents/${doc.id}/preview`;
+    window.open(previewUrl, '_blank');
   };
 
   const handleShare = (doc: DocumentResponse) => {

@@ -291,6 +291,7 @@ class IndexedDBService {
   }
 }
 
-// Export singleton
+// Export class and singleton
+export { IndexedDBService };
 export const indexedDBService = new IndexedDBService();
 export default indexedDBService;

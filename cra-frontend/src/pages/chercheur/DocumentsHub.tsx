@@ -38,7 +38,6 @@ import { DocumentCard } from '../../components/documents/DocumentCard';
 import { DocumentSkeleton } from '../../components/documents/shared/DocumentSkeleton';
 import { EmptyDocuments } from '../../components/documents/shared/EmptyDocuments';
 import { UploadDocumentModal } from '../../components/documents/modals/UploadDocumentModal';
-import { DocumentPreviewModal } from '../../components/documents/modals/DocumentPreviewModal';
 import { ShareDocumentModal } from '../../components/documents/modals/ShareDocumentModal';
 import { EditMetadataModal } from '../../components/documents/modals/EditMetadataModal';
 import { DocumentResponse } from '../../types/document.types';
@@ -53,7 +52,6 @@ export const DocumentsHub: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<DocumentResponse | null>(null);
@@ -110,8 +108,9 @@ export const DocumentsHub: React.FC = () => {
   }, [documents]);
 
   const handleView = (doc: DocumentResponse) => {
-    setSelectedDocument(doc);
-    setShowPreviewModal(true);
+    // Ouvrir le document dans un nouvel onglet du navigateur
+    const previewUrl = `/api/documents/${doc.id}/preview`;
+    window.open(previewUrl, '_blank');
   };
 
   const handleDownload = async (doc: DocumentResponse) => {
@@ -366,17 +365,6 @@ export const DocumentsHub: React.FC = () => {
             setShowUploadModal(false);
             refetchAll();
           }}
-        />
-      )}
-
-      {showPreviewModal && selectedDocument && (
-        <DocumentPreviewModal
-          isOpen={showPreviewModal}
-          onClose={() => {
-            setShowPreviewModal(false);
-            setSelectedDocument(null);
-          }}
-          document={selectedDocument}
         />
       )}
 

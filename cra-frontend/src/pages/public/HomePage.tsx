@@ -54,13 +54,6 @@ const HomePage: React.FC = () => {
     }
   ];
 
-  const stats = [
-    { number: "150+", label: "Chercheurs Actifs", icon: Users },
-    { number: "50+", label: "Projets de Recherche", icon: Microscope },
-    { number: "1000+", label: "Documents Partagés", icon: FileText },
-    { number: "50+", label: "Années d'Excellence", icon: Award }
-  ];
-
   const missions = [
     {
       icon: Target,
@@ -82,14 +75,18 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="bg-white/95 backdrop-blur-md shadow-sm fixed w-full top-0 z-50">
+      <nav className="bg-white/95 backdrop-blur-md shadow-sm fixed w-full top-0 z-50" style={{
+        fontFamily: "'Georgia', 'Times New Roman', serif"
+      }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-green-700 rounded-xl flex items-center justify-center shadow-lg">
-                <Leaf className="w-7 h-7 text-white" />
-              </div>
+              <img
+                src="/isra.png"
+                alt="ISRA Logo"
+                className="w-12 h-12 rounded-xl shadow-lg object-contain"
+              />
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent">
                   CRA Plateforme
@@ -163,35 +160,47 @@ const HomePage: React.FC = () => {
         {/* Contenu */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-green-600/20 backdrop-blur-sm border border-green-400/30 text-green-300 text-sm font-semibold mb-8">
-              <Leaf className="w-4 h-4 mr-2" />
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-green-600/20 backdrop-blur-sm border border-green-400/30 text-green-300 text-sm font-semibold mb-8 animate-fade-in-down" style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif"
+            }}>
+              <img
+                src="/isra.png"
+                alt="ISRA Logo"
+                className="w-5 h-5 mr-2 object-contain animate-pulse-slow"
+              />
               Centre de Recherches Agricoles
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight" style={{
+            <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight animate-fade-in-up" style={{
               fontFamily: "'Georgia', 'Times New Roman', serif",
-              textShadow: '0 4px 30px rgba(0,0,0,0.5)'
+              textShadow: '0 4px 30px rgba(0,0,0,0.5)',
+              animation: 'fadeInUp 0.8s ease-out'
             }}>
               Innovation et Excellence en Recherche Agricole
             </h1>
 
-            <p className="text-xl md:text-2xl text-gray-200 mb-10 leading-relaxed" style={{
-              textShadow: '0 2px 20px rgba(0,0,0,0.5)'
+            <p className="text-xl md:text-2xl text-gray-200 mb-10 leading-relaxed animate-fade-in-up" style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif",
+              textShadow: '0 2px 20px rgba(0,0,0,0.5)',
+              animation: 'fadeInUp 1s ease-out'
             }}>
               Plateforme collaborative dédiée à l'avancement de la recherche agricole et à la sécurité alimentaire dans la vallée du fleuve Sénégal
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif",
+              animation: 'fadeInUp 1.2s ease-out'
+            }}>
               <Link
                 to="/login"
-                className="inline-flex items-center justify-center bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-4 rounded-xl hover:from-green-700 hover:to-green-800 transition-all shadow-xl font-semibold text-lg group"
+                className="inline-flex items-center justify-center bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-4 rounded-xl hover:from-green-700 hover:to-green-800 hover:scale-105 transition-all shadow-xl font-semibold text-lg group"
               >
                 Accéder à la Plateforme
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
                 href="#apropos"
-                className="inline-flex items-center justify-center border-2 border-white/80 text-white px-8 py-4 rounded-xl hover:bg-white/10 backdrop-blur-sm transition-all font-semibold text-lg"
+                className="inline-flex items-center justify-center border-2 border-white/80 text-white px-8 py-4 rounded-xl hover:bg-white/10 hover:scale-105 backdrop-blur-sm transition-all font-semibold text-lg"
               >
                 En Savoir Plus
               </a>
@@ -205,22 +214,191 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-20 bg-white">
+      <style>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in-down {
+          animation: fadeInDown 0.6s ease-out;
+        }
+
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out;
+        }
+
+        .animate-pulse-slow {
+          animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.7;
+          }
+        }
+      `}</style>
+
+      {/* Histoire et Présentation du CRA */}
+      <section className="py-20 bg-gradient-to-br from-white via-green-50/30 to-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="bg-gradient-to-br from-green-50 to-green-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md">
-                  <stat.icon className="w-10 h-10 text-green-600" />
-                </div>
-                <h3 className="text-4xl font-bold text-gray-900 mb-2">{stat.number}</h3>
-                <p className="text-gray-600 font-medium">{stat.label}</p>
+          {/* Histoire du CRA */}
+          <div className="mb-20 opacity-0 translate-y-10 animate-slide-up">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6" style={{
+                fontFamily: "'Georgia', 'Times New Roman', serif"
+              }}>
+                Le Centre de Recherches Agricoles de Saint-Louis
+              </h2>
+            </div>
+            <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-green-100" style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif"
+            }}>
+              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                L'un des plus grands centres de l'ISRA a été créé en <span className="font-bold text-green-700">1972 à Richard Toll</span>, puis transféré à <span className="font-bold text-green-700">Saint-Louis en 1984</span>. Il couvre la région agro écologique de la vallée du fleuve Sénégal (VFS) qui s'étend sur les régions administratives de Saint-Louis, Matam et le département de Bakel (Région de Tambacounda).
+              </p>
+              <p className="text-lg text-gray-700 leading-relaxed">
+                Cette région agro écologique est l'une des zones agricoles les plus importantes du pays. Elle possède d'importantes potentialités en agriculture, élevage, pêche, de foresterie et de l'agroforesterie. Ce qui justifie son rôle de premier plan dans la <span className="font-semibold text-green-700">politique nationale de développement économique et social</span>.
+              </p>
+            </div>
+          </div>
+
+          {/* Missions du Centre */}
+          <div className="mb-20 opacity-0 translate-y-10 animate-slide-up-delay-1">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6" style={{
+                fontFamily: "'Georgia', 'Times New Roman', serif"
+              }}>
+                Missions du Centre
+              </h2>
+            </div>
+            <div className="bg-gradient-to-br from-green-100 to-green-200 rounded-3xl shadow-2xl p-8 md:p-12 text-gray-800" style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif"
+            }}>
+              <p className="text-lg leading-relaxed mb-8">
+                Il a pour mission de participer au développement socio-économique en générant des technologies et des connaissances, ainsi qu'en élaborant des innovations techniques visant à améliorer le bien-être des populations rurales en augmentant leurs revenus.
+              </p>
+              <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-green-300">
+                <h3 className="text-2xl font-bold mb-4 text-gray-900">Programme: Systèmes de production et gestion des ressources naturelles dans la VFS</h3>
+                <p className="text-gray-700 mb-6">Structuré autour de cinq thématiques :</p>
+                <ul className="space-y-3">
+                  <li className="flex items-start">
+                    <CheckCircle className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-green-600" />
+                    <span className="text-gray-800">Intensification de la riziculture</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-green-600" />
+                    <span className="text-gray-800">Diversification des cultures</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-green-600" />
+                    <span className="text-gray-800">Amélioration des systèmes de production</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-green-600" />
+                    <span className="text-gray-800">Environnement institutionnel et dynamique des filières</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-green-600" />
+                    <span className="text-gray-800">Gestion durable des ressources et des espaces ruraux</span>
+                  </li>
+                </ul>
               </div>
-            ))}
+              <p className="text-gray-700 leading-relaxed">
+                Cette initiative vise à intensifier la riziculture, diversifier les cultures et améliorer les systèmes de production tout en assurant une gestion durable des ressources. Elle contribue également à éclairer les décisions dans les secteurs public et privé. L'organisation dispose de <span className="font-bold text-gray-900">quatre stations d'expérimentation</span> pour soutenir ses activités.
+              </p>
+            </div>
+          </div>
+
+          {/* Nos Missions au CRA */}
+          <div className="mb-20 opacity-0 translate-y-10 animate-slide-up-delay-2">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6" style={{
+                fontFamily: "'Georgia', 'Times New Roman', serif"
+              }}>
+                Nos Missions au CRA
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8" style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif"
+            }}>
+              <div className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-2xl transition-all hover:-translate-y-2 border border-green-100">
+                <div className="bg-gradient-to-br from-green-100 to-green-200 w-16 h-16 rounded-xl flex items-center justify-center mb-6 mx-auto">
+                  <Microscope className="w-8 h-8 text-green-700" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">Intensification de la riziculture</h3>
+              </div>
+              <div className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-2xl transition-all hover:-translate-y-2 border border-green-100">
+                <div className="bg-gradient-to-br from-green-100 to-green-200 w-16 h-16 rounded-xl flex items-center justify-center mb-6 mx-auto">
+                  <Leaf className="w-8 h-8 text-green-700" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">Diversification des cultures et systèmes de production</h3>
+                <p className="text-gray-600 text-center">Dans une dynamique de gestion durable des ressources</p>
+              </div>
+              <div className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-2xl transition-all hover:-translate-y-2 border border-green-100">
+                <div className="bg-gradient-to-br from-green-100 to-green-200 w-16 h-16 rounded-xl flex items-center justify-center mb-6 mx-auto">
+                  <BarChart3 className="w-8 h-8 text-green-700" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">Contribution à l'éclairage des décisions</h3>
+                <p className="text-gray-600 text-center">Du secteur public et privé</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
+      <style>{`
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-slide-up {
+          animation: slideUp 0.8s ease-out forwards;
+        }
+
+        .animate-slide-up-delay-1 {
+          animation: slideUp 0.8s ease-out 0.2s forwards;
+        }
+
+        .animate-slide-up-delay-2 {
+          animation: slideUp 0.8s ease-out 0.4s forwards;
+        }
+
+        .animate-slide-up-delay-3 {
+          animation: slideUp 0.8s ease-out 0.6s forwards;
+        }
+
+        .animate-slide-up-delay-4 {
+          animation: slideUp 0.8s ease-out 0.8s forwards;
+        }
+      `}</style>
 
       {/* À Propos Section */}
       <section id="apropos" className="py-24 bg-gradient-to-br from-gray-50 to-green-50">
@@ -231,12 +409,16 @@ const HomePage: React.FC = () => {
             }}>
               À Propos du CRA de Saint-Louis
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto" style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif"
+            }}>
               Une institution de référence dans la recherche agricole et le développement rural
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16" style={{
+            fontFamily: "'Georgia', 'Times New Roman', serif"
+          }}>
             {missions.map((mission, index) => (
               <div key={index} className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow">
                 <div className="bg-gradient-to-br from-green-100 to-green-200 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
@@ -248,7 +430,9 @@ const HomePage: React.FC = () => {
             ))}
           </div>
 
-          <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12" style={{
+            fontFamily: "'Georgia', 'Times New Roman', serif"
+          }}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h3 className="text-3xl font-bold text-gray-900 mb-6">
@@ -299,12 +483,16 @@ const HomePage: React.FC = () => {
             }}>
               Fonctionnalités de la Plateforme
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto" style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif"
+            }}>
               Des outils modernes pour faciliter la recherche agricole et la collaboration scientifique
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" style={{
+            fontFamily: "'Georgia', 'Times New Roman', serif"
+          }}>
             {features.map((feature, index) => (
               <div key={index} className="group">
                 <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-lg p-8 hover:shadow-2xl transition-all h-full border border-gray-100 hover:border-green-200">
@@ -329,13 +517,22 @@ const HomePage: React.FC = () => {
             }}>
               Nos Activités en Images
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto" style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif"
+            }}>
               Découvrez le travail de nos chercheurs et les résultats de nos recherches
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="relative group overflow-hidden rounded-2xl shadow-xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8" style={{
+            fontFamily: "'Georgia', 'Times New Roman', serif"
+          }}>
+            <a
+              href="https://israsaintlouis.sn/2-columns/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative group overflow-hidden rounded-2xl shadow-xl block cursor-pointer"
+            >
               <img
                 src="/photo_2025-01-20_08-37-40.jpg"
                 alt="Recherche au CRA"
@@ -347,9 +544,14 @@ const HomePage: React.FC = () => {
                   <p className="text-gray-200">Innovation et développement agricole</p>
                 </div>
               </div>
-            </div>
+            </a>
 
-            <div className="relative group overflow-hidden rounded-2xl shadow-xl">
+            <a
+              href="https://israsaintlouis.sn/equipe/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative group overflow-hidden rounded-2xl shadow-xl block cursor-pointer"
+            >
               <img
                 src="/WhatsApp-Image-2025-07-02-a-15.59.09_f5945a10.jpg"
                 alt="Équipe du CRA"
@@ -361,7 +563,7 @@ const HomePage: React.FC = () => {
                   <p className="text-gray-200">Des chercheurs dévoués et passionnés</p>
                 </div>
               </div>
-            </div>
+            </a>
           </div>
         </div>
       </section>
@@ -381,7 +583,9 @@ const HomePage: React.FC = () => {
           }}>
             Prêt à rejoindre la plateforme ?
           </h2>
-          <p className="text-xl text-green-100 mb-10 max-w-2xl mx-auto">
+          <p className="text-xl text-green-100 mb-10 max-w-2xl mx-auto" style={{
+            fontFamily: "'Georgia', 'Times New Roman', serif"
+          }}>
             Découvrez comment notre plateforme peut transformer votre approche de la recherche agricole
           </p>
           <Link
@@ -395,17 +599,21 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="bg-gray-900 text-white py-16">
+      <footer id="contact" className="bg-gray-900 text-white py-16" style={{
+        fontFamily: "'Georgia', 'Times New Roman', serif"
+      }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
             {/* Company Info */}
             <div className="md:col-span-2">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-green-700 rounded-xl flex items-center justify-center">
-                  <Leaf className="w-7 h-7 text-white" />
-                </div>
+                <img
+                  src="/isra.png"
+                  alt="ISRA Logo"
+                  className="w-12 h-12 rounded-xl object-contain"
+                />
                 <div>
-                  <h3 className="text-2xl font-bold">CRA Platform</h3>
+                  <h3 className="text-2xl font-bold">CRA Plateforme</h3>
                   <p className="text-gray-400 text-sm">Saint-Louis, Sénégal</p>
                 </div>
               </div>
@@ -448,7 +656,7 @@ const HomePage: React.FC = () => {
                 </div>
                 <div className="flex items-start space-x-3">
                   <Phone className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-400">+221 33 XXX XX XX</span>
+                  <span className="text-gray-400">+221 33 96138321 </span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Mail className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
@@ -460,7 +668,7 @@ const HomePage: React.FC = () => {
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center">
             <p className="text-gray-400">
-              © 2025 CRA Platform. Tous droits réservés.
+              © 2026 CRA Plateforme. Tous droits réservés.
             </p>
           </div>
         </div>

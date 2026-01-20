@@ -73,17 +73,14 @@ router.get('/event/:eventId', authenticate, documentController.getEventDocuments
 // ROUTES AVEC /:id (DOIVENT ÊTRE À LA FIN)
 // =============================================
 
-// Obtenir un document spécifique
-router.get('/:id', authenticate, documentController.getDocumentById);
+// IMPORTANT: Les routes spécifiques (/:id/preview, /:id/download, etc.)
+// doivent être définies AVANT la route générique /:id
 
 // Preview document (inline dans le browser) - Utilise flexibleAuth pour supporter token en query
 router.get('/:id/preview', flexibleAuth, documentController.previewDocument);
 
 // Télécharger un document - Utilise flexibleAuth pour supporter token en query
 router.get('/:id/download', flexibleAuth, documentController.downloadDocument);
-
-// Partager un document
-router.post('/:id/share', authenticate, documentController.shareDocument);
 
 // Gestion des partages
 router.get('/:id/shares', authenticate, documentController.getDocumentShares);
@@ -102,10 +99,16 @@ router.delete('/:id/favorite', authenticate, documentController.removeFromFavori
 router.post('/:id/restore', authenticate, documentController.restoreDocument);
 router.delete('/:id/permanent', authenticate, documentController.permanentDeleteDocument);
 
+// Partager un document
+router.post('/:id/share', authenticate, documentController.shareDocument);
+
 // Mise à jour métadonnées
 router.patch('/:id', authenticate, documentController.updateDocumentMetadata);
 
 // Suppression (soft delete par défaut maintenant)
 router.delete('/:id', authenticate, documentController.deleteDocument);
+
+// Obtenir un document spécifique - DOIT ÊTRE EN DERNIER
+router.get('/:id', authenticate, documentController.getDocumentById);
 
 export default router;

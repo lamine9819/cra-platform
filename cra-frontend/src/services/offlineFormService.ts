@@ -9,8 +9,8 @@ import {
   SyncSummary,
 } from '../types/form.types';
 import formApi from './formApi';
-import indexedDBService from './indexedDBService';
-import encryptionService, { EncryptedData } from './encryptionService';
+import indexedDBService, { IndexedDBService } from './indexedDBService';
+import encryptionService, { EncryptionService, EncryptedData } from './encryptionService';
 
 const OFFLINE_STORAGE_KEY = 'offline_forms';
 const DEVICE_ID_KEY = 'device_id';
@@ -489,23 +489,23 @@ async function savePhotoToIndexedDB(
   responseIndex: number,
   photoData: PhotoData
 ): Promise<string> {
-  if (!indexedDBService.isAvailable()) {
+  if (!IndexedDBService.isAvailable()) {
     console.warn('IndexedDB non disponible, utilisation du stockage base64');
     return photoData.base64; // Fallback
   }
 
   try {
     // Convertir base64 en Blob pour stockage optimisé
-    const blob = indexedDBService.base64ToBlob(photoData.base64, photoData.mimeType);
+    const blob = indexedDBService.base64ToBlob(photoData.base64, photoData.mimeType || 'image/jpeg');
 
     const photoId = await indexedDBService.savePhoto({
       formId,
       fieldId,
       responseIndex,
       blob,
-      filename: photoData.filename,
-      mimeType: photoData.mimeType,
-      takenAt: photoData.takenAt,
+      filename: photoData.filename || 'photo.jpg',
+      mimeType: photoData.mimeType || 'image/jpeg',
+      takenAt: photoData.takenAt || new Date(),
       latitude: photoData.latitude,
       longitude: photoData.longitude,
       caption: photoData.caption,
@@ -522,7 +522,7 @@ async function savePhotoToIndexedDB(
  * Récupérer une photo depuis IndexedDB et la convertir en PhotoData
  */
 async function getPhotoFromIndexedDB(photoId: string): Promise<PhotoData | null> {
-  if (!indexedDBService.isAvailable()) {
+  if (!IndexedDBService.isAvailable()) {
     return null;
   }
 
@@ -653,7 +653,7 @@ export const offlineFormService = {
 
     // Sauvegarder les photos dans IndexedDB si disponible
     const photoIds: string[] = [];
-    if (response.photos && indexedDBService.isAvailable()) {
+    if (response.photos && IndexedDBService.isAvailable()) {
       try {
         for (const photo of response.photos) {
           const photoId = await savePhotoToIndexedDB(
@@ -687,7 +687,7 @@ export const offlineFormService = {
     }
 
     // Chiffrer les champs sensibles (email, nom, données personnelles)
-    if (encryptionService.isAvailable()) {
+    if (EncryptionService.isAvailable()) {
       try {
         // Définir les champs sensibles à chiffrer
         const sensitiveFields = ['collectorEmail', 'collectorName'];
@@ -802,7 +802,7 @@ export const offlineFormService = {
           let preparedResponse = { ...response };
 
           // Déchiffrer les données sensibles si nécessaire
-          if (preparedResponse._encrypted && encryptionService.isAvailable()) {
+          if (preparedResponse._encrypted && EncryptionService.isAvailable()) {
             try {
               preparedResponse = await encryptionService.decryptSensitiveFields(preparedResponse);
             } catch (error) {
@@ -812,7 +812,7 @@ export const offlineFormService = {
           }
 
           // Récupérer les photos depuis IndexedDB si nécessaire
-          if (preparedResponse.useIndexedDB && preparedResponse.photoIds && indexedDBService.isAvailable()) {
+          if (preparedResponse.useIndexedDB && preparedResponse.photoIds && IndexedDBService.isAvailable()) {
             try {
               const photos = [];
               for (const photoId of preparedResponse.photoIds) {
@@ -843,7 +843,7 @@ export const offlineFormService = {
           );
 
           // Supprimer les photos d'IndexedDB après sync réussie
-          if (response.photoIds && indexedDBService.isAvailable()) {
+          if (response.photoIds && IndexedDBService.isAvailable()) {
             for (const photoId of response.photoIds) {
               try {
                 await indexedDBService.deletePhoto(photoId);

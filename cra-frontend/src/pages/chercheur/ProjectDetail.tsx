@@ -33,7 +33,6 @@ import ProjectAnalytics from '../../components/projects/ProjectAnalytics';
 import ConventionDetailsModal from '../../components/conventions/ConventionDetailsModal';
 import { useProjectDocuments } from '../../hooks/documents/useDocuments';
 import { UploadDocumentModal } from '../../components/documents/modals/UploadDocumentModal';
-import { DocumentPreviewModal } from '../../components/documents/modals/DocumentPreviewModal';
 import { DocumentCard } from '../../components/documents/DocumentCard';
 import { DocumentResponse } from '../../types/document.types';
 import { documentService } from '../../services/api/documentService';
@@ -52,7 +51,6 @@ const ProjectDetail: React.FC = () => {
 
   // États pour les documents
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<DocumentResponse | null>(null);
 
   const { data: project, isLoading, isError, error } = useQuery({
@@ -67,8 +65,9 @@ const ProjectDetail: React.FC = () => {
 
   // Handlers pour les documents
   const handleViewDocument = (document: DocumentResponse) => {
-    setSelectedDocument(document);
-    setShowPreviewModal(true);
+    // Ouvrir le document dans un nouvel onglet du navigateur
+    const previewUrl = `/api/documents/${document.id}/preview`;
+    window.open(previewUrl, '_blank');
   };
 
   const handleDownloadDocument = async (document: DocumentResponse) => {
@@ -507,18 +506,6 @@ const ProjectDetail: React.FC = () => {
           setShowUploadModal(false);
         }}
       />
-
-      {/* Modal de prévisualisation */}
-      {selectedDocument && (
-        <DocumentPreviewModal
-          isOpen={showPreviewModal}
-          onClose={() => {
-            setShowPreviewModal(false);
-            setSelectedDocument(null);
-          }}
-          document={selectedDocument}
-        />
-      )}
 
       {/* Modal des détails de la convention */}
       <ConventionDetailsModal

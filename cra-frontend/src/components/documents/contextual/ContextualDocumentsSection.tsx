@@ -32,7 +32,6 @@ import { DocumentSkeleton } from '../shared/DocumentSkeleton';
 import { EmptyDocuments } from '../shared/EmptyDocuments';
 import { UploadDocumentModal } from '../modals/UploadDocumentModal';
 import { LinkExistingModal } from '../modals/LinkExistingModal';
-import { DocumentPreviewModal } from '../modals/DocumentPreviewModal';
 
 interface ContextualDocumentsSectionProps {
   entityType: 'activity' | 'project' | 'task';
@@ -49,7 +48,6 @@ export const ContextualDocumentsSection: React.FC<ContextualDocumentsSectionProp
 }) => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<DocumentResponse | null>(null);
   const [activeTab, setActiveTab] = useState<'upload' | 'link'>('upload');
 
@@ -68,8 +66,9 @@ export const ContextualDocumentsSection: React.FC<ContextualDocumentsSectionProp
   const removeFromFavoritesMutation = useRemoveFromFavorites();
 
   const handleView = (document: DocumentResponse) => {
-    setSelectedDocument(document);
-    setShowPreviewModal(true);
+    // Ouvrir le document dans un nouvel onglet du navigateur
+    const previewUrl = `/api/documents/${document.id}/preview`;
+    window.open(previewUrl, '_blank');
   };
 
   const handleDownload = async (document: DocumentResponse) => {
@@ -210,17 +209,6 @@ export const ContextualDocumentsSection: React.FC<ContextualDocumentsSectionProp
             setShowLinkModal(false);
             refetch();
           }}
-        />
-      )}
-
-      {showPreviewModal && selectedDocument && (
-        <DocumentPreviewModal
-          isOpen={showPreviewModal}
-          onClose={() => {
-            setShowPreviewModal(false);
-            setSelectedDocument(null);
-          }}
-          document={selectedDocument}
         />
       )}
     </div>

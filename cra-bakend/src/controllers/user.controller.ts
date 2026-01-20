@@ -11,7 +11,9 @@ import {
   userListQuerySchema,
   createTimeAllocationSchema,
   validateIndividualProfileSchema,
-  downloadIndividualProfileSchema
+  downloadIndividualProfileSchema,
+  createIndividualProfileSchema,
+  getTimeAllocationSchema
 } from '../utils/userValidation';
 
 const userService = new UserService();
@@ -469,6 +471,99 @@ export class UserController {
         success: true,
         message: 'Profil individuel mis à jour avec succès',
         data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Créer son propre profil individuel
+   */
+  createMyIndividualProfile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const userId = authenticatedReq.user.userId;
+      const validatedData = createIndividualProfileSchema.parse(req.body);
+
+      const user = await userService.createIndividualProfile(userId, validatedData, userId);
+
+      res.status(201).json({
+        success: true,
+        message: 'Profil individuel créé avec succès',
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Récupérer toutes ses allocations de temps
+   */
+  getMyTimeAllocations = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const userId = authenticatedReq.user.userId;
+
+      const allocations = await userService.getTimeAllocations(userId);
+
+      res.status(200).json({
+        success: true,
+        data: allocations,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Récupérer son allocation de temps pour une année spécifique
+   */
+  getMyTimeAllocation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const userId = authenticatedReq.user.userId;
+      const { year } = getTimeAllocationSchema.parse(req.params);
+
+      const allocation = await userService.getTimeAllocation(userId, year);
+
+      res.status(200).json({
+        success: true,
+        data: allocation,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Mettre à jour sa propre allocation de temps pour une année
+   */
+  updateMyTimeAllocation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authenticatedReq = req as AuthenticatedRequest;
+      const userId = authenticatedReq.user.userId;
+      const validatedData = createTimeAllocationSchema.parse(req.body);
+
+      const timeAllocation = await userService.updateTimeAllocation(
+        userId,
+        validatedData.year,
+        {
+          tempsRecherche: validatedData.tempsRecherche,
+          tempsEnseignement: validatedData.tempsEnseignement,
+          tempsFormation: validatedData.tempsFormation,
+          tempsConsultation: validatedData.tempsConsultation,
+          tempsGestionScientifique: validatedData.tempsGestionScientifique,
+          tempsAdministration: validatedData.tempsAdministration,
+        },
+        userId
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Allocation de temps mise à jour avec succès',
+        data: timeAllocation,
       });
     } catch (error) {
       next(error);

@@ -30,7 +30,6 @@ import ActivityTasks from '../../components/activities/ActivityTasks';
 import ReconductActivityModal from '../../components/activities/ReconductActivityModal';
 import { useActivityDocuments } from '../../hooks/documents/useDocuments';
 import { UploadDocumentModal } from '../../components/documents/modals/UploadDocumentModal';
-import { DocumentPreviewModal } from '../../components/documents/modals/DocumentPreviewModal';
 import { DocumentCard } from '../../components/documents/DocumentCard';
 import { DocumentResponse } from '../../types/document.types';
 import { documentService } from '../../services/api/documentService';
@@ -55,7 +54,6 @@ const ActivityDetail: React.FC = () => {
 
   // États pour les documents
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<DocumentResponse | null>(null);
 
   // Empêcher le chargement si l'ID est "create" ou "edit" (routes réservées)
@@ -89,8 +87,9 @@ const ActivityDetail: React.FC = () => {
 
   // Handlers pour les documents
   const handleViewDocument = (document: DocumentResponse) => {
-    setSelectedDocument(document);
-    setShowPreviewModal(true);
+    // Ouvrir le document dans un nouvel onglet du navigateur
+    const previewUrl = `/api/documents/${document.id}/preview`;
+    window.open(previewUrl, '_blank');
   };
 
   const handleDownloadDocument = async (document: DocumentResponse) => {
@@ -696,18 +695,6 @@ const ActivityDetail: React.FC = () => {
           setShowUploadModal(false);
         }}
       />
-
-      {/* Modal de prévisualisation */}
-      {selectedDocument && (
-        <DocumentPreviewModal
-          isOpen={showPreviewModal}
-          onClose={() => {
-            setShowPreviewModal(false);
-            setSelectedDocument(null);
-          }}
-          document={selectedDocument}
-        />
-      )}
 
       {/* Modal de reconduction */}
       {showReconductModal && (

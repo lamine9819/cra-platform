@@ -33,6 +33,12 @@ router.delete('/me/profile-image',
   userController.deleteProfileImage
 );
 
+// Créer son propre profil individuel (chercheurs uniquement)
+router.post('/me/individual-profile',
+  authorize(['CHERCHEUR']),
+  userController.createMyIndividualProfile
+);
+
 // Mettre à jour son propre profil individuel (chercheurs uniquement)
 router.patch('/me/individual-profile',
   authorize(['CHERCHEUR']),
@@ -43,6 +49,28 @@ router.patch('/me/individual-profile',
 router.get('/me/individual-profile/download',
   authorize(['CHERCHEUR']),
   userController.downloadMyIndividualProfile
+);
+
+// =============================================
+// ROUTES POUR L'ALLOCATION DE TEMPS PERSONNELLE
+// =============================================
+
+// Récupérer toutes ses allocations de temps
+router.get('/me/time-allocations',
+  authorize(['CHERCHEUR']),
+  userController.getMyTimeAllocations
+);
+
+// Récupérer son allocation de temps pour une année spécifique
+router.get('/me/time-allocation/:year',
+  authorize(['CHERCHEUR']),
+  userController.getMyTimeAllocation
+);
+
+// Créer ou mettre à jour sa propre allocation de temps
+router.patch('/me/time-allocation',
+  authorize(['CHERCHEUR']),
+  userController.updateMyTimeAllocation
 );
 
 // =============================================

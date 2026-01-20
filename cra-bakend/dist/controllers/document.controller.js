@@ -146,7 +146,11 @@ class DocumentController {
                 const fileInfo = await documentService.getDocumentFilePath(id, userId, userRole);
                 res.setHeader('Content-Type', fileInfo.mimeType);
                 res.setHeader('Content-Disposition', `attachment; filename="${fileInfo.filename}"`);
-                res.sendFile(path_1.default.resolve(fileInfo.filepath));
+                // Résoudre le chemin absolu à partir du répertoire du backend
+                const absolutePath = path_1.default.isAbsolute(fileInfo.filepath)
+                    ? fileInfo.filepath
+                    : path_1.default.join(process.cwd(), fileInfo.filepath);
+                res.sendFile(absolutePath);
             }
             catch (error) {
                 next(error);
@@ -722,9 +726,15 @@ class DocumentController {
                 // Incrémenter le compteur de vues
                 await documentService.incrementViewCount(id);
                 const path = require('path');
-                res.sendFile(path.resolve(fileInfo.filepath));
+                // Résoudre le chemin absolu à partir du répertoire du backend
+                const absolutePath = path.isAbsolute(fileInfo.filepath)
+                    ? fileInfo.filepath
+                    : path.join(process.cwd(), fileInfo.filepath);
+                console.log('Preview document:', { id, filepath: fileInfo.filepath, absolutePath });
+                res.sendFile(absolutePath);
             }
             catch (error) {
+                console.error('Error in previewDocument:', error);
                 next(error);
             }
         };

@@ -298,6 +298,150 @@ export class UserService {
   }
 
   /**
+   * Récupérer toutes les allocations de temps d'un utilisateur
+   */
+  async getTimeAllocations(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { individualProfile: true }
+    });
+
+    if (!user?.individualProfile) {
+      return [];
+    }
+
+    const allocations = await prisma.individualTimeAllocation.findMany({
+      where: { profileId: user.individualProfile.id },
+      orderBy: { year: 'desc' }
+    });
+
+    return allocations;
+  }
+
+  /**
+   * Récupérer l'allocation de temps d'une année spécifique
+   */
+  async getTimeAllocation(userId: string, year: number) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { individualProfile: true }
+    });
+
+    if (!user?.individualProfile) {
+      return null;
+    }
+
+    const allocation = await prisma.individualTimeAllocation.findUnique({
+      where: {
+        profileId_year: {
+          profileId: user.individualProfile.id,
+          year
+        }
+      }
+    });
+
+    return allocation;
+  }
+
+  /**
+   * Créer un profil individuel pour un utilisateur
+   */
+  async createIndividualProfile(
+    userId: string,
+    profileData: {
+      matricule: string;
+      grade?: string;
+      classe?: string;
+      dateNaissance?: Date | string;
+      dateRecrutement?: Date | string;
+      localite?: string;
+      diplome?: string;
+      tempsRecherche?: number;
+      tempsEnseignement?: number;
+      tempsFormation?: number;
+      tempsConsultation?: number;
+      tempsGestionScientifique?: number;
+      tempsAdministration?: number;
+    },
+    requesterId: string
+  ): Promise<UserResponse> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { individualProfile: true }
+    });
+
+    if (!user) {
+      throw new NotFoundError('Utilisateur non trouvé');
+    }
+
+    if (user.individualProfile) {
+      throw new ValidationError('Cet utilisateur a déjà un profil individuel');
+    }
+
+    // Vérifier les permissions
+    await this.validateUpdatePermissions(user, requesterId);
+
+    // Vérifier l'unicité du matricule
+    const existingProfile = await prisma.individualProfile.findUnique({
+      where: { matricule: profileData.matricule }
+    });
+
+    if (existingProfile) {
+      throw new ValidationError('Un profil avec ce matricule existe déjà');
+    }
+
+    // Créer le profil individuel
+    await prisma.individualProfile.create({
+      data: {
+        userId,
+        matricule: profileData.matricule,
+        grade: profileData.grade,
+        classe: profileData.classe,
+        dateNaissance: profileData.dateNaissance ? new Date(profileData.dateNaissance) : undefined,
+        dateRecrutement: profileData.dateRecrutement ? new Date(profileData.dateRecrutement) : undefined,
+        localite: profileData.localite,
+        diplome: profileData.diplome,
+        tempsRecherche: profileData.tempsRecherche || 0,
+        tempsEnseignement: profileData.tempsEnseignement || 0,
+        tempsFormation: profileData.tempsFormation || 0,
+        tempsConsultation: profileData.tempsConsultation || 0,
+        tempsGestionScientifique: profileData.tempsGestionScientifique || 0,
+        tempsAdministration: profileData.tempsAdministration || 0,
+      }
+    });
+
+    // Retourner l'utilisateur mis à jour
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        supervisor: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+          }
+        },
+        individualProfile: true,
+        supervisedUsers: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+            discipline: true,
+          },
+          where: { isActive: true }
+        }
+      }
+    });
+
+    return this.formatUserResponse(updatedUser!);
+  }
+
+  /**
    * Valider un profil individuel
    */
   async validateIndividualProfile(

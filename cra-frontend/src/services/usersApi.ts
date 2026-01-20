@@ -271,7 +271,7 @@ class UsersApiService {
   // ALLOCATION DE TEMPS
   // =============================================
 
-  // Mettre à jour l'allocation de temps
+  // Mettre à jour l'allocation de temps (pour admin/coordonateur)
   async updateTimeAllocation(userId: string, year: number, allocation: any): Promise<any> {
     try {
       const response = await api.patch(`${this.baseUrl}/${userId}/time-allocation`, {
@@ -281,6 +281,49 @@ class UsersApiService {
       return response.data.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour de l\'allocation de temps');
+    }
+  }
+
+  // Récupérer toutes ses allocations de temps
+  async getMyTimeAllocations(): Promise<any[]> {
+    try {
+      const response = await api.get(`${this.baseUrl}/me/time-allocations`);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des allocations de temps');
+    }
+  }
+
+  // Récupérer son allocation de temps pour une année spécifique
+  async getMyTimeAllocation(year: number): Promise<any> {
+    try {
+      const response = await api.get(`${this.baseUrl}/me/time-allocation/${year}`);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la récupération de l\'allocation de temps');
+    }
+  }
+
+  // Mettre à jour sa propre allocation de temps
+  async updateMyTimeAllocation(year: number, allocation: any): Promise<any> {
+    try {
+      const response = await api.patch(`${this.baseUrl}/me/time-allocation`, {
+        year,
+        ...allocation
+      });
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour de l\'allocation de temps');
+    }
+  }
+
+  // Créer son propre profil individuel
+  async createMyIndividualProfile(profileData: any): Promise<any> {
+    try {
+      const response = await api.post(`${this.baseUrl}/me/individual-profile`, profileData);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erreur lors de la création du profil individuel');
     }
   }
 

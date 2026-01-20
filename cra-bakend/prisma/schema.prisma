@@ -455,6 +455,8 @@ model Project {
   strategicAxis      String?
   subAxis            String?
   program            String?
+  researchType       String?
+  interventionRegion String?
   researchProgramId  String?
   conventionId       String?
   createdAt          DateTime             @default(now())

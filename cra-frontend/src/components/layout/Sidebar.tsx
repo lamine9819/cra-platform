@@ -294,14 +294,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ navigation, isOpen, onClose })
               );
             })}
           </nav>
-
-          {/* Footer du sidebar */}
-          <div className="px-6 py-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-            <div className="text-xs text-center text-gray-500">
-              <p className="font-medium">Version 1.0.0</p>
-              <p className="mt-1">© 2024 ISRA</p>
-            </div>
-          </div>
         </div>
       </aside>
     </>

@@ -6,14 +6,18 @@ import {
   Phone,
   Briefcase,
   GraduationCap,
-  Upload,
-  Trash2,
   Save,
   X,
   Camera,
   Download,
   Clock,
-  FileText
+  FileText,
+  Plus,
+  Calendar,
+  CheckCircle,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { usersApi } from '../../services/usersApi';
@@ -21,13 +25,33 @@ import { toast } from 'react-hot-toast';
 
 type TabType = 'personal' | 'individual' | 'timeAllocation';
 
+interface TimeAllocation {
+  id: string;
+  year: number;
+  tempsRecherche: number;
+  tempsEnseignement: number;
+  tempsFormation: number;
+  tempsConsultation: number;
+  tempsGestionScientifique: number;
+  tempsAdministration: number;
+  isValidated: boolean;
+  validatedAt?: string;
+  validatedBy?: string;
+}
+
 const CompleteProfilePage: React.FC = () => {
   const { user: authUser, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('personal');
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingIndividual, setIsEditingIndividual] = useState(false);
+  const [isCreatingProfile, setIsCreatingProfile] = useState(false);
+  const [isEditingTimeAllocation, setIsEditingTimeAllocation] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
+
+  // Gestion de l'année pour l'allocation de temps
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
 
   // Données du profil personnel
   const [profileData, setProfileData] = useState({
@@ -58,7 +82,18 @@ const CompleteProfilePage: React.FC = () => {
     tempsGestionScientifique: 0,
     tempsAdministration: 0,
   });
-  const [timeAllocation, setTimeAllocation] = useState<any>(null);
+
+  // Allocations de temps
+  const [timeAllocations, setTimeAllocations] = useState<TimeAllocation[]>([]);
+  const [currentTimeAllocation, setCurrentTimeAllocation] = useState<TimeAllocation | null>(null);
+  const [timeAllocationFormData, setTimeAllocationFormData] = useState({
+    tempsRecherche: 0,
+    tempsEnseignement: 0,
+    tempsFormation: 0,
+    tempsConsultation: 0,
+    tempsGestionScientifique: 0,
+    tempsAdministration: 0,
+  });
 
   const [profileImage, setProfileImage] = useState<string | undefined>(authUser?.profileImage);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -68,6 +103,31 @@ const CompleteProfilePage: React.FC = () => {
   useEffect(() => {
     loadProfile();
   }, []);
+
+  useEffect(() => {
+    // Charger l'allocation de l'année sélectionnée
+    const allocation = timeAllocations.find(a => a.year === selectedYear);
+    setCurrentTimeAllocation(allocation || null);
+    if (allocation) {
+      setTimeAllocationFormData({
+        tempsRecherche: allocation.tempsRecherche,
+        tempsEnseignement: allocation.tempsEnseignement,
+        tempsFormation: allocation.tempsFormation,
+        tempsConsultation: allocation.tempsConsultation,
+        tempsGestionScientifique: allocation.tempsGestionScientifique,
+        tempsAdministration: allocation.tempsAdministration,
+      });
+    } else {
+      setTimeAllocationFormData({
+        tempsRecherche: 0,
+        tempsEnseignement: 0,
+        tempsFormation: 0,
+        tempsConsultation: 0,
+        tempsGestionScientifique: 0,
+        tempsAdministration: 0,
+      });
+    }
+  }, [selectedYear, timeAllocations]);
 
   const loadProfile = async () => {
     try {
@@ -105,6 +165,15 @@ const CompleteProfilePage: React.FC = () => {
           tempsGestionScientifique: ((profile as any)?.individualProfile).tempsGestionScientifique || 0,
           tempsAdministration: ((profile as any)?.individualProfile).tempsAdministration || 0,
         });
+
+        // Charger les allocations de temps
+        try {
+          const allocations = await usersApi.getMyTimeAllocations();
+          setTimeAllocations(allocations || []);
+        } catch (err) {
+          console.warn('Erreur lors du chargement des allocations:', err);
+          setTimeAllocations([]);
+        }
       }
     } catch (error: any) {
       toast.error(error.message || 'Erreur lors du chargement du profil');
@@ -185,6 +254,30 @@ const CompleteProfilePage: React.FC = () => {
     }
   };
 
+  const handleCreateIndividualProfile = async () => {
+    try {
+      setIsLoading(true);
+
+      // Validation : le matricule est obligatoire
+      if (!individualProfileData.matricule.trim()) {
+        toast.error('Le matricule est obligatoire');
+        return;
+      }
+
+      await usersApi.createMyIndividualProfile(individualProfileData);
+
+      toast.success('Profil individuel créé avec succès');
+      setIsCreatingProfile(false);
+
+      // Recharger le profil
+      loadProfile();
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de la création du profil individuel');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSaveIndividualProfile = async () => {
     try {
       setIsLoading(true);
@@ -212,6 +305,39 @@ const CompleteProfilePage: React.FC = () => {
       loadProfile();
     } catch (error: any) {
       toast.error(error.message || 'Erreur lors de la mise à jour du profil individuel');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveTimeAllocation = async () => {
+    try {
+      setIsLoading(true);
+
+      // Validation : la somme des temps doit être = 100%
+      const totalTemps =
+        timeAllocationFormData.tempsRecherche +
+        timeAllocationFormData.tempsEnseignement +
+        timeAllocationFormData.tempsFormation +
+        timeAllocationFormData.tempsConsultation +
+        timeAllocationFormData.tempsGestionScientifique +
+        timeAllocationFormData.tempsAdministration;
+
+      if (totalTemps !== 100) {
+        toast.error('La somme des allocations de temps doit être égale à 100%');
+        return;
+      }
+
+      await usersApi.updateMyTimeAllocation(selectedYear, timeAllocationFormData);
+
+      toast.success(`Allocation de temps pour ${selectedYear} mise à jour avec succès`);
+      setIsEditingTimeAllocation(false);
+
+      // Recharger les allocations
+      const allocations = await usersApi.getMyTimeAllocations();
+      setTimeAllocations(allocations || []);
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de la mise à jour de l\'allocation de temps');
     } finally {
       setIsLoading(false);
     }
@@ -256,6 +382,9 @@ const CompleteProfilePage: React.FC = () => {
     { id: 'individual' as TabType, label: 'Profil individuel', icon: FileText },
     { id: 'timeAllocation' as TabType, label: 'Allocation de temps', icon: Clock },
   ];
+
+  // Années disponibles pour la sélection (5 ans dans le passé et futur)
+  const availableYears = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
   if (isLoading && !profileData.firstName) {
     return (
@@ -320,12 +449,21 @@ const CompleteProfilePage: React.FC = () => {
               </button>
             )}
 
-            {activeTab === 'individual' && !isEditingIndividual && individualProfile && (
+            {activeTab === 'individual' && !isEditingIndividual && individualProfile && !isCreatingProfile && (
               <button
                 onClick={() => setIsEditingIndividual(true)}
                 className="px-4 py-2 bg-white text-green-700 rounded-lg hover:bg-green-50 transition-colors"
               >
                 Modifier
+              </button>
+            )}
+
+            {activeTab === 'timeAllocation' && !isEditingTimeAllocation && individualProfile && (
+              <button
+                onClick={() => setIsEditingTimeAllocation(true)}
+                className="px-4 py-2 bg-white text-green-700 rounded-lg hover:bg-green-50 transition-colors"
+              >
+                {currentTimeAllocation ? 'Modifier' : 'Configurer'}
               </button>
             )}
           </div>
@@ -350,6 +488,9 @@ const CompleteProfilePage: React.FC = () => {
                   onClick={() => {
                     setActiveTab(tab.id);
                     setIsEditing(false);
+                    setIsEditingIndividual(false);
+                    setIsEditingTimeAllocation(false);
+                    setIsCreatingProfile(false);
                   }}
                   className={`flex items-center px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
                     activeTab === tab.id
@@ -380,13 +521,25 @@ const CompleteProfilePage: React.FC = () => {
               data={individualProfile}
               formData={individualProfileData}
               isEditing={isEditingIndividual}
+              isCreating={isCreatingProfile}
               onChange={(field, value) => setIndividualProfileData((prev: any) => ({ ...prev, [field]: value }))}
               onDownload={handleDownloadFiche}
+              onStartCreate={() => setIsCreatingProfile(true)}
             />
           )}
 
           {activeTab === 'timeAllocation' && (
-            <TimeAllocationTab data={timeAllocation} />
+            <TimeAllocationTab
+              individualProfile={individualProfile}
+              allocations={timeAllocations}
+              currentAllocation={currentTimeAllocation}
+              selectedYear={selectedYear}
+              availableYears={availableYears}
+              isEditing={isEditingTimeAllocation}
+              formData={timeAllocationFormData}
+              onYearChange={setSelectedYear}
+              onChange={(field, value) => setTimeAllocationFormData(prev => ({ ...prev, [field]: value }))}
+            />
           )}
         </div>
 
@@ -424,8 +577,56 @@ const CompleteProfilePage: React.FC = () => {
           </div>
         )}
 
-        {/* Actions pour onglet profil individuel */}
-        {activeTab === 'individual' && isEditingIndividual && (
+        {/* Actions pour onglet profil individuel - Création */}
+        {activeTab === 'individual' && isCreatingProfile && (
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
+            <button
+              onClick={() => {
+                setIsCreatingProfile(false);
+                setIndividualProfileData({
+                  matricule: '',
+                  grade: '',
+                  classe: '',
+                  dateNaissance: '',
+                  dateRecrutement: '',
+                  localite: '',
+                  diplome: '',
+                  tempsRecherche: 0,
+                  tempsEnseignement: 0,
+                  tempsFormation: 0,
+                  tempsConsultation: 0,
+                  tempsGestionScientifique: 0,
+                  tempsAdministration: 0,
+                });
+              }}
+              disabled={isLoading}
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              <X className="w-4 h-4 inline mr-2" />
+              Annuler
+            </button>
+            <button
+              onClick={handleCreateIndividualProfile}
+              disabled={isLoading}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline mr-2"></div>
+                  Création...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 inline mr-2" />
+                  Créer mon profil
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Actions pour onglet profil individuel - Modification */}
+        {activeTab === 'individual' && isEditingIndividual && !isCreatingProfile && (
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
             <button
               onClick={() => {
@@ -440,6 +641,60 @@ const CompleteProfilePage: React.FC = () => {
             </button>
             <button
               onClick={handleSaveIndividualProfile}
+              disabled={isLoading}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline mr-2"></div>
+                  Enregistrement...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 inline mr-2" />
+                  Enregistrer
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Actions pour onglet allocation de temps */}
+        {activeTab === 'timeAllocation' && isEditingTimeAllocation && individualProfile && (
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
+            <button
+              onClick={() => {
+                setIsEditingTimeAllocation(false);
+                // Restaurer les données
+                const allocation = timeAllocations.find(a => a.year === selectedYear);
+                if (allocation) {
+                  setTimeAllocationFormData({
+                    tempsRecherche: allocation.tempsRecherche,
+                    tempsEnseignement: allocation.tempsEnseignement,
+                    tempsFormation: allocation.tempsFormation,
+                    tempsConsultation: allocation.tempsConsultation,
+                    tempsGestionScientifique: allocation.tempsGestionScientifique,
+                    tempsAdministration: allocation.tempsAdministration,
+                  });
+                } else {
+                  setTimeAllocationFormData({
+                    tempsRecherche: 0,
+                    tempsEnseignement: 0,
+                    tempsFormation: 0,
+                    tempsConsultation: 0,
+                    tempsGestionScientifique: 0,
+                    tempsAdministration: 0,
+                  });
+                }
+              }}
+              disabled={isLoading}
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              <X className="w-4 h-4 inline mr-2" />
+              Annuler
+            </button>
+            <button
+              onClick={handleSaveTimeAllocation}
               disabled={isLoading}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
             >
@@ -589,20 +844,32 @@ const IndividualProfileTab: React.FC<{
   data: any;
   formData: any;
   isEditing: boolean;
+  isCreating: boolean;
   onChange: (field: string, value: any) => void;
   onDownload: (format: 'pdf' | 'word') => void;
-}> = ({ data, formData, isEditing, onChange, onDownload }) => {
-  if (!data && !isEditing) {
+  onStartCreate: () => void;
+}> = ({ data, formData, isEditing, isCreating, onChange, onDownload, onStartCreate }) => {
+
+  // Si pas de profil et pas en mode création, afficher le bouton de création
+  if (!data && !isCreating) {
     return (
       <div className="text-center py-12">
         <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">Profil individuel non configuré</h3>
-        <p className="text-gray-600">Votre profil individuel n'a pas encore été créé.</p>
+        <p className="text-gray-600 mb-6">Votre profil individuel n'a pas encore été créé. Créez-le pour accéder à toutes les fonctionnalités.</p>
+        <button
+          onClick={onStartCreate}
+          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors inline-flex items-center"
+        >
+          <Plus className="w-5 h-5 mr-2" />
+          Créer mon profil individuel
+        </button>
       </div>
     );
   }
 
-  const displayData = isEditing ? formData : data;
+  const displayData = (isEditing || isCreating) ? formData : data;
+  const isFormMode = isEditing || isCreating;
 
   // Calculer le total des allocations de temps
   const totalTemps =
@@ -615,7 +882,7 @@ const IndividualProfileTab: React.FC<{
 
   return (
     <div>
-      {!isEditing && (
+      {!isFormMode && (
         <div className="flex justify-end mb-6 space-x-3">
           <button
             onClick={() => onDownload('pdf')}
@@ -639,14 +906,17 @@ const IndividualProfileTab: React.FC<{
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Informations administratives</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Matricule</label>
-            {isEditing ? (
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Matricule {isCreating && <span className="text-red-500">*</span>}
+            </label>
+            {isFormMode ? (
               <input
                 type="text"
                 value={formData.matricule}
                 onChange={(e) => onChange('matricule', e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder="Ex: MAT12345"
+                required={isCreating}
               />
             ) : (
               <p className="px-4 py-2 bg-gray-50 rounded-lg text-gray-900 font-medium">
@@ -657,7 +927,7 @@ const IndividualProfileTab: React.FC<{
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Grade</label>
-            {isEditing ? (
+            {isFormMode ? (
               <input
                 type="text"
                 value={formData.grade}
@@ -674,7 +944,7 @@ const IndividualProfileTab: React.FC<{
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Classe</label>
-            {isEditing ? (
+            {isFormMode ? (
               <input
                 type="text"
                 value={formData.classe}
@@ -691,7 +961,7 @@ const IndividualProfileTab: React.FC<{
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Localité</label>
-            {isEditing ? (
+            {isFormMode ? (
               <input
                 type="text"
                 value={formData.localite}
@@ -708,7 +978,7 @@ const IndividualProfileTab: React.FC<{
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
-            {isEditing ? (
+            {isFormMode ? (
               <input
                 type="date"
                 value={formData.dateNaissance}
@@ -724,7 +994,7 @@ const IndividualProfileTab: React.FC<{
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Date de recrutement</label>
-            {isEditing ? (
+            {isFormMode ? (
               <input
                 type="date"
                 value={formData.dateRecrutement}
@@ -740,7 +1010,7 @@ const IndividualProfileTab: React.FC<{
 
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">Diplôme</label>
-            {isEditing ? (
+            {isFormMode ? (
               <input
                 type="text"
                 value={formData.diplome}
@@ -757,24 +1027,22 @@ const IndividualProfileTab: React.FC<{
         </div>
       </div>
 
-      {/* Allocation de temps */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Allocation de temps (en %)</h3>
-          {isEditing && (
+      {/* Allocation de temps par défaut (dans le profil) - Seulement pour édition */}
+      {isFormMode && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Allocation de temps par défaut (en %)</h3>
             <span className={`text-sm font-medium ${totalTemps > 100 ? 'text-red-600' : totalTemps === 100 ? 'text-green-600' : 'text-gray-600'}`}>
               Total: {totalTemps}% {totalTemps > 100 && '(Dépasse 100%)'}
             </span>
-          )}
-        </div>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Clock className="w-4 h-4 inline mr-2" />
-              Recherche (%)
-            </label>
-            {isEditing ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Clock className="w-4 h-4 inline mr-2" />
+                Recherche (%)
+              </label>
               <input
                 type="number"
                 min="0"
@@ -783,19 +1051,13 @@ const IndividualProfileTab: React.FC<{
                 onChange={(e) => onChange('tempsRecherche', parseInt(e.target.value) || 0)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
-            ) : (
-              <p className="px-4 py-2 bg-blue-50 rounded-lg text-gray-900 font-medium">
-                {displayData.tempsRecherche}%
-              </p>
-            )}
-          </div>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Clock className="w-4 h-4 inline mr-2" />
-              Enseignement (%)
-            </label>
-            {isEditing ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Clock className="w-4 h-4 inline mr-2" />
+                Enseignement (%)
+              </label>
               <input
                 type="number"
                 min="0"
@@ -804,19 +1066,13 @@ const IndividualProfileTab: React.FC<{
                 onChange={(e) => onChange('tempsEnseignement', parseInt(e.target.value) || 0)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
-            ) : (
-              <p className="px-4 py-2 bg-green-50 rounded-lg text-gray-900 font-medium">
-                {displayData.tempsEnseignement}%
-              </p>
-            )}
-          </div>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Clock className="w-4 h-4 inline mr-2" />
-              Formation (%)
-            </label>
-            {isEditing ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Clock className="w-4 h-4 inline mr-2" />
+                Formation (%)
+              </label>
               <input
                 type="number"
                 min="0"
@@ -825,19 +1081,13 @@ const IndividualProfileTab: React.FC<{
                 onChange={(e) => onChange('tempsFormation', parseInt(e.target.value) || 0)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
-            ) : (
-              <p className="px-4 py-2 bg-yellow-50 rounded-lg text-gray-900 font-medium">
-                {displayData.tempsFormation}%
-              </p>
-            )}
-          </div>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Clock className="w-4 h-4 inline mr-2" />
-              Consultation (%)
-            </label>
-            {isEditing ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Clock className="w-4 h-4 inline mr-2" />
+                Consultation (%)
+              </label>
               <input
                 type="number"
                 min="0"
@@ -846,19 +1096,13 @@ const IndividualProfileTab: React.FC<{
                 onChange={(e) => onChange('tempsConsultation', parseInt(e.target.value) || 0)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
-            ) : (
-              <p className="px-4 py-2 bg-purple-50 rounded-lg text-gray-900 font-medium">
-                {displayData.tempsConsultation}%
-              </p>
-            )}
-          </div>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Clock className="w-4 h-4 inline mr-2" />
-              Gestion scientifique (%)
-            </label>
-            {isEditing ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Clock className="w-4 h-4 inline mr-2" />
+                Gestion scientifique (%)
+              </label>
               <input
                 type="number"
                 min="0"
@@ -867,19 +1111,13 @@ const IndividualProfileTab: React.FC<{
                 onChange={(e) => onChange('tempsGestionScientifique', parseInt(e.target.value) || 0)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
-            ) : (
-              <p className="px-4 py-2 bg-pink-50 rounded-lg text-gray-900 font-medium">
-                {displayData.tempsGestionScientifique}%
-              </p>
-            )}
-          </div>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Clock className="w-4 h-4 inline mr-2" />
-              Administration (%)
-            </label>
-            {isEditing ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Clock className="w-4 h-4 inline mr-2" />
+                Administration (%)
+              </label>
               <input
                 type="number"
                 min="0"
@@ -888,79 +1126,299 @@ const IndividualProfileTab: React.FC<{
                 onChange={(e) => onChange('tempsAdministration', parseInt(e.target.value) || 0)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Statut de validation - Seulement en mode affichage */}
+      {!isFormMode && data && (
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center">
+            {data.isValidated ? (
+              <>
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <span className="text-green-700 font-medium">Profil validé</span>
+                {data.validatedAt && (
+                  <span className="text-gray-500 text-sm ml-2">
+                    le {new Date(data.validatedAt).toLocaleDateString('fr-FR')}
+                  </span>
+                )}
+              </>
             ) : (
-              <p className="px-4 py-2 bg-red-50 rounded-lg text-gray-900 font-medium">
-                {displayData.tempsAdministration}%
-              </p>
+              <>
+                <AlertCircle className="w-5 h-5 text-orange-500 mr-2" />
+                <span className="text-orange-700 font-medium">En attente de validation</span>
+              </>
             )}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
 
 // Composant pour l'onglet Allocation de temps
-const TimeAllocationTab: React.FC<{ data: any }> = ({ data }) => {
+const TimeAllocationTab: React.FC<{
+  individualProfile: any;
+  allocations: TimeAllocation[];
+  currentAllocation: TimeAllocation | null;
+  selectedYear: number;
+  availableYears: number[];
+  isEditing: boolean;
+  formData: any;
+  onYearChange: (year: number) => void;
+  onChange: (field: string, value: number) => void;
+}> = ({
+  individualProfile,
+  allocations,
+  currentAllocation,
+  selectedYear,
+  availableYears,
+  isEditing,
+  formData,
+  onYearChange,
+  onChange
+}) => {
   const currentYear = new Date().getFullYear();
 
-  if (!data) {
+  // Si pas de profil individuel, afficher un message
+  if (!individualProfile) {
     return (
       <div className="text-center py-12">
         <Clock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Allocation de temps non configurée</h3>
-        <p className="text-gray-600">Votre allocation de temps pour {currentYear} n'a pas encore été configurée.</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Profil individuel requis</h3>
+        <p className="text-gray-600">Vous devez d'abord créer votre profil individuel pour gérer vos allocations de temps.</p>
       </div>
     );
   }
 
-  const allocations = [
-    { label: 'Recherche', value: data.tempsRecherche || 0, color: 'bg-blue-500' },
-    { label: 'Enseignement', value: data.tempsEnseignement || 0, color: 'bg-green-500' },
-    { label: 'Formation', value: data.tempsFormation || 0, color: 'bg-yellow-500' },
-    { label: 'Consultation', value: data.tempsConsultation || 0, color: 'bg-purple-500' },
-    { label: 'Gestion scientifique', value: data.tempsGestionScientifique || 0, color: 'bg-pink-500' },
-    { label: 'Administration', value: data.tempsAdministration || 0, color: 'bg-red-500' },
+  const displayData = isEditing ? formData : currentAllocation;
+
+  const allocationFields = [
+    { key: 'tempsRecherche', label: 'Recherche', color: 'bg-blue-500', bgColor: 'bg-blue-50' },
+    { key: 'tempsEnseignement', label: 'Enseignement', color: 'bg-green-500', bgColor: 'bg-green-50' },
+    { key: 'tempsFormation', label: 'Formation', color: 'bg-yellow-500', bgColor: 'bg-yellow-50' },
+    { key: 'tempsConsultation', label: 'Consultation', color: 'bg-purple-500', bgColor: 'bg-purple-50' },
+    { key: 'tempsGestionScientifique', label: 'Gestion scientifique', color: 'bg-pink-500', bgColor: 'bg-pink-50' },
+    { key: 'tempsAdministration', label: 'Administration', color: 'bg-red-500', bgColor: 'bg-red-50' },
   ];
 
-  const total = allocations.reduce((sum, item) => sum + item.value, 0);
+  const total = allocationFields.reduce((sum, field) => {
+    return sum + (displayData?.[field.key] || 0);
+  }, 0);
 
   return (
     <div>
+      {/* Sélecteur d'année */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Répartition du temps - Année {currentYear}
-        </h3>
-        <div className="bg-gray-50 p-4 rounded-lg mb-4">
-          <p className="text-sm text-gray-600 mb-2">Total: <span className="font-bold text-gray-900">{total}%</span></p>
-          <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden flex">
-            {allocations.map((item, index) => (
-              item.value > 0 && (
-                <div
-                  key={index}
-                  className={`${item.color} h-full`}
-                  style={{ width: `${item.value}%` }}
-                  title={`${item.label}: ${item.value}%`}
-                />
-              )
-            ))}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+            <Calendar className="w-5 h-5 mr-2" />
+            Allocation de temps par année
+          </h3>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => onYearChange(selectedYear - 1)}
+              disabled={selectedYear <= availableYears[0]}
+              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <select
+              value={selectedYear}
+              onChange={(e) => onYearChange(parseInt(e.target.value))}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+              {availableYears.map(year => (
+                <option key={year} value={year}>
+                  {year} {year === currentYear && '(Année courante)'}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => onYearChange(selectedYear + 1)}
+              disabled={selectedYear >= availableYears[availableYears.length - 1]}
+              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
+        </div>
+
+        {/* Indicateur des années avec allocations */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {availableYears.map(year => {
+            const hasAllocation = allocations.some(a => a.year === year);
+            const isSelected = year === selectedYear;
+            return (
+              <button
+                key={year}
+                onClick={() => onYearChange(year)}
+                className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                  isSelected
+                    ? 'bg-green-600 text-white'
+                    : hasAllocation
+                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}
+              >
+                {year}
+                {hasAllocation && !isSelected && (
+                  <CheckCircle className="w-3 h-3 inline ml-1" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {allocations.map((item, index) => (
-          <div key={index} className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className={`w-3 h-3 rounded-full ${item.color} mr-3`}></div>
-                <span className="text-sm font-medium text-gray-700">{item.label}</span>
-              </div>
-              <span className="text-lg font-bold text-gray-900">{item.value}%</span>
+      {/* Contenu de l'allocation */}
+      {!displayData && !isEditing ? (
+        <div className="text-center py-8 bg-gray-50 rounded-lg">
+          <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-600 mb-2">Aucune allocation configurée pour {selectedYear}</p>
+          <p className="text-sm text-gray-500">Cliquez sur "Configurer" pour définir votre allocation de temps.</p>
+        </div>
+      ) : (
+        <>
+          {/* Barre de progression */}
+          <div className="bg-gray-50 p-4 rounded-lg mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-gray-600">
+                Total: <span className={`font-bold ${total === 100 ? 'text-green-600' : total > 100 ? 'text-red-600' : 'text-gray-900'}`}>{total}%</span>
+              </p>
+              {isEditing && total !== 100 && (
+                <p className={`text-sm ${total > 100 ? 'text-red-600' : 'text-orange-600'}`}>
+                  {total > 100 ? `Dépasse de ${total - 100}%` : `Manque ${100 - total}%`}
+                </p>
+              )}
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden flex">
+              {allocationFields.map((field) => {
+                const value = displayData?.[field.key] || 0;
+                return value > 0 ? (
+                  <div
+                    key={field.key}
+                    className={`${field.color} h-full transition-all duration-300`}
+                    style={{ width: `${Math.min(value, 100)}%` }}
+                    title={`${field.label}: ${value}%`}
+                  />
+                ) : null;
+              })}
             </div>
           </div>
-        ))}
-      </div>
+
+          {/* Formulaire ou affichage */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {allocationFields.map((field) => (
+              <div key={field.key} className={`${isEditing ? '' : field.bgColor} border border-gray-200 rounded-lg p-4`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className={`w-3 h-3 rounded-full ${field.color} mr-3`}></div>
+                    <span className="text-sm font-medium text-gray-700">{field.label}</span>
+                  </div>
+                  {isEditing ? (
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData[field.key]}
+                      onChange={(e) => onChange(field.key, parseInt(e.target.value) || 0)}
+                      className="w-20 px-3 py-1 text-right border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  ) : (
+                    <span className="text-lg font-bold text-gray-900">{displayData?.[field.key] || 0}%</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Statut de validation */}
+          {!isEditing && currentAllocation && (
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center">
+                {currentAllocation.isValidated ? (
+                  <>
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    <span className="text-green-700 font-medium">Allocation validée</span>
+                    {currentAllocation.validatedAt && (
+                      <span className="text-gray-500 text-sm ml-2">
+                        le {new Date(currentAllocation.validatedAt).toLocaleDateString('fr-FR')}
+                        {currentAllocation.validatedBy && ` par ${currentAllocation.validatedBy}`}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="w-5 h-5 text-orange-500 mr-2" />
+                    <span className="text-orange-700 font-medium">En attente de validation</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Historique des allocations */}
+      {allocations.length > 0 && (
+        <div className="mt-8">
+          <h4 className="text-md font-semibold text-gray-900 mb-4">Historique des allocations</h4>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Année</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Recherche</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Enseign.</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Formation</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Consult.</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Gestion</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Admin.</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {allocations.map((allocation) => (
+                  <tr
+                    key={allocation.id}
+                    className={`${allocation.year === selectedYear ? 'bg-green-50' : ''} hover:bg-gray-50 cursor-pointer`}
+                    onClick={() => onYearChange(allocation.year)}
+                  >
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {allocation.year}
+                      {allocation.year === currentYear && (
+                        <span className="ml-2 text-xs text-green-600">(Actuelle)</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-500">{allocation.tempsRecherche}%</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-500">{allocation.tempsEnseignement}%</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-500">{allocation.tempsFormation}%</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-500">{allocation.tempsConsultation}%</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-500">{allocation.tempsGestionScientifique}%</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-500">{allocation.tempsAdministration}%</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-center">
+                      {allocation.isValidated ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Validé
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                          <AlertCircle className="w-3 h-3 mr-1" />
+                          En attente
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

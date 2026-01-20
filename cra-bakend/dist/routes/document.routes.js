@@ -53,14 +53,12 @@ router.get('/event/:eventId', auth_1.authenticate, documentController.getEventDo
 // =============================================
 // ROUTES AVEC /:id (DOIVENT ÊTRE À LA FIN)
 // =============================================
-// Obtenir un document spécifique
-router.get('/:id', auth_1.authenticate, documentController.getDocumentById);
+// IMPORTANT: Les routes spécifiques (/:id/preview, /:id/download, etc.)
+// doivent être définies AVANT la route générique /:id
 // Preview document (inline dans le browser) - Utilise flexibleAuth pour supporter token en query
 router.get('/:id/preview', auth_1.flexibleAuth, documentController.previewDocument);
 // Télécharger un document - Utilise flexibleAuth pour supporter token en query
 router.get('/:id/download', auth_1.flexibleAuth, documentController.downloadDocument);
-// Partager un document
-router.post('/:id/share', auth_1.authenticate, documentController.shareDocument);
 // Gestion des partages
 router.get('/:id/shares', auth_1.authenticate, documentController.getDocumentShares);
 router.delete('/:id/shares/:shareId', auth_1.authenticate, documentController.revokeShare);
@@ -74,9 +72,13 @@ router.delete('/:id/favorite', auth_1.authenticate, documentController.removeFro
 // Corbeille - Restauration et suppression
 router.post('/:id/restore', auth_1.authenticate, documentController.restoreDocument);
 router.delete('/:id/permanent', auth_1.authenticate, documentController.permanentDeleteDocument);
+// Partager un document
+router.post('/:id/share', auth_1.authenticate, documentController.shareDocument);
 // Mise à jour métadonnées
 router.patch('/:id', auth_1.authenticate, documentController.updateDocumentMetadata);
 // Suppression (soft delete par défaut maintenant)
 router.delete('/:id', auth_1.authenticate, documentController.deleteDocument);
+// Obtenir un document spécifique - DOIT ÊTRE EN DERNIER
+router.get('/:id', auth_1.authenticate, documentController.getDocumentById);
 exports.default = router;
 //# sourceMappingURL=document.routes.js.map

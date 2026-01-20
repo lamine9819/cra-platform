@@ -285,7 +285,8 @@ class EncryptionService {
   }
 }
 
-// Export singleton
+// Export class and singleton
+export { EncryptionService };
 export const encryptionService = new EncryptionService();
 export default encryptionService;
 export type { EncryptedData };

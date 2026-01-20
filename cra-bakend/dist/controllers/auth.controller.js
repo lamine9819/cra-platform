@@ -31,7 +31,7 @@ class AuthController {
                 res.cookie('auth_token', result.token, {
                     httpOnly: true, // Le cookie ne peut pas être lu par JavaScript
                     secure: process.env.NODE_ENV === 'production', // HTTPS uniquement en production
-                    sameSite: 'strict', // Protection CSRF
+                    sameSite: 'lax', // Protection CSRF tout en permettant les requêtes GET (iframe, preview)
                     maxAge: 24 * 60 * 60 * 1000, // 24 heures
                     path: '/',
                 });
@@ -91,7 +91,7 @@ class AuthController {
             res.clearCookie('auth_token', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
+                sameSite: 'lax',
                 path: '/',
             });
             res.status(200).json({

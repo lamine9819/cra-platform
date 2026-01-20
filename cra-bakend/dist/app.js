@@ -58,8 +58,11 @@ app.use((0, helmet_1.default)({
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             scriptSrc: ["'self'"],
-            imgSrc: ["'self'", "data:", "https:", "http://localhost:5173", "http://127.0.0.1:5173"],
+            imgSrc: ["'self'", "data:", "blob:", "https:", "http://localhost:5173", "http://127.0.0.1:5173"],
             connectSrc: ["'self'", "ws:", "wss:"],
+            frameSrc: ["'self'", "blob:", "data:"], // Permettre les iframes pour prévisualiser les PDFs
+            objectSrc: ["'self'", "blob:", "data:"], // Permettre les objets PDF
+            mediaSrc: ["'self'", "blob:", "data:"], // Permettre les médias
             frameAncestors: ["'self'", "http://localhost:5173", "http://127.0.0.1:5173"],
         },
     },
